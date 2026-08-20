@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { EventDrawer } from "@/components/kundivent/event-drawer";
 import { TimelineEventRow } from "@/components/kundivent/timeline-event-row";
+import { MatrixView } from "@/components/kundivent/matrix-view";
 import { useCategories, usePlanningAreas } from "@/lib/master-data";
 import { publicHolidays } from "@/lib/holidays";
 import { EVENT_STATUSES, useEvents, type EventWithRelations } from "@/lib/events";
