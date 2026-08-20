@@ -360,3 +360,44 @@ function Eintraege() {
     </div>
   );
 }
+
+const MONTH_NAMES = [
+  "Januar",
+  "Februar",
+  "März",
+  "April",
+  "Mai",
+  "Juni",
+  "Juli",
+  "August",
+  "September",
+  "Oktober",
+  "November",
+  "Dezember",
+];
+
+function todayIso() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+    d.getDate(),
+  ).padStart(2, "0")}`;
+}
+
+function groupByMonth(events: EventWithRelations[]): [string, EventWithRelations[]][] {
+  const map = new Map<string, EventWithRelations[]>();
+  for (const event of [...events].sort(
+    (a, b) =>
+      a.start_date.localeCompare(b.start_date) ||
+      (a.start_time ?? "99").localeCompare(b.start_time ?? "99") ||
+      a.title.localeCompare(b.title),
+  )) {
+    const key = event.start_date.slice(0, 7);
+    const list = map.get(key);
+    if (list) list.push(event);
+    else map.set(key, [event]);
+  }
+  return [...map.entries()].map(([key, group]) => [
+    `${MONTH_NAMES[Number(key.slice(5, 7)) - 1]} ${key.slice(0, 4)}`,
+    group,
+  ]);
+}
