@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus, Search } from "lucide-react";
+import { displayAreaKeyFromNames } from "@/lib/area-theme";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -118,9 +120,10 @@ function Eintraege() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h1 className="text-lg font-semibold tracking-tight">Einträge</h1>
+        <h1 className="text-base font-semibold tracking-tight">Einträge</h1>
+
         <span className="text-xs text-muted-foreground">
           {events.data ? `${filtered.length} von ${events.data.length}` : "—"}
         </span>
@@ -204,10 +207,11 @@ function Eintraege() {
 
         <div className="ml-auto flex items-center gap-2">
           <div
-            className="flex items-center rounded-sm border border-border p-0.5"
+            className="inline-flex items-center rounded-sm bg-muted p-0.5"
             role="group"
             aria-label="Ansicht"
           >
+
             {(
               [
                 ["table", "Tabelle"],
@@ -217,16 +221,18 @@ function Eintraege() {
               <button
                 key={value}
                 type="button"
+                aria-pressed={view === value}
                 onClick={() => setView(value)}
                 className={cn(
                   "rounded-[3px] px-2.5 py-1 text-xs transition-colors",
                   view === value
-                    ? "bg-accent font-medium text-accent-foreground"
+                    ? "bg-card font-semibold text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 {label}
               </button>
+
             ))}
           </div>
           <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={openNew}>
@@ -323,12 +329,28 @@ function Eintraege() {
                     <TableCell className="py-1.5 tabular-nums text-xs text-muted-foreground">
                       {formatDateRange(event.start_date, event.end_date)}
                     </TableCell>
-                    <TableCell className="py-1.5 font-medium">{event.title}</TableCell>
+                    <TableCell className="py-1.5 font-medium">
+                      <span className="flex items-center gap-2">
+                        <span
+                          aria-hidden
+                          className="h-3.5 w-[3px] shrink-0 rounded-full"
+                          style={{
+                            backgroundColor: `var(--area-${displayAreaKeyFromNames(
+                              event.planning_area_ids.map((id) => areaName.get(id) ?? ""),
+                            )})`,
+                          }}
+                        />
+                        <span className={cn(event.status === "cancelled" && "line-through")}>
+                          {event.title}
+                        </span>
+                      </span>
+                    </TableCell>
                     <TableCell className="py-1.5 text-xs text-muted-foreground">
                       {event.planning_area_ids
                         .map((id) => areaName.get(id) ?? "—")
                         .join(", ") || "—"}
                     </TableCell>
+
                     <TableCell className="py-1.5 text-xs">
                       <span className="flex items-center gap-2">
                         <span

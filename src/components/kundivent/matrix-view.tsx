@@ -6,10 +6,20 @@ import {
   formatDateRange,
   formatTimeRange,
   statusLabel,
+  type EventStatus,
   type EventWithRelations,
 } from "@/lib/events";
+import {
+  AREA_STYLE,
+  areaKeyFromName,
+  eventBlockClasses,
+  statusMark,
+  type AreaKey,
+} from "@/lib/area-theme";
+
 import type { PlanningArea } from "@/lib/master-data";
 import { publicHolidays } from "@/lib/holidays";
+
 
 const WEEKDAYS = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
 const MONTHS_SHORT = [
@@ -74,34 +84,6 @@ function buildDays(year: number, holidayByDate: Map<string, string>): Day[] {
 
 type Category = { name: string; color: string };
 
-function statusClasses(event: EventWithRelations, isHoliday: boolean) {
-  if (isHoliday)
-    return "bg-muted text-muted-foreground border-y border-border/70 font-semibold uppercase tracking-wide";
-  switch (event.status) {
-    case "confirmed":
-      return "bg-primary/15 text-foreground border border-primary/40";
-    case "provisional":
-      return "bg-warning/15 text-foreground border border-dashed border-warning/70";
-    case "cancelled":
-      return "bg-transparent text-muted-foreground/70 border border-border/60 line-through opacity-60";
-    default:
-      return "bg-muted/40 text-muted-foreground border border-dotted border-border";
-  }
-}
-
-function statusMark(event: EventWithRelations, isHoliday: boolean) {
-  if (isHoliday) return "×";
-  switch (event.status) {
-    case "confirmed":
-      return "●";
-    case "provisional":
-      return "◐";
-    case "cancelled":
-      return "✕";
-    default:
-      return "○";
-  }
-}
 
 function tooltipText(
   event: EventWithRelations,
@@ -212,11 +194,17 @@ export function MatrixView({
         {areas.map((area) => (
           <div
             key={area.id}
-            className="sticky top-0 z-20 border-b border-r border-border bg-card px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground last:border-r-0"
+            className="sticky top-0 z-20 flex items-center gap-1.5 border-b border-r border-border bg-card px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground last:border-r-0"
           >
-            {area.name}
+            <span
+              aria-hidden
+              className="size-2 shrink-0 rounded-[2px]"
+              style={{ backgroundColor: `var(--area-${areaKeyFromName(area.name)})` }}
+            />
+            <span className="truncate">{area.name}</span>
           </div>
         ))}
+
 
         {days.map((day, dayIndex) => {
           const isMonthStart = day.day === 1;
@@ -291,7 +279,7 @@ function MatrixRow({
       <div
         className={cn(
           "sticky left-0 z-10 flex items-center gap-1.5 overflow-hidden whitespace-nowrap border-b border-r border-border px-2 py-0.5 text-[11px] leading-tight tabular-nums",
-          day.isWeekend ? "bg-accent/70 font-medium" : "bg-card",
+          day.isWeekend ? "bg-muted/50 font-medium" : "bg-card",
           isToday && "bg-primary/10",
         )}
       >
@@ -315,6 +303,7 @@ function MatrixRow({
             key={area.id}
             date={day.date}
             areaId={area.id}
+            areaKey={areaKeyFromName(area.name)}
             events={list}
             isWeekend={day.isWeekend}
             isToday={isToday}
@@ -334,6 +323,7 @@ function MatrixRow({
 function MatrixCell({
   date,
   areaId,
+  areaKey,
   events,
   isWeekend,
   isToday,
@@ -346,6 +336,7 @@ function MatrixCell({
 }: {
   date: string;
   areaId: string;
+  areaKey: AreaKey;
   events: EventWithRelations[];
   isWeekend: boolean;
   isToday: boolean;
@@ -358,9 +349,11 @@ function MatrixCell({
 }) {
   const base = cn(
     "relative border-b border-r border-border/70 px-0.5 py-px last:border-r-0",
-    isWeekend && "bg-accent/30",
+    isWeekend && "bg-muted/40",
     isToday && "bg-primary/5",
   );
+
+
 
   if (!events.length) {
     return (
@@ -382,7 +375,7 @@ function MatrixCell({
         <EventBlock
           key={event.id}
           event={event}
-          date={date}
+          areaKey={areaKey}
           prevDate={prevDate}
           nextDate={nextDate}
           categoryById={categoryById}
@@ -422,7 +415,7 @@ function MatrixCell({
 
 function EventBlock({
   event,
-  date,
+  areaKey,
   prevDate,
   nextDate,
   categoryById,
@@ -430,7 +423,7 @@ function EventBlock({
   onOpenEvent,
 }: {
   event: EventWithRelations;
-  date: string;
+  areaKey: AreaKey;
   prevDate: string | null;
   nextDate: string | null;
   categoryById: Map<string, Category>;
@@ -445,29 +438,25 @@ function EventBlock({
   const areaNames = event.planning_area_ids
     .map((id) => areaNameById.get(id) ?? "")
     .filter(Boolean);
+  const status = event.status as EventStatus;
 
-  const time =
-    !event.all_day && event.start_time ? event.start_time.slice(0, 5) : null;
+  const time = !event.all_day && event.start_time ? event.start_time.slice(0, 5) : null;
 
   return (
     <button
       type="button"
       onClick={() => onOpenEvent(event)}
       title={tooltipText(event, areaNames, category?.name)}
+      style={AREA_STYLE[areaKey]}
       className={cn(
-        "flex w-full items-center gap-1 overflow-hidden rounded-[3px] px-1 py-[3px] text-left text-[11px] leading-tight transition-colors hover:brightness-95",
-        statusClasses(event, isHoliday),
+        "flex w-full items-center gap-1 overflow-hidden rounded-[3px] px-1 py-[3px] text-left text-[11px] leading-tight",
+        eventBlockClasses(status, isHoliday),
         continuesFrom && "rounded-t-none border-t-0",
         continuesTo && "rounded-b-none border-b-0",
       )}
-      style={
-        !isHoliday && category?.color
-          ? { borderLeft: `3px solid ${category.color}` }
-          : undefined
-      }
     >
       <span aria-hidden className="text-[8px] opacity-70">
-        {statusMark(event, isHoliday)}
+        {statusMark(status, isHoliday)}
       </span>
       {continuesFrom ? (
         <span className="truncate text-[10px] opacity-60">↳ {event.title}</span>
@@ -477,6 +466,7 @@ function EventBlock({
           {event.title}
         </span>
       )}
+
     </button>
   );
 }

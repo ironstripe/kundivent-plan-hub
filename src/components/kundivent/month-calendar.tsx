@@ -10,11 +10,18 @@ import {
   type EventStatus,
   type EventWithRelations,
 } from "@/lib/events";
+import {
+  AREA_STYLE,
+  displayAreaKey,
+  eventBlockClasses,
+  statusMark,
+} from "@/lib/area-theme";
 import { cn } from "@/lib/utils";
 
 const WEEKDAYS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 const LANE_HEIGHT = 20;
 const MAX_LANES = 3;
+
 
 function iso(d: Date) {
   return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(
@@ -58,20 +65,13 @@ function statusRank(status: string) {
   return status === "confirmed" ? 0 : status === "provisional" ? 1 : status === "idea" ? 2 : 3;
 }
 
-function blockClasses(status: EventStatus, isHoliday: boolean) {
-  if (isHoliday)
-    return "border border-dashed border-muted-foreground/40 bg-muted text-muted-foreground";
-  switch (status) {
-    case "confirmed":
-      return "border border-primary/30 bg-primary/15 text-foreground";
-    case "provisional":
-      return "border border-dashed border-warning/60 bg-warning/10 text-foreground";
-    case "idea":
-      return "border border-border bg-card text-muted-foreground";
-    default:
-      return "border border-border/60 bg-transparent text-muted-foreground/60 line-through";
-  }
+function isHolidayEvent(
+  event: EventWithRelations,
+  categoryById: Map<string, { name: string; color: string }>,
+) {
+  return categoryById.get(event.category_id)?.name === HOLIDAY_CATEGORY;
 }
+
 
 export function MonthCalendar({
   year,
@@ -175,13 +175,13 @@ export function MonthCalendar({
 
   return (
     <section className="overflow-hidden rounded-md border border-border bg-card">
-      <div className="grid grid-cols-7 border-b border-border bg-muted/40">
+      <div className="grid grid-cols-7 border-b border-border bg-muted/50">
         {WEEKDAYS.map((d, i) => (
           <div
             key={d}
             className={cn(
-              "px-2 py-1.5 text-[11px] font-medium uppercase tracking-wider",
-              i >= 5 ? "text-foreground" : "text-muted-foreground",
+              "px-2 py-1.5 text-[11px] uppercase tracking-wider",
+              i >= 4 ? "font-semibold text-foreground" : "font-medium text-muted-foreground",
               i > 0 && "border-l border-border/60",
             )}
           >
@@ -191,7 +191,7 @@ export function MonthCalendar({
       </div>
 
       {weekLayouts.map(({ week, segments, hiddenByDate, laneCount }) => (
-        <div key={week[0]} className="relative min-h-[96px] border-b border-border last:border-b-0">
+        <div key={week[0]} className="relative min-h-[92px] border-b border-border last:border-b-0">
           <div className="absolute inset-0 grid grid-cols-7">
             {week.map((date, i) => {
               const isOtherMonth = parse(date).getUTCMonth() !== month;
@@ -204,8 +204,10 @@ export function MonthCalendar({
                   className={cn(
                     "h-full w-full transition-colors hover:bg-accent/40",
                     i > 0 && "border-l border-border/60",
-                    i >= 5 && "bg-muted/30",
-                    isOtherMonth && "bg-muted/50",
+                    i >= 5 && "bg-muted",
+                    i === 4 && "bg-muted/50",
+
+                    isOtherMonth && "bg-muted/60",
                   )}
                 />
               );
@@ -223,13 +225,14 @@ export function MonthCalendar({
                       className={cn(
                         "inline-flex size-5 items-center justify-center rounded-full text-[11px] tabular-nums",
                         isOtherMonth ? "text-muted-foreground/50" : "font-medium text-foreground",
-                        date === today && "bg-primary font-semibold text-primary-foreground",
+                        date === today &&
+                          "bg-primary font-semibold text-primary-foreground shadow-none",
                       )}
                     >
                       {Number(date.slice(8, 10))}
                     </span>
                     {holiday ? (
-                      <span className="truncate text-[10px] italic text-muted-foreground/70">
+                      <span className="truncate text-[10px] text-muted-foreground/70">
                         {holiday}
                       </span>
                     ) : null}
@@ -278,9 +281,15 @@ export function MonthCalendar({
                                 key={event.id}
                                 type="button"
                                 onClick={() => onOpenEvent(event)}
+                                style={
+                                  AREA_STYLE[displayAreaKey(event.planning_area_ids, areaNameById)]
+                                }
                                 className={cn(
-                                  "block w-full truncate rounded-sm px-1.5 py-1 text-left text-xs",
-                                  blockClasses(event.status as EventStatus, false),
+                                  "block w-full truncate rounded-[3px] px-1.5 py-1 text-left text-xs",
+                                  eventBlockClasses(
+                                    event.status as EventStatus,
+                                    isHolidayEvent(event, categoryById),
+                                  ),
                                 )}
                               >
                                 {event.title}
@@ -317,6 +326,8 @@ function EventBar({
   const isHoliday = category?.name === HOLIDAY_CATEGORY;
   const areaNames = event.planning_area_ids.map((id) => areaNameById.get(id) ?? "").filter(Boolean);
   const time = !event.all_day && event.start_time ? event.start_time.slice(0, 5) : null;
+  const status = event.status as EventStatus;
+  const areaKey = displayAreaKey(event.planning_area_ids, areaNameById);
 
   return (
     <HoverCard openDelay={200} closeDelay={60}>
@@ -325,21 +336,22 @@ function EventBar({
           type="button"
           onClick={() => onOpenEvent(event)}
           className={cn(
-            "pointer-events-auto absolute flex items-center gap-1 overflow-hidden rounded-[3px] px-1.5 text-left text-[11px] leading-none transition-[filter] hover:brightness-95",
-            blockClasses(event.status as EventStatus, isHoliday),
+            "pointer-events-auto absolute flex items-center gap-1 overflow-hidden rounded-[3px] px-1.5 text-left text-[11px] leading-none",
+            eventBlockClasses(status, isHoliday),
             continuesFrom && "rounded-l-none border-l-0",
             continuesTo && "rounded-r-none border-r-0",
           )}
           style={{
+            ...AREA_STYLE[areaKey],
             left: `calc(${(col / 7) * 100}% + 2px)`,
             width: `calc(${(span / 7) * 100}% - 4px)`,
             top: lane * LANE_HEIGHT,
             height: LANE_HEIGHT - 3,
-            ...(!isHoliday && category?.color
-              ? { borderLeftColor: category.color, borderLeftWidth: continuesFrom ? 0 : 3 }
-              : {}),
           }}
         >
+          <span aria-hidden className="shrink-0 text-[7px] opacity-70">
+            {statusMark(status, isHoliday)}
+          </span>
           {continuesFrom ? <span className="text-[9px] opacity-60">↳</span> : null}
           {time && !continuesFrom ? (
             <span className="shrink-0 tabular-nums opacity-70">{time}</span>
@@ -348,48 +360,34 @@ function EventBar({
         </button>
       </HoverCardTrigger>
       <HoverCardContent align="start" className="hidden w-72 p-3 md:block">
-        <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-medium leading-snug">{event.title}</p>
-          <EventStatusBadge status={event.status as EventStatus} />
-        </div>
-        <dl className="mt-2 space-y-1 text-xs text-muted-foreground">
-          <div className="flex gap-2">
-            <dt className="w-20 shrink-0">Datum</dt>
-            <dd className="tabular-nums text-foreground">
-              {formatDateRange(event.start_date, event.end_date)}
-            </dd>
-          </div>
-          <div className="flex gap-2">
-            <dt className="w-20 shrink-0">Zeit</dt>
-            <dd className="tabular-nums">
-              {formatTimeRange(event.all_day, event.start_time, event.end_time)}
-            </dd>
-          </div>
-          <div className="flex gap-2">
-            <dt className="w-20 shrink-0">Bereiche</dt>
-            <dd>{areaNames.join(", ") || "—"}</dd>
-          </div>
-          <div className="flex gap-2">
-            <dt className="w-20 shrink-0">Kategorie</dt>
-            <dd className="flex items-center gap-1.5">
-              {category?.color ? (
-                <span
-                  aria-hidden
-                  className="size-2.5 rounded-[2px] border border-border"
-                  style={{ backgroundColor: category.color }}
-                />
-              ) : null}
-              {category?.name ?? "—"}
-            </dd>
-          </div>
-          {event.pax ? (
-            <div className="flex gap-2">
-              <dt className="w-20 shrink-0">Personen</dt>
-              <dd className="tabular-nums">{event.pax}</dd>
-            </div>
+        <p className="text-sm font-semibold leading-snug">{event.title}</p>
+        <p className="mt-0.5 text-xs tabular-nums text-muted-foreground">
+          {formatDateRange(event.start_date, event.end_date)} ·{" "}
+          {formatTimeRange(event.all_day, event.start_time, event.end_time)}
+        </p>
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          <EventStatusBadge status={status} />
+          {category ? (
+            <span className="rounded-sm border border-border bg-muted px-1.5 py-0.5 text-[11px] leading-none text-muted-foreground">
+              {category.name}
+            </span>
           ) : null}
-        </dl>
+          {event.pax ? (
+            <span className="rounded-sm border border-border bg-muted px-1.5 py-0.5 text-[11px] leading-none tabular-nums text-muted-foreground">
+              {event.pax} Pers.
+            </span>
+          ) : null}
+        </div>
+        <p className="mt-2 flex items-start gap-1.5 text-xs text-muted-foreground">
+          <span
+            aria-hidden
+            className="mt-[3px] size-2 shrink-0 rounded-[2px]"
+            style={{ backgroundColor: `var(--area-${areaKey})` }}
+          />
+          {areaNames.join(", ") || "—"}
+        </p>
       </HoverCardContent>
     </HoverCard>
   );
 }
+
