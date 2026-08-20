@@ -394,7 +394,7 @@ function Uebersicht() {
           </div>
         </div>
 
-        {view === "timeline" ? (
+        {true ? (
           <div className="flex flex-wrap items-center gap-0.5 border-t border-border pt-2">
             {MONTHS_SHORT.map((m, i) => (
               <button
