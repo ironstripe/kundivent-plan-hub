@@ -2,21 +2,26 @@ import { CircleDashed, CircleDot, CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { statusLabel, type EventStatus } from "@/lib/events";
 
+/**
+ * Status badges stay neutral: colour in Kundivent belongs to planning areas.
+ * Shape (icon) plus label carry the meaning; only the confirmed state gets a
+ * slightly stronger neutral surface.
+ */
 const STYLES: Record<EventStatus, { className: string; Icon: typeof CircleDot }> = {
   idea: {
-    className: "border-border bg-muted text-muted-foreground",
+    className: "border-border/70 bg-transparent text-muted-foreground",
     Icon: CircleDashed,
   },
   provisional: {
-    className: "border-warning/40 bg-warning/10 text-warning-foreground",
+    className: "border-dashed border-foreground/40 bg-transparent text-foreground/80",
     Icon: CircleDot,
   },
   confirmed: {
-    className: "border-primary/40 bg-primary/10 text-primary",
+    className: "border-foreground/25 bg-foreground/10 text-foreground font-semibold",
     Icon: CheckCircle2,
   },
   cancelled: {
-    className: "border-destructive/40 bg-destructive/10 text-destructive",
+    className: "border-border/60 bg-transparent text-muted-foreground/70 line-through",
     Icon: XCircle,
   },
 };

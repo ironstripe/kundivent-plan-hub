@@ -49,31 +49,37 @@ const MONTHS = [
   "Dezember",
 ];
 
+/**
+ * Availability keeps its own semantic colour system (--avail-*), deliberately
+ * separate from the planning-area colours used in Übersicht and Matrix.
+ * Each state is also carried by an icon and a text label, never colour alone.
+ */
 const STATE_STYLE: Record<
   AvailabilityState,
   { cell: string; label: string; Icon: typeof Check }
 > = {
   free: {
-    cell: "border-primary/25 bg-primary/5 hover:bg-primary/10 text-primary",
-    label: "text-primary",
+    cell: "border-[var(--avail-free-border)] bg-[var(--avail-free-bg)] hover:bg-[var(--avail-free-hover)]",
+    label: "text-[var(--avail-free)]",
     Icon: Check,
   },
   provisional: {
-    cell: "border-warning/40 bg-warning/10 hover:bg-warning/15 text-warning-foreground border-dashed",
-    label: "text-warning-foreground",
+    cell: "border-dashed border-[var(--avail-provisional-border)] bg-[var(--avail-provisional-bg)] hover:bg-[var(--avail-provisional-hover)]",
+    label: "text-[var(--avail-provisional)]",
     Icon: CircleAlert,
   },
   occupied: {
-    cell: "border-border bg-muted hover:bg-muted/80 text-foreground",
+    cell: "border-[var(--avail-occupied-border)] bg-[var(--avail-occupied-bg)] hover:bg-[var(--avail-occupied-hover)]",
     label: "text-foreground",
     Icon: Lock,
   },
   closed: {
-    cell: "border-border bg-foreground/10 hover:bg-foreground/15 text-muted-foreground",
+    cell: "surface-hatch border-[var(--avail-closed-border)] bg-[var(--avail-closed-bg)] hover:bg-[var(--avail-closed-hover)]",
     label: "text-muted-foreground",
     Icon: CircleSlash,
   },
 };
+
 
 function iso(d: Date) {
   return d.toISOString().slice(0, 10);
@@ -201,9 +207,9 @@ function FreieTermine() {
   const sortedWeekdays = [...weekdays].sort((a, b) => a - b);
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-5">
-      <header className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-        <h1 className="text-lg font-semibold tracking-tight">Freie Termine</h1>
+    <div className="w-full space-y-3">
+      <header className="flex flex-wrap items-baseline justify-between gap-2">
+        <h1 className="text-base font-semibold tracking-tight">Freie Termine</h1>
         <p className="text-xs text-muted-foreground">
           {rangeValid && areaIds.length > 0
             ? `${freeCount} freie Termine · ${days.length} geprüfte Daten`
@@ -211,7 +217,8 @@ function FreieTermine() {
         </p>
       </header>
 
-      <div className="sticky top-14 z-10 mb-4 rounded-md border border-border bg-card/95 p-3 backdrop-blur">
+      <div className="sticky top-12 z-10 rounded-md border border-border bg-card/95 p-2.5 backdrop-blur">
+
         <div className="flex flex-wrap items-end gap-3">
           <div className="space-y-1">
             <Label htmlFor="from" className="text-[11px] text-muted-foreground">
@@ -347,7 +354,7 @@ function FreieTermine() {
           Im gewählten Zeitraum gibt es keine Daten mit den gewählten Wochentagen.
         </p>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-5">
           {months.map(([mk, weeks]) => (
             <section key={mk}>
               <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">

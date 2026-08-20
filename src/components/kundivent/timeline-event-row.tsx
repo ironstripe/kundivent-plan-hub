@@ -1,12 +1,14 @@
 import { CalendarClock, Clock, Users, MoveRight, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EventStatusBadge } from "@/components/kundivent/event-status-badge";
+import { AREA_STYLE, displayAreaKeyFromNames } from "@/lib/area-theme";
 import {
   HOLIDAY_CATEGORY,
   formatTimeRange,
   type EventStatus,
   type EventWithRelations,
 } from "@/lib/events";
+
 
 const MONTHS_SHORT = [
   "Jan",
@@ -46,6 +48,8 @@ export function TimelineEventRow({
   onOpen: (event: EventWithRelations) => void;
 }) {
   const isHoliday = category?.name === HOLIDAY_CATEGORY;
+  const areaKey = displayAreaKeyFromNames(areaNames);
+
   const isCancelled = event.status === "cancelled";
   const end = event.end_date ?? event.start_date;
   const continues = end.slice(0, 7) !== event.start_date.slice(0, 7);
@@ -65,18 +69,18 @@ export function TimelineEventRow({
           onOpen(event);
         }
       }}
+      style={AREA_STYLE[areaKey]}
       className={cn(
-        "group grid cursor-pointer grid-cols-[3px_1fr] gap-0 rounded-sm border border-border bg-card transition-colors hover:border-primary/40 hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "group grid cursor-pointer grid-cols-[3px_1fr] gap-0 rounded-sm border border-border bg-card transition-colors hover:border-[var(--ev-border)] hover:bg-[var(--ev-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         isHoliday && "border-dashed bg-muted/40",
         isCancelled && "opacity-60",
       )}
     >
       <span
         aria-hidden
-        className="rounded-l-sm"
-        style={{ backgroundColor: isHoliday ? undefined : category?.color }}
+        className={cn("rounded-l-sm", isHoliday ? "bg-border" : "bg-[var(--ev-accent)]")}
       />
-      <div className="flex flex-col gap-1 px-2.5 py-2 sm:flex-row sm:items-center sm:gap-3">
+      <div className="flex flex-col gap-1 px-2.5 py-1.5 sm:flex-row sm:items-center sm:gap-3">
         <span
           className={cn(
             "w-full shrink-0 text-xs font-medium tabular-nums text-muted-foreground sm:w-32",
@@ -105,15 +109,11 @@ export function TimelineEventRow({
 
         <span className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground sm:shrink-0">
           {category ? (
-            <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-              <span
-                aria-hidden
-                className="size-2 shrink-0 rounded-[2px]"
-                style={{ backgroundColor: category.color }}
-              />
+            <span className="whitespace-nowrap rounded-sm border border-border bg-muted px-1.5 py-0.5 text-[11px] leading-none">
               {category.name}
             </span>
           ) : null}
+
           {time ? (
             <span className="inline-flex items-center gap-1 whitespace-nowrap tabular-nums">
               <Clock aria-hidden className="size-3" />

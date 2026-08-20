@@ -139,6 +139,120 @@
   --sidebar-ring: oklch(0.6 0.05 216);
 }
 
+/* ---------------------------------------------------------------------------
+ * Planning-area colour system.
+ *
+ * Each planning area owns one restrained hue. Derived surfaces (bg / soft /
+ * border / hover) are mixed against --card so they stay calm in light and
+ * dark mode. Components never hardcode these values: they set the --ev-*
+ * variables via AREA_STYLE (src/lib/area-theme.ts) and use var(--ev-*).
+ * ------------------------------------------------------------------------ */
+
+:root {
+  --area-restaurant: oklch(0.58 0.105 42);
+  --area-event: oklch(0.53 0.075 250);
+  --area-hofstube: oklch(0.52 0.075 145);
+  --area-terrasse: oklch(0.6 0.045 160);
+  --area-fishing: oklch(0.55 0.065 205);
+  --area-hofladen: oklch(0.63 0.085 85);
+  --area-default: oklch(0.55 0.02 250);
+
+  /* semantic availability states (Freie Termine) — deliberately separate */
+  --avail-free: oklch(0.55 0.08 160);
+  --avail-provisional: oklch(0.65 0.11 70);
+  --avail-occupied: oklch(0.5 0.02 250);
+  --avail-closed: oklch(0.42 0.015 250);
+}
+
+.dark {
+  --area-restaurant: oklch(0.72 0.1 42);
+  --area-event: oklch(0.7 0.075 250);
+  --area-hofstube: oklch(0.7 0.075 145);
+  --area-terrasse: oklch(0.74 0.045 160);
+  --area-fishing: oklch(0.71 0.065 205);
+  --area-hofladen: oklch(0.76 0.085 85);
+  --area-default: oklch(0.7 0.02 250);
+
+  --avail-free: oklch(0.72 0.08 160);
+  --avail-provisional: oklch(0.76 0.11 70);
+  --avail-occupied: oklch(0.7 0.02 250);
+  --avail-closed: oklch(0.6 0.015 250);
+}
+
+:root,
+.dark {
+  --area-restaurant-bg: color-mix(in oklab, var(--area-restaurant) 16%, var(--card));
+  --area-restaurant-soft: color-mix(in oklab, var(--area-restaurant) 6%, var(--card));
+  --area-restaurant-border: color-mix(in oklab, var(--area-restaurant) 42%, var(--card));
+  --area-restaurant-hover: color-mix(in oklab, var(--area-restaurant) 26%, var(--card));
+  --area-restaurant-faint: color-mix(in oklab, var(--area-restaurant) 45%, var(--card));
+
+  --area-event-bg: color-mix(in oklab, var(--area-event) 16%, var(--card));
+  --area-event-soft: color-mix(in oklab, var(--area-event) 6%, var(--card));
+  --area-event-border: color-mix(in oklab, var(--area-event) 42%, var(--card));
+  --area-event-hover: color-mix(in oklab, var(--area-event) 26%, var(--card));
+  --area-event-faint: color-mix(in oklab, var(--area-event) 45%, var(--card));
+
+  --area-hofstube-bg: color-mix(in oklab, var(--area-hofstube) 16%, var(--card));
+  --area-hofstube-soft: color-mix(in oklab, var(--area-hofstube) 6%, var(--card));
+  --area-hofstube-border: color-mix(in oklab, var(--area-hofstube) 42%, var(--card));
+  --area-hofstube-hover: color-mix(in oklab, var(--area-hofstube) 26%, var(--card));
+  --area-hofstube-faint: color-mix(in oklab, var(--area-hofstube) 45%, var(--card));
+
+  --area-terrasse-bg: color-mix(in oklab, var(--area-terrasse) 18%, var(--card));
+  --area-terrasse-soft: color-mix(in oklab, var(--area-terrasse) 7%, var(--card));
+  --area-terrasse-border: color-mix(in oklab, var(--area-terrasse) 45%, var(--card));
+  --area-terrasse-hover: color-mix(in oklab, var(--area-terrasse) 28%, var(--card));
+  --area-terrasse-faint: color-mix(in oklab, var(--area-terrasse) 48%, var(--card));
+
+  --area-fishing-bg: color-mix(in oklab, var(--area-fishing) 16%, var(--card));
+  --area-fishing-soft: color-mix(in oklab, var(--area-fishing) 6%, var(--card));
+  --area-fishing-border: color-mix(in oklab, var(--area-fishing) 42%, var(--card));
+  --area-fishing-hover: color-mix(in oklab, var(--area-fishing) 26%, var(--card));
+  --area-fishing-faint: color-mix(in oklab, var(--area-fishing) 45%, var(--card));
+
+  --area-hofladen-bg: color-mix(in oklab, var(--area-hofladen) 18%, var(--card));
+  --area-hofladen-soft: color-mix(in oklab, var(--area-hofladen) 7%, var(--card));
+  --area-hofladen-border: color-mix(in oklab, var(--area-hofladen) 45%, var(--card));
+  --area-hofladen-hover: color-mix(in oklab, var(--area-hofladen) 28%, var(--card));
+  --area-hofladen-faint: color-mix(in oklab, var(--area-hofladen) 48%, var(--card));
+
+  --area-default-bg: color-mix(in oklab, var(--area-default) 14%, var(--card));
+  --area-default-soft: color-mix(in oklab, var(--area-default) 5%, var(--card));
+  --area-default-border: color-mix(in oklab, var(--area-default) 38%, var(--card));
+  --area-default-hover: color-mix(in oklab, var(--area-default) 22%, var(--card));
+  --area-default-faint: color-mix(in oklab, var(--area-default) 40%, var(--card));
+
+  --avail-free-bg: color-mix(in oklab, var(--avail-free) 12%, var(--card));
+  --avail-free-border: color-mix(in oklab, var(--avail-free) 38%, var(--card));
+  --avail-free-hover: color-mix(in oklab, var(--avail-free) 20%, var(--card));
+  --avail-provisional-bg: color-mix(in oklab, var(--avail-provisional) 14%, var(--card));
+  --avail-provisional-border: color-mix(in oklab, var(--avail-provisional) 45%, var(--card));
+  --avail-provisional-hover: color-mix(in oklab, var(--avail-provisional) 22%, var(--card));
+  --avail-occupied-bg: color-mix(in oklab, var(--avail-occupied) 14%, var(--card));
+  --avail-occupied-border: color-mix(in oklab, var(--avail-occupied) 32%, var(--card));
+  --avail-occupied-hover: color-mix(in oklab, var(--avail-occupied) 20%, var(--card));
+  --avail-closed-bg: color-mix(in oklab, var(--avail-closed) 22%, var(--card));
+  --avail-closed-border: color-mix(in oklab, var(--avail-closed) 40%, var(--card));
+  --avail-closed-hover: color-mix(in oklab, var(--avail-closed) 28%, var(--card));
+}
+
+@theme inline {
+  --color-avail-free: var(--avail-free);
+  --color-avail-provisional: var(--avail-provisional);
+  --color-avail-occupied: var(--avail-occupied);
+  --color-avail-closed: var(--avail-closed);
+}
+
+/* Diagonal hatch used for closed / Betriebsferien surfaces. */
+@utility surface-hatch {
+  background-image: repeating-linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--foreground) 8%, transparent) 0 2px,
+    transparent 2px 6px
+  );
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
@@ -147,5 +261,12 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-variant-numeric: tabular-nums;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 1px;
   }
 }
+

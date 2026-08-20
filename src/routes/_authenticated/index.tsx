@@ -20,7 +20,9 @@ import { MonthCalendar } from "@/components/kundivent/month-calendar";
 import { MatrixView } from "@/components/kundivent/matrix-view";
 import { useCategories, usePlanningAreas } from "@/lib/master-data";
 import { EVENT_STATUSES, useEvents, type EventWithRelations } from "@/lib/events";
+import { areaKeyFromName } from "@/lib/area-theme";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
@@ -208,7 +210,7 @@ function Uebersicht() {
         </div>
 
         <div
-          className="ml-1 flex items-center rounded-sm border border-border p-0.5"
+          className="ml-1 inline-flex items-center rounded-sm bg-muted p-0.5"
           role="group"
           aria-label="Ansicht"
         >
@@ -221,11 +223,12 @@ function Uebersicht() {
             <button
               key={value}
               type="button"
+              aria-pressed={view === value}
               onClick={() => switchView(value)}
               className={cn(
                 "rounded-[3px] px-2.5 py-1 text-xs transition-colors",
                 view === value
-                  ? "bg-accent font-medium text-accent-foreground"
+                  ? "bg-card font-semibold text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
@@ -234,10 +237,18 @@ function Uebersicht() {
           ))}
         </div>
 
+
         <div className="ml-auto flex items-center gap-2">
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
+              <Button
+                variant="outline"
+                size="sm"
+                className={cn(
+                  "h-8 gap-1.5 text-xs",
+                  areaIds.length > 0 && "border-primary/50 bg-primary/5 font-medium",
+                )}
+              >
                 {areaLabel}
                 <ChevronDown className="size-3.5 opacity-60" />
               </Button>
@@ -269,6 +280,11 @@ function Uebersicht() {
                           )
                         }
                       />
+                      <span
+                        aria-hidden
+                        className="size-2.5 shrink-0 rounded-[2px]"
+                        style={{ backgroundColor: `var(--area-${areaKeyFromName(area.name)})` }}
+                      />
                       {area.name}
                     </label>
                   );
@@ -277,13 +293,19 @@ function Uebersicht() {
             </PopoverContent>
           </Popover>
 
+
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 gap-1.5 text-xs"
+                className={cn(
+                  "h-8 gap-1.5 text-xs",
+                  (secondaryCount > 0 || showCancelled) &&
+                    "border-primary/50 bg-primary/5 font-medium",
+                )}
                 aria-label="Weitere Filter"
+
               >
                 <SlidersHorizontal className="size-3.5" />
                 Filter
