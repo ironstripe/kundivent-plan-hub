@@ -394,8 +394,7 @@ function Uebersicht() {
           </div>
         </div>
 
-        {true ? (
-          <div className="flex flex-wrap items-center gap-0.5 border-t border-border pt-2">
+        <div className="flex flex-wrap items-center gap-0.5 border-t border-border pt-2">
             {MONTHS_SHORT.map((m, i) => (
               <button
                 key={m}
@@ -415,7 +414,7 @@ function Uebersicht() {
               </button>
             ))}
           </div>
-        ) : null}
+        </div>
       </div>
 
       {view === "matrix" ? (
