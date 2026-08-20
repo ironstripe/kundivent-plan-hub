@@ -186,17 +186,23 @@ function Uebersicht() {
 
   function openEvent(event: EventWithRelations) {
     setPrefillDate(null);
+    setPrefillAreas([]);
     setSelected(event);
     setDrawerOpen(true);
   }
 
-  function openNew(date?: string) {
+  function openNew(date?: string, areaId?: string) {
     setPrefillDate(date ?? null);
+    setPrefillAreas(areaId ? [areaId] : []);
     setSelected(null);
     setDrawerOpen(true);
   }
 
   function jumpToMonth(index: number) {
+    if (view === "matrix") {
+      setJumpMonth({ index, nonce: Date.now() });
+      return;
+    }
     monthRefs.current[index]?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
