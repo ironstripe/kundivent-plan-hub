@@ -389,7 +389,7 @@ function Uebersicht() {
           areas={matrixAreas}
           year={cursor.year}
           today={today}
-          categoryById={categoryById as never}
+          categoryById={categoryById}
           areaNameById={areaNameById}
           jumpMonth={jumpMonth}
           onOpenEvent={openEvent}

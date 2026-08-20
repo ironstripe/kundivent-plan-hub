@@ -135,7 +135,7 @@ export function MatrixView({
   areas: PlanningArea[];
   year: number;
   today: string;
-  categoryById: Map<string, Category>;
+  categoryById: Map<string, { name: string; color: string }>;
   areaNameById: Map<string, string>;
   jumpMonth: { index: number; nonce: number } | null;
   onOpenEvent: (event: EventWithRelations) => void;
@@ -267,7 +267,7 @@ function MatrixRow({
   isToday: boolean;
   areas: PlanningArea[];
   cellIndex: Map<string, EventWithRelations[]>;
-  categoryById: Map<string, Category>;
+  categoryById: Map<string, { name: string; color: string }>;
   areaNameById: Map<string, string>;
   columns: number;
   onOpenEvent: (event: EventWithRelations) => void;
@@ -349,7 +349,7 @@ function MatrixCell({
   events: EventWithRelations[];
   isWeekend: boolean;
   isToday: boolean;
-  categoryById: Map<string, Category>;
+  categoryById: Map<string, { name: string; color: string }>;
   areaNameById: Map<string, string>;
   prevDate: string | null;
   nextDate: string | null;
@@ -433,7 +433,7 @@ function EventBlock({
   date: string;
   prevDate: string | null;
   nextDate: string | null;
-  categoryById: Map<string, Category>;
+  categoryById: Map<string, { name: string; color: string }>;
   areaNameById: Map<string, string>;
   onOpenEvent: (event: EventWithRelations) => void;
 }) {
