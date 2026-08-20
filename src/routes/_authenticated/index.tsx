@@ -167,7 +167,7 @@ function Uebersicht() {
       );
     }
     return groups;
-  }, [events.data, year, areaIds, categoryId, status, search]);
+  }, [filteredEvents, year]);
 
   const totalCount = monthGroups.reduce((sum, g) => sum + g.length, 0);
 
