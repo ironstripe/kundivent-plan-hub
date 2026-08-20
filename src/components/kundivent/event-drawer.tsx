@@ -96,10 +96,12 @@ export function EventDrawer({
   open,
   onOpenChange,
   event,
+  defaultDate,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   event?: EventWithRelations | null;
+  defaultDate?: string;
 }) {
   const areas = usePlanningAreas();
   const categories = useCategories();
@@ -119,8 +121,11 @@ export function EventDrawer({
   useEffect(() => {
     if (!open) return;
     setErrors({});
-    setForm(event ? fromEvent(event) : EMPTY);
-  }, [open, event]);
+    setForm(
+      event ? fromEvent(event) : defaultDate ? { ...EMPTY, start_date: defaultDate } : EMPTY,
+    );
+  }, [open, event, defaultDate]);
+
 
   const selectedCategory = activeCategories.find((c) => c.id === form.category_id);
   const isHoliday = selectedCategory?.name === HOLIDAY_CATEGORY;
