@@ -87,7 +87,7 @@ function fromEvent(event: EventWithRelations): FormState {
   };
 }
 
-function FieldError({ message }: { message?: string }) {
+function FieldError({ message }: { message?: string | undefined }) {
   if (!message) return null;
   return <p className="text-[11px] text-destructive">{message}</p>;
 }
