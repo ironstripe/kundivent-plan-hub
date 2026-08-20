@@ -204,8 +204,9 @@ export function MonthCalendar({
                   className={cn(
                     "h-full w-full transition-colors hover:bg-accent/40",
                     i > 0 && "border-l border-border/60",
-                    i >= 5 && "bg-muted/40",
-                    i === 4 && "bg-muted/20",
+                    i >= 5 && "bg-muted",
+                    i === 4 && "bg-muted/50",
+
                     isOtherMonth && "bg-muted/60",
                   )}
                 />
