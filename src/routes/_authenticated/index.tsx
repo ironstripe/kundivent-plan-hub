@@ -131,19 +131,31 @@ function Uebersicht() {
     return map;
   }, [categories.data]);
 
-  const monthGroups = useMemo(() => {
+  const filteredEvents = useMemo(() => {
     const term = search.trim().toLowerCase();
-    const groups: EventWithRelations[][] = Array.from({ length: 12 }, () => []);
-    for (const event of events.data ?? []) {
+    return (events.data ?? []).filter((event) => {
       const start = event.start_date;
       const end = event.end_date ?? event.start_date;
-      if (Number(end.slice(0, 4)) < year || Number(start.slice(0, 4)) > year) continue;
-      if (areaIds.length && !event.planning_area_ids.some((id) => areaIds.includes(id))) continue;
-      if (categoryId !== ALL && event.category_id !== categoryId) continue;
-      if (status !== ALL && event.status !== status) continue;
-      if (term && !`${event.title} ${event.notes ?? ""}`.toLowerCase().includes(term)) continue;
-      const monthIndex =
-        Number(start.slice(0, 4)) < year ? 0 : Number(start.slice(5, 7)) - 1;
+      if (Number(end.slice(0, 4)) < year || Number(start.slice(0, 4)) > year) return false;
+      if (areaIds.length && !event.planning_area_ids.some((id) => areaIds.includes(id)))
+        return false;
+      if (categoryId !== ALL && event.category_id !== categoryId) return false;
+      if (status !== ALL && event.status !== status) return false;
+      if (term && !`${event.title} ${event.notes ?? ""}`.toLowerCase().includes(term)) return false;
+      return true;
+    });
+  }, [events.data, year, areaIds, categoryId, status, search]);
+
+  const matrixAreas = useMemo(
+    () => (areaIds.length ? activeAreas.filter((a) => areaIds.includes(a.id)) : activeAreas),
+    [activeAreas, areaIds],
+  );
+
+  const monthGroups = useMemo(() => {
+    const groups: EventWithRelations[][] = Array.from({ length: 12 }, () => []);
+    for (const event of filteredEvents) {
+      const start = event.start_date;
+      const monthIndex = Number(start.slice(0, 4)) < year ? 0 : Number(start.slice(5, 7)) - 1;
       groups[monthIndex]?.push(event);
     }
     for (const group of groups) {
