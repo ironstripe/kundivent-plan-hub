@@ -63,7 +63,7 @@ function Einstellungen() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h1 className="text-lg font-semibold tracking-tight">Einstellungen</h1>
+        <h1 className="text-base font-semibold tracking-tight">Einstellungen</h1>
         <span className="text-xs text-muted-foreground">
           Stammdaten – Bearbeitung folgt in einer späteren Phase
         </span>

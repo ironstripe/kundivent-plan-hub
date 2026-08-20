@@ -162,7 +162,7 @@ function MigrationPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <div>
-          <h1 className="text-lg font-semibold tracking-tight">Excel-Migration</h1>
+          <h1 className="text-base font-semibold tracking-tight">Excel-Migration</h1>
           <p className="text-xs text-muted-foreground">
             Migrationswerkzeug – nicht Teil der operativen Navigation.
           </p>
