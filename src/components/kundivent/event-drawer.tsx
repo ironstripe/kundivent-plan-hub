@@ -500,8 +500,8 @@ export function EventDrawer({
               Löschen
             </AlertDialogAction>
           </AlertDialogFooter>
-        </AlertDialogFooter>
         </AlertDialogContent>
+
       </AlertDialog>
     </>
   );
