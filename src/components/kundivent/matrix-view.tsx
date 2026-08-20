@@ -290,8 +290,8 @@ function MatrixRow({
 
       <div
         className={cn(
-          "sticky left-0 z-10 flex items-center gap-1.5 border-b border-r border-border px-2 py-0.5 text-[11px] leading-tight tabular-nums",
-          day.isWeekend ? "bg-accent/40 font-medium" : "bg-card",
+          "sticky left-0 z-10 flex items-center gap-1.5 overflow-hidden whitespace-nowrap border-b border-r border-border px-2 py-0.5 text-[11px] leading-tight tabular-nums",
+          day.isWeekend ? "bg-accent/70 font-medium" : "bg-card",
           isToday && "bg-primary/10",
         )}
       >
@@ -302,7 +302,7 @@ function MatrixRow({
           {String(day.day).padStart(2, "0")} {MONTHS_SHORT[day.month]}
         </span>
         {day.holiday ? (
-          <span className="truncate text-[10px] text-muted-foreground/70" title={day.holiday}>
+          <span className="min-w-0 truncate text-[10px] text-muted-foreground/70" title={day.holiday}>
             · {day.holiday}
           </span>
         ) : null}
@@ -358,7 +358,7 @@ function MatrixCell({
 }) {
   const base = cn(
     "relative border-b border-r border-border/70 px-0.5 py-px last:border-r-0",
-    isWeekend && "bg-accent/25",
+    isWeekend && "bg-accent/30",
     isToday && "bg-primary/5",
   );
 
