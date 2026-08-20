@@ -20,7 +20,9 @@ import {
 } from "@/components/ui/table";
 import { EventDrawer } from "@/components/kundivent/event-drawer";
 import { EventStatusBadge } from "@/components/kundivent/event-status-badge";
+import { TimelineEventRow } from "@/components/kundivent/timeline-event-row";
 import { useCategories, usePlanningAreas } from "@/lib/master-data";
+import { cn } from "@/lib/utils";
 import {
   EVENT_STATUSES,
   formatDateRange,
@@ -57,6 +59,7 @@ function Eintraege() {
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selected, setSelected] = useState<EventWithRelations | null>(null);
+  const [view, setView] = useState<"table" | "timeline">("table");
 
   const [year, setYear] = useState<string>(ALL);
   const [areaId, setAreaId] = useState<string>(ALL);
