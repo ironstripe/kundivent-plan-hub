@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { EventDrawer } from "@/components/kundivent/event-drawer";
 import { TimelineEventRow } from "@/components/kundivent/timeline-event-row";
+import { MatrixView } from "@/components/kundivent/matrix-view";
 import { useCategories, usePlanningAreas } from "@/lib/master-data";
 import { publicHolidays } from "@/lib/holidays";
 import { EVENT_STATUSES, useEvents, type EventWithRelations } from "@/lib/events";
@@ -96,6 +97,8 @@ function Uebersicht() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selected, setSelected] = useState<EventWithRelations | null>(null);
   const [prefillDate, setPrefillDate] = useState<string | null>(null);
+  const [prefillAreas, setPrefillAreas] = useState<string[]>([]);
+  const [jumpMonth, setJumpMonth] = useState<{ index: number; nonce: number } | null>(null);
 
   const monthRefs = useRef<(HTMLElement | null)[]>([]);
 
@@ -129,19 +132,31 @@ function Uebersicht() {
     return map;
   }, [categories.data]);
 
-  const monthGroups = useMemo(() => {
+  const filteredEvents = useMemo(() => {
     const term = search.trim().toLowerCase();
-    const groups: EventWithRelations[][] = Array.from({ length: 12 }, () => []);
-    for (const event of events.data ?? []) {
+    return (events.data ?? []).filter((event) => {
       const start = event.start_date;
       const end = event.end_date ?? event.start_date;
-      if (Number(end.slice(0, 4)) < year || Number(start.slice(0, 4)) > year) continue;
-      if (areaIds.length && !event.planning_area_ids.some((id) => areaIds.includes(id))) continue;
-      if (categoryId !== ALL && event.category_id !== categoryId) continue;
-      if (status !== ALL && event.status !== status) continue;
-      if (term && !`${event.title} ${event.notes ?? ""}`.toLowerCase().includes(term)) continue;
-      const monthIndex =
-        Number(start.slice(0, 4)) < year ? 0 : Number(start.slice(5, 7)) - 1;
+      if (Number(end.slice(0, 4)) < year || Number(start.slice(0, 4)) > year) return false;
+      if (areaIds.length && !event.planning_area_ids.some((id) => areaIds.includes(id)))
+        return false;
+      if (categoryId !== ALL && event.category_id !== categoryId) return false;
+      if (status !== ALL && event.status !== status) return false;
+      if (term && !`${event.title} ${event.notes ?? ""}`.toLowerCase().includes(term)) return false;
+      return true;
+    });
+  }, [events.data, year, areaIds, categoryId, status, search]);
+
+  const matrixAreas = useMemo(
+    () => (areaIds.length ? activeAreas.filter((a) => areaIds.includes(a.id)) : activeAreas),
+    [activeAreas, areaIds],
+  );
+
+  const monthGroups = useMemo(() => {
+    const groups: EventWithRelations[][] = Array.from({ length: 12 }, () => []);
+    for (const event of filteredEvents) {
+      const start = event.start_date;
+      const monthIndex = Number(start.slice(0, 4)) < year ? 0 : Number(start.slice(5, 7)) - 1;
       groups[monthIndex]?.push(event);
     }
     for (const group of groups) {
@@ -153,7 +168,7 @@ function Uebersicht() {
       );
     }
     return groups;
-  }, [events.data, year, areaIds, categoryId, status, search]);
+  }, [filteredEvents, year]);
 
   const totalCount = monthGroups.reduce((sum, g) => sum + g.length, 0);
 
@@ -184,17 +199,23 @@ function Uebersicht() {
 
   function openEvent(event: EventWithRelations) {
     setPrefillDate(null);
+    setPrefillAreas([]);
     setSelected(event);
     setDrawerOpen(true);
   }
 
-  function openNew(date?: string) {
+  function openNew(date?: string, areaId?: string) {
     setPrefillDate(date ?? null);
+    setPrefillAreas(areaId ? [areaId] : []);
     setSelected(null);
     setDrawerOpen(true);
   }
 
   function jumpToMonth(index: number) {
+    if (view === "matrix") {
+      setJumpMonth({ index, nonce: Date.now() });
+      return;
+    }
     monthRefs.current[index]?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
@@ -250,7 +271,6 @@ function Uebersicht() {
               size="sm"
               className="h-8 px-2 text-xs"
               onClick={goToday}
-              disabled={view !== "timeline"}
             >
               Heute
             </Button>
@@ -374,8 +394,7 @@ function Uebersicht() {
           </div>
         </div>
 
-        {view === "timeline" ? (
-          <div className="flex flex-wrap items-center gap-0.5 border-t border-border pt-2">
+        <div className="flex flex-wrap items-center gap-0.5 border-t border-border pt-2">
             {MONTHS_SHORT.map((m, i) => (
               <button
                 key={m}
@@ -395,13 +414,30 @@ function Uebersicht() {
               </button>
             ))}
           </div>
-        ) : null}
       </div>
 
       {view === "matrix" ? (
-        <div className="rounded-md border border-dashed border-border bg-card px-5 py-14 text-center">
-          <p className="text-sm font-medium">Die Matrixansicht wird im nächsten Schritt ergänzt.</p>
-        </div>
+        events.isPending ? (
+          <Skeleton className="h-[60vh] w-full rounded-md" />
+        ) : events.isError ? (
+          <div className="rounded-md border border-destructive/40 bg-destructive/5 px-5 py-10 text-center">
+            <p className="text-sm font-medium text-destructive">
+              Einträge konnten nicht geladen werden.
+            </p>
+          </div>
+        ) : (
+          <MatrixView
+            events={filteredEvents}
+            areas={matrixAreas}
+            year={year}
+            today={today}
+            categoryById={categoryById}
+            areaNameById={areaNameById}
+            jumpMonth={jumpMonth}
+            onOpenEvent={openEvent}
+            onCreate={openNew}
+          />
+        )
       ) : events.isPending ? (
         <div className="space-y-2">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -522,6 +558,7 @@ function Uebersicht() {
         onOpenChange={setDrawerOpen}
         event={selected}
         {...(prefillDate ? { defaultDate: prefillDate } : {})}
+        {...(prefillAreas.length ? { defaultAreaIds: prefillAreas } : {})}
       />
     </div>
   );

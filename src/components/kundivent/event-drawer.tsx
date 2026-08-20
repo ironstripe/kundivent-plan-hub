@@ -97,11 +97,13 @@ export function EventDrawer({
   onOpenChange,
   event,
   defaultDate,
+  defaultAreaIds,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   event?: EventWithRelations | null;
   defaultDate?: string;
+  defaultAreaIds?: string[];
 }) {
   const areas = usePlanningAreas();
   const categories = useCategories();
@@ -122,9 +124,16 @@ export function EventDrawer({
     if (!open) return;
     setErrors({});
     setForm(
-      event ? fromEvent(event) : defaultDate ? { ...EMPTY, start_date: defaultDate } : EMPTY,
+      event
+        ? fromEvent(event)
+        : {
+            ...EMPTY,
+            ...(defaultDate ? { start_date: defaultDate } : {}),
+            ...(defaultAreaIds?.length ? { planning_area_ids: [...defaultAreaIds] } : {}),
+          },
     );
-  }, [open, event, defaultDate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, event, defaultDate, defaultAreaIds?.join(",")]);
 
 
   const selectedCategory = activeCategories.find((c) => c.id === form.category_id);
