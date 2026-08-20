@@ -271,7 +271,6 @@ function Uebersicht() {
               size="sm"
               className="h-8 px-2 text-xs"
               onClick={goToday}
-              disabled={view !== "timeline"}
             >
               Heute
             </Button>
