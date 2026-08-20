@@ -199,10 +199,38 @@ function Eintraege() {
           </SelectContent>
         </Select>
 
-        <Button size="sm" className="ml-auto h-8 gap-1.5 text-xs" onClick={openNew}>
-          <Plus className="size-3.5" />
-          Eintrag
-        </Button>
+        <div className="ml-auto flex items-center gap-2">
+          <div
+            className="flex items-center rounded-sm border border-border p-0.5"
+            role="group"
+            aria-label="Ansicht"
+          >
+            {(
+              [
+                ["table", "Tabelle"],
+                ["timeline", "Timeline"],
+              ] as const
+            ).map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setView(value)}
+                className={cn(
+                  "rounded-[3px] px-2.5 py-1 text-xs transition-colors",
+                  view === value
+                    ? "bg-accent font-medium text-accent-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={openNew}>
+            <Plus className="size-3.5" />
+            Eintrag
+          </Button>
+        </div>
       </div>
 
       <section className="overflow-x-auto rounded-md border border-border bg-card">
