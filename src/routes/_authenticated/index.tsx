@@ -96,6 +96,8 @@ function Uebersicht() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selected, setSelected] = useState<EventWithRelations | null>(null);
   const [prefillDate, setPrefillDate] = useState<string | null>(null);
+  const [prefillAreas, setPrefillAreas] = useState<string[]>([]);
+  const [jumpMonth, setJumpMonth] = useState<{ index: number; nonce: number } | null>(null);
 
   const monthRefs = useRef<(HTMLElement | null)[]>([]);
 
