@@ -401,9 +401,27 @@ function Uebersicht() {
       </div>
 
       {view === "matrix" ? (
-        <div className="rounded-md border border-dashed border-border bg-card px-5 py-14 text-center">
-          <p className="text-sm font-medium">Die Matrixansicht wird im nächsten Schritt ergänzt.</p>
-        </div>
+        events.isPending ? (
+          <Skeleton className="h-[60vh] w-full rounded-md" />
+        ) : events.isError ? (
+          <div className="rounded-md border border-destructive/40 bg-destructive/5 px-5 py-10 text-center">
+            <p className="text-sm font-medium text-destructive">
+              Einträge konnten nicht geladen werden.
+            </p>
+          </div>
+        ) : (
+          <MatrixView
+            events={filteredEvents}
+            areas={matrixAreas}
+            year={year}
+            today={today}
+            categoryById={categoryById}
+            areaNameById={areaNameById}
+            jumpMonth={jumpMonth}
+            onOpenEvent={openEvent}
+            onCreate={openNew}
+          />
+        )
       ) : events.isPending ? (
         <div className="space-y-2">
           {Array.from({ length: 6 }).map((_, i) => (
