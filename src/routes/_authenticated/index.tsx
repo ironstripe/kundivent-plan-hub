@@ -524,6 +524,7 @@ function Uebersicht() {
         onOpenChange={setDrawerOpen}
         event={selected}
         {...(prefillDate ? { defaultDate: prefillDate } : {})}
+        {...(prefillAreas.length ? { defaultAreaIds: prefillAreas } : {})}
       />
     </div>
   );
