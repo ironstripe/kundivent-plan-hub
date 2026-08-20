@@ -69,6 +69,23 @@ function Einstellungen() {
         </span>
       </div>
 
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-dashed border-border bg-card px-3 py-2">
+        <div>
+          <p className="text-xs font-medium">Excel-Migration</p>
+          <p className="text-[11px] text-muted-foreground">
+            Einmaliges Migrationswerkzeug für die bestehende Excel-Eventplanung.
+          </p>
+        </div>
+        <Link
+          to="/migration"
+          className="rounded-sm border border-border px-2.5 py-1 text-xs transition-colors hover:bg-accent"
+        >
+          Öffnen
+        </Link>
+      </div>
+
+
+
       <Section title="Planungsbereiche" hint={`${areas.data?.length ?? 0} Einträge`}>
         {areas.isPending ? (
           <p className="px-3 py-6 text-xs text-muted-foreground">Wird geladen…</p>
