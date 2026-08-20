@@ -15,6 +15,7 @@ import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedEinstellungenRouteImport } from './routes/_authenticated/einstellungen'
 import { Route as AuthenticatedEintraegeRouteImport } from './routes/_authenticated/eintraege'
 import { Route as AuthenticatedFreieTermineRouteImport } from './routes/_authenticated/freie-termine'
+import { Route as AuthenticatedMigrationRouteImport } from './routes/_authenticated/migration'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -47,6 +48,11 @@ const AuthenticatedFreieTermineRoute =
     path: '/freie-termine',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedMigrationRoute = AuthenticatedMigrationRouteImport.update({
+  id: '/migration',
+  path: '/migration',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -54,12 +60,14 @@ export interface FileRoutesByFullPath {
   '/einstellungen': typeof AuthenticatedEinstellungenRoute
   '/eintraege': typeof AuthenticatedEintraegeRoute
   '/freie-termine': typeof AuthenticatedFreieTermineRoute
+  '/migration': typeof AuthenticatedMigrationRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/einstellungen': typeof AuthenticatedEinstellungenRoute
   '/eintraege': typeof AuthenticatedEintraegeRoute
   '/freie-termine': typeof AuthenticatedFreieTermineRoute
+  '/migration': typeof AuthenticatedMigrationRoute
   '/': typeof AuthenticatedIndexRoute
 }
 export interface FileRoutesById {
@@ -69,13 +77,26 @@ export interface FileRoutesById {
   '/_authenticated/einstellungen': typeof AuthenticatedEinstellungenRoute
   '/_authenticated/eintraege': typeof AuthenticatedEintraegeRoute
   '/_authenticated/freie-termine': typeof AuthenticatedFreieTermineRoute
+  '/_authenticated/migration': typeof AuthenticatedMigrationRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/einstellungen' | '/eintraege' | '/freie-termine'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/einstellungen'
+    | '/eintraege'
+    | '/freie-termine'
+    | '/migration'
   fileRoutesByTo: FileRoutesByTo
-  to: '/auth' | '/einstellungen' | '/eintraege' | '/freie-termine' | '/'
+  to:
+    | '/auth'
+    | '/einstellungen'
+    | '/eintraege'
+    | '/freie-termine'
+    | '/migration'
+    | '/'
   id:
     | '__root__'
     | '/_authenticated'
@@ -83,6 +104,7 @@ export interface FileRouteTypes {
     | '/_authenticated/einstellungen'
     | '/_authenticated/eintraege'
     | '/_authenticated/freie-termine'
+    | '/_authenticated/migration'
     | '/_authenticated/'
   fileRoutesById: FileRoutesById
 }
@@ -135,6 +157,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFreieTermineRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/migration': {
+      id: '/_authenticated/migration'
+      path: '/migration'
+      fullPath: '/migration'
+      preLoaderRoute: typeof AuthenticatedMigrationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -142,6 +171,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEinstellungenRoute: typeof AuthenticatedEinstellungenRoute
   AuthenticatedEintraegeRoute: typeof AuthenticatedEintraegeRoute
   AuthenticatedFreieTermineRoute: typeof AuthenticatedFreieTermineRoute
+  AuthenticatedMigrationRoute: typeof AuthenticatedMigrationRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
@@ -149,6 +179,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEinstellungenRoute: AuthenticatedEinstellungenRoute,
   AuthenticatedEintraegeRoute: AuthenticatedEintraegeRoute,
   AuthenticatedFreieTermineRoute: AuthenticatedFreieTermineRoute,
+  AuthenticatedMigrationRoute: AuthenticatedMigrationRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
 
