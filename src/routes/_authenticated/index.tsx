@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { EventDrawer } from "@/components/kundivent/event-drawer";
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
@@ -43,6 +45,8 @@ function FilterPlaceholder({ label }: { label: string }) {
 }
 
 function Uebersicht() {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -80,7 +84,7 @@ function Uebersicht() {
             </span>
             <span className="px-2.5 py-1 text-xs text-muted-foreground">Matrix</span>
           </div>
-          <Button size="sm" className="h-8 gap-1.5 text-xs" disabled>
+          <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => setDrawerOpen(true)}>
             <Plus className="size-3.5" />
             Eintrag
           </Button>
@@ -97,6 +101,8 @@ function Uebersicht() {
           </p>
         </div>
       </div>
+
+      <EventDrawer open={drawerOpen} onOpenChange={setDrawerOpen} event={null} />
     </div>
   );
 }
