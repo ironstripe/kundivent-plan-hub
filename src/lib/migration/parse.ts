@@ -358,7 +358,6 @@ function parseAnnualSheet(
   const rows = XLSX.utils.sheet_to_json<unknown[]>(sheet, {
     header: 1,
     raw: true,
-    cellDates: true,
     blankrows: true,
   });
 
@@ -426,7 +425,6 @@ function checkWeekendSheet(
   const rows = XLSX.utils.sheet_to_json<unknown[]>(sheet, {
     header: 1,
     raw: true,
-    cellDates: true,
     blankrows: true,
   });
 
