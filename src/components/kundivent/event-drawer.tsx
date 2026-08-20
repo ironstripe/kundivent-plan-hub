@@ -97,11 +97,13 @@ export function EventDrawer({
   onOpenChange,
   event,
   defaultDate,
+  defaultAreaIds,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   event?: EventWithRelations | null;
   defaultDate?: string;
+  defaultAreaIds?: string[];
 }) {
   const areas = usePlanningAreas();
   const categories = useCategories();
