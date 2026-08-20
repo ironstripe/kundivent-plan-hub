@@ -281,9 +281,7 @@ function Eintraege() {
                       areaNames={event.planning_area_ids
                         .map((id) => areaName.get(id) ?? "")
                         .filter(Boolean)}
-                      {...(categoryById.get(event.category_id)
-                        ? { category: categoryById.get(event.category_id)! }
-                        : {})}
+                      category={categoryById.get(event.category_id)}
                       today={todayIso()}
                       onOpen={openEvent}
                     />
