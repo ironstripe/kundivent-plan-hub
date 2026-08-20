@@ -20,7 +20,9 @@ import {
 } from "@/components/ui/table";
 import { EventDrawer } from "@/components/kundivent/event-drawer";
 import { EventStatusBadge } from "@/components/kundivent/event-status-badge";
+import { TimelineEventRow } from "@/components/kundivent/timeline-event-row";
 import { useCategories, usePlanningAreas } from "@/lib/master-data";
+import { cn } from "@/lib/utils";
 import {
   EVENT_STATUSES,
   formatDateRange,
@@ -57,6 +59,7 @@ function Eintraege() {
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selected, setSelected] = useState<EventWithRelations | null>(null);
+  const [view, setView] = useState<"table" | "timeline">("table");
 
   const [year, setYear] = useState<string>(ALL);
   const [areaId, setAreaId] = useState<string>(ALL);
@@ -199,10 +202,38 @@ function Eintraege() {
           </SelectContent>
         </Select>
 
-        <Button size="sm" className="ml-auto h-8 gap-1.5 text-xs" onClick={openNew}>
-          <Plus className="size-3.5" />
-          Eintrag
-        </Button>
+        <div className="ml-auto flex items-center gap-2">
+          <div
+            className="flex items-center rounded-sm border border-border p-0.5"
+            role="group"
+            aria-label="Ansicht"
+          >
+            {(
+              [
+                ["table", "Tabelle"],
+                ["timeline", "Timeline"],
+              ] as const
+            ).map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setView(value)}
+                className={cn(
+                  "rounded-[3px] px-2.5 py-1 text-xs transition-colors",
+                  view === value
+                    ? "bg-accent font-medium text-accent-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={openNew}>
+            <Plus className="size-3.5" />
+            Eintrag
+          </Button>
+        </div>
       </div>
 
       <section className="overflow-x-auto rounded-md border border-border bg-card">
@@ -228,6 +259,36 @@ function Eintraege() {
                 Eintrag
               </Button>
             ) : null}
+          </div>
+        ) : view === "timeline" ? (
+          <div className="space-y-4 p-3">
+            {groupByMonth(filtered).map(([label, group]) => (
+              <div key={label}>
+                <div className="mb-1.5 flex items-center gap-2">
+                  <h2 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                    {label}
+                  </h2>
+                  <span className="h-px flex-1 bg-border" />
+                  <span className="text-[11px] tabular-nums text-muted-foreground">
+                    {group.length}
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  {group.map((event) => (
+                    <TimelineEventRow
+                      key={event.id}
+                      event={event}
+                      areaNames={event.planning_area_ids
+                        .map((id) => areaName.get(id) ?? "")
+                        .filter(Boolean)}
+                      category={categoryById.get(event.category_id)}
+                      today={todayIso()}
+                      onOpen={openEvent}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         ) : (
           <Table className="min-w-[900px] text-sm">
@@ -298,4 +359,45 @@ function Eintraege() {
       <EventDrawer open={drawerOpen} onOpenChange={setDrawerOpen} event={selected} />
     </div>
   );
+}
+
+const MONTH_NAMES = [
+  "Januar",
+  "Februar",
+  "März",
+  "April",
+  "Mai",
+  "Juni",
+  "Juli",
+  "August",
+  "September",
+  "Oktober",
+  "November",
+  "Dezember",
+];
+
+function todayIso() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+    d.getDate(),
+  ).padStart(2, "0")}`;
+}
+
+function groupByMonth(events: EventWithRelations[]): [string, EventWithRelations[]][] {
+  const map = new Map<string, EventWithRelations[]>();
+  for (const event of [...events].sort(
+    (a, b) =>
+      a.start_date.localeCompare(b.start_date) ||
+      (a.start_time ?? "99").localeCompare(b.start_time ?? "99") ||
+      a.title.localeCompare(b.title),
+  )) {
+    const key = event.start_date.slice(0, 7);
+    const list = map.get(key);
+    if (list) list.push(event);
+    else map.set(key, [event]);
+  }
+  return [...map.entries()].map(([key, group]) => [
+    `${MONTH_NAMES[Number(key.slice(5, 7)) - 1]} ${key.slice(0, 4)}`,
+    group,
+  ]);
 }
