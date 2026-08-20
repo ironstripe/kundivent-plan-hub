@@ -142,7 +142,7 @@ function Uebersicht() {
       if (term && !`${event.title} ${event.notes ?? ""}`.toLowerCase().includes(term)) continue;
       const monthIndex =
         Number(start.slice(0, 4)) < year ? 0 : Number(start.slice(5, 7)) - 1;
-      groups[monthIndex].push(event);
+      groups[monthIndex]?.push(event);
     }
     for (const group of groups) {
       group.sort(
@@ -159,7 +159,7 @@ function Uebersicht() {
 
   const holidaysByMonth = useMemo(() => {
     const groups: { date: string; name: string }[][] = Array.from({ length: 12 }, () => []);
-    for (const h of publicHolidays(year)) groups[Number(h.date.slice(5, 7)) - 1].push(h);
+    for (const h of publicHolidays(year)) groups[Number(h.date.slice(5, 7)) - 1]?.push(h);
     return groups;
   }, [year]);
 
@@ -383,7 +383,7 @@ function Uebersicht() {
                 onClick={() => jumpToMonth(i)}
                 className={cn(
                   "rounded-sm px-1.5 py-0.5 text-[11px] transition-colors hover:bg-accent",
-                  monthGroups[i].length
+                  monthGroups[i]?.length
                     ? "font-medium text-foreground"
                     : "text-muted-foreground/60",
                   year === currentYear && i === new Date().getMonth()
@@ -446,7 +446,8 @@ function Uebersicht() {
       ) : (
         <div className="space-y-4">
           {MONTHS.map((month, index) => {
-            const group = monthGroups[index];
+            const group = monthGroups[index] ?? [];
+            const holidays = holidaysByMonth[index] ?? [];
             const isCurrentMonth = year === currentYear && index === new Date().getMonth();
             const monthDate = `${year}-${String(index + 1).padStart(2, "0")}-01`;
             return (
@@ -502,10 +503,10 @@ function Uebersicht() {
                   <p className="px-0.5 text-[11px] text-muted-foreground/70">Keine Einträge</p>
                 )}
 
-                {holidaysByMonth[index].length ? (
+                {holidays.length ? (
                   <p className="mt-1 px-0.5 text-[11px] text-muted-foreground/60">
                     Feiertage:{" "}
-                    {holidaysByMonth[index]
+                    {holidays
                       .map((h) => `${h.date.slice(8, 10)}. ${MONTHS_SHORT[index]} ${h.name}`)
                       .join(" · ")}
                   </p>
