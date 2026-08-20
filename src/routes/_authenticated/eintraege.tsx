@@ -260,6 +260,38 @@ function Eintraege() {
               </Button>
             ) : null}
           </div>
+        ) : view === "timeline" ? (
+          <div className="space-y-4 p-3">
+            {groupByMonth(filtered).map(([label, group]) => (
+              <div key={label}>
+                <div className="mb-1.5 flex items-center gap-2">
+                  <h2 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                    {label}
+                  </h2>
+                  <span className="h-px flex-1 bg-border" />
+                  <span className="text-[11px] tabular-nums text-muted-foreground">
+                    {group.length}
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  {group.map((event) => (
+                    <TimelineEventRow
+                      key={event.id}
+                      event={event}
+                      areaNames={event.planning_area_ids
+                        .map((id) => areaName.get(id) ?? "")
+                        .filter(Boolean)}
+                      {...(categoryById.get(event.category_id)
+                        ? { category: categoryById.get(event.category_id)! }
+                        : {})}
+                      today={todayIso()}
+                      onOpen={openEvent}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         ) : (
           <Table className="min-w-[900px] text-sm">
             <TableHeader>
