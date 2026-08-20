@@ -414,7 +414,6 @@ function Uebersicht() {
               </button>
             ))}
           </div>
-        </div>
       </div>
 
       {view === "matrix" ? (
