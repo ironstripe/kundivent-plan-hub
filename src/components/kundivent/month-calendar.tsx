@@ -191,7 +191,7 @@ export function MonthCalendar({
       </div>
 
       {weekLayouts.map(({ week, segments, hiddenByDate, laneCount }) => (
-        <div key={week[0]} className="relative border-b border-border last:border-b-0">
+        <div key={week[0]} className="relative min-h-[96px] border-b border-border last:border-b-0">
           <div className="absolute inset-0 grid grid-cols-7">
             {week.map((date, i) => {
               const isOtherMonth = parse(date).getUTCMonth() !== month;
