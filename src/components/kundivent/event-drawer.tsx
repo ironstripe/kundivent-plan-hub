@@ -43,6 +43,7 @@ import {
   type EventStatus,
   type EventWithRelations,
 } from "@/lib/events";
+import { profileLabel, useProfiles } from "@/lib/users";
 
 type FormState = {
   title: string;
@@ -59,6 +60,7 @@ type FormState = {
   deposit_received: boolean;
   deposit_amount: string;
   deposit_received_at: string;
+  responsible_user_id: string;
 };
 
 const EMPTY: FormState = {
@@ -76,6 +78,7 @@ const EMPTY: FormState = {
   deposit_received: false,
   deposit_amount: "",
   deposit_received_at: "",
+  responsible_user_id: "",
 };
 
 function fromEvent(event: EventWithRelations): FormState {
@@ -94,8 +97,11 @@ function fromEvent(event: EventWithRelations): FormState {
     deposit_received: event.deposit_received ?? false,
     deposit_amount: event.deposit_amount != null ? String(event.deposit_amount) : "",
     deposit_received_at: event.deposit_received_at ?? "",
+    responsible_user_id: event.responsible_user_id ?? "",
   };
 }
+
+const NONE = "__none__";
 
 function FieldError({ message }: { message?: string | undefined }) {
   if (!message) return null;
@@ -119,6 +125,7 @@ export function EventDrawer({
 }) {
   const areas = usePlanningAreas();
   const categories = useCategories();
+  const profiles = useProfiles();
   const save = useSaveEvent();
   const remove = useDeleteEvent();
 
@@ -148,6 +155,12 @@ export function EventDrawer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, event, defaultDate, defaultAreaIds?.join(","), defaultStatus]);
 
+
+  const responsibleOptions = useMemo(() => {
+    const all = profiles.data ?? [];
+    // Active users are selectable; an inactive user stays listed while still assigned.
+    return all.filter((p) => p.active || p.id === form.responsible_user_id);
+  }, [profiles.data, form.responsible_user_id]);
 
   const selectedCategory = activeCategories.find((c) => c.id === form.category_id);
   const isHoliday = selectedCategory?.name === HOLIDAY_CATEGORY;
@@ -241,6 +254,7 @@ export function EventDrawer({
       deposit_received: form.deposit_received,
       deposit_amount: form.deposit_received ? depositAmount : null,
       deposit_received_at: form.deposit_received ? form.deposit_received_at || null : null,
+      responsible_user_id: form.responsible_user_id || null,
     };
   }
 
@@ -384,6 +398,30 @@ export function EventDrawer({
                   </p>
                 ) : null}
                 <FieldError message={errors['planning_area_ids']} />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs">Verantwortlich</Label>
+                <Select
+                  value={form.responsible_user_id || NONE}
+                  onValueChange={(value) =>
+                    update({ responsible_user_id: value === NONE ? "" : value })
+                  }
+                >
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue placeholder="Nicht zugewiesen" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NONE} className="text-xs">
+                      Nicht zugewiesen
+                    </SelectItem>
+                    {responsibleOptions.map((profile) => (
+                      <SelectItem key={profile.id} value={profile.id} className="text-xs">
+                        {profileLabel(profile)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2 rounded-md border border-border p-3">
