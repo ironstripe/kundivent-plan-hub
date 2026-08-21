@@ -99,6 +99,7 @@ export type Database = {
           migration_source_ref: string | null
           notes: string | null
           pax: number | null
+          responsible_user_id: string | null
           start_date: string
           start_time: string | null
           status: Database["public"]["Enums"]["event_status"]
@@ -124,6 +125,7 @@ export type Database = {
           migration_source_ref?: string | null
           notes?: string | null
           pax?: number | null
+          responsible_user_id?: string | null
           start_date: string
           start_time?: string | null
           status?: Database["public"]["Enums"]["event_status"]
@@ -149,6 +151,7 @@ export type Database = {
           migration_source_ref?: string | null
           notes?: string | null
           pax?: number | null
+          responsible_user_id?: string | null
           start_date?: string
           start_time?: string | null
           status?: Database["public"]["Enums"]["event_status"]
@@ -162,6 +165,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_responsible_user_id_fkey"
+            columns: ["responsible_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
