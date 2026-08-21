@@ -31,6 +31,30 @@ export function useMyProfile() {
   return useQuery(myProfileQuery);
 }
 
+/** All profiles (incl. inactive) — used to render/select "Verantwortlich". */
+export const profilesQuery = queryOptions({
+  queryKey: ["profiles"],
+  queryFn: async (): Promise<Profile[]> => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .order("display_name", { ascending: true });
+    if (error) throw error;
+    return data ?? [];
+  },
+  staleTime: 5 * 60 * 1000,
+});
+
+export function useProfiles() {
+  return useQuery(profilesQuery);
+}
+
+export function profileLabel(profile: Profile | undefined) {
+  if (!profile) return null;
+  const name = profile.display_name.trim() || "Unbenannt";
+  return profile.active ? name : `${name} · Inaktiv`;
+}
+
 export const usersQuery = queryOptions({
   queryKey: ["managed-users"],
   queryFn: () => listUsers(),
