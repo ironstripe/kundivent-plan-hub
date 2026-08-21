@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { ChevronDown, ChevronLeft, ChevronRight, Plus, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -230,6 +230,19 @@ function Uebersicht() {
     if (next === "matrix") setJumpMonth({ index: cursor.month, nonce: Date.now() });
     patchSearch({ mode: next });
   }
+
+  /** Matrix scrolls through a whole year — keep the header month in sync. */
+  const handleVisibleMonth = useCallback(
+    (month: number) => {
+      navigate({
+        to: ".",
+        replace: true,
+        search: (prev) => (prev.m === month ? prev : { ...prev, m: month }),
+      });
+    },
+    [navigate],
+  );
+
 
   function openEvent(event: EventWithRelations) {
     setPrefillDate(null);
@@ -535,6 +548,8 @@ function Uebersicht() {
           jumpMonth={jumpMonth}
           onOpenEvent={openEvent}
           onCreate={openNew}
+          onVisibleMonthChange={handleVisibleMonth}
+
         />
       ) : (
         <MonthCalendar
