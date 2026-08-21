@@ -524,7 +524,7 @@ function Uebersicht() {
             Erneut versuchen
           </Button>
         </div>
-      ) : view === "matrix" ? (
+      ) : mode === "matrix" ? (
         <MatrixView
           events={matrixEvents}
           areas={matrixAreas}
