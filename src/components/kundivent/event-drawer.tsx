@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -55,6 +56,8 @@ type FormState = {
   end_time: string;
   pax: string;
   notes: string;
+  deposit_received: boolean;
+  deposit_amount: string;
 };
 
 const EMPTY: FormState = {
@@ -69,6 +72,8 @@ const EMPTY: FormState = {
   end_time: "",
   pax: "",
   notes: "",
+  deposit_received: false,
+  deposit_amount: "",
 };
 
 function fromEvent(event: EventWithRelations): FormState {
@@ -84,6 +89,8 @@ function fromEvent(event: EventWithRelations): FormState {
     end_time: event.end_time?.slice(0, 5) ?? "",
     pax: event.pax != null ? String(event.pax) : "",
     notes: event.notes ?? "",
+    deposit_received: event.deposit_received ?? false,
+    deposit_amount: event.deposit_amount != null ? String(event.deposit_amount) : "",
   };
 }
 
@@ -197,6 +204,16 @@ export function EventDrawer({
       else pax = parsed;
     }
 
+    let depositAmount: number | null = null;
+    if (form.deposit_received && form.deposit_amount.trim()) {
+      const parsed = Number(form.deposit_amount);
+      if (!Number.isFinite(parsed) || parsed < 0)
+        next['deposit_amount'] = "Betrag muss eine Zahl ab 0 sein.";
+      else if (Math.round(parsed * 100) !== parsed * 100)
+        next['deposit_amount'] = "Maximal zwei Nachkommastellen.";
+      else depositAmount = parsed;
+    }
+
     if (!form.all_day) {
       const singleDay = !form.end_date || form.end_date === form.start_date;
       if (singleDay && form.start_time && form.end_time && form.end_time <= form.start_time)
@@ -218,6 +235,8 @@ export function EventDrawer({
       end_time: form.all_day ? null : form.end_time || null,
       pax,
       notes: form.notes.trim() || null,
+      deposit_received: form.deposit_received,
+      deposit_amount: form.deposit_received ? depositAmount : null,
     };
   }
 
@@ -451,6 +470,42 @@ export function EventDrawer({
                   className="h-8 w-32 text-xs"
                 />
                 <FieldError message={errors['pax']} />
+              </div>
+
+              <div className="space-y-2 rounded-md border border-border p-3">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="deposit_received"
+                    checked={form.deposit_received}
+                    onCheckedChange={(checked) =>
+                      update(
+                        checked === true
+                          ? { deposit_received: true }
+                          : { deposit_received: false, deposit_amount: "" },
+                      )
+                    }
+                  />
+                  <Label htmlFor="deposit_received" className="text-xs">
+                    Anzahlung erhalten
+                  </Label>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="deposit_amount" className="text-xs">
+                    Betrag (CHF)
+                  </Label>
+                  <Input
+                    id="deposit_amount"
+                    type="number"
+                    min={0}
+                    step="0.05"
+                    inputMode="decimal"
+                    disabled={!form.deposit_received}
+                    value={form.deposit_amount}
+                    onChange={(e) => update({ deposit_amount: e.target.value })}
+                    className="h-8 w-32 text-xs"
+                  />
+                  <FieldError message={errors['deposit_amount']} />
+                </div>
               </div>
 
               <div className="space-y-1.5">
