@@ -257,7 +257,7 @@ export function EventDrawer({
           side="right"
           className="flex h-full w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-md"
         >
-          <SheetHeader className="border-b border-border px-4 py-3">
+          <SheetHeader className="shrink-0 border-b border-border px-4 py-3">
             <SheetTitle className="text-sm font-semibold">
               {event ? "Eintrag bearbeiten" : "Neuer Eintrag"}
             </SheetTitle>
@@ -469,7 +469,7 @@ export function EventDrawer({
               </div>
             </div>
 
-            <div className="flex items-center gap-2 border-t border-border px-4 py-3">
+            <div className="flex shrink-0 items-center gap-2 border-t border-border px-4 py-3">
               {event ? (
                 <Button
                   type="button"
