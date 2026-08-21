@@ -127,9 +127,10 @@ export function useSaveEvent() {
         await syncPlanningAreas(id, input.planning_area_ids);
         return id;
       }
+      const { data: auth } = await supabase.auth.getUser();
       const { data, error } = await supabase
         .from("events")
-        .insert(toRecord(input))
+        .insert({ ...toRecord(input), created_by: auth.user?.id ?? null })
         .select("id")
         .single();
       if (error) throw error;
