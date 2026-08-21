@@ -112,6 +112,7 @@ export function MatrixView({
   jumpMonth,
   onOpenEvent,
   onCreate,
+  onVisibleMonthChange,
 }: {
   events: EventWithRelations[];
   areas: PlanningArea[];
@@ -122,9 +123,11 @@ export function MatrixView({
   jumpMonth: { index: number; nonce: number } | null;
   onOpenEvent: (event: EventWithRelations) => void;
   onCreate: (date: string, areaId: string) => void;
+  onVisibleMonthChange?: (month: number) => void;
 }) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const monthRefs = useRef<Record<number, HTMLDivElement | null>>({});
+
 
   const holidayByDate = useMemo(() => {
     const map = new Map<string, string>();
