@@ -255,7 +255,10 @@ export function MatrixView({
     >
       <div className="min-w-max" style={{ display: "grid", gridTemplateColumns: gridTemplate }}>
         {/* header */}
-        <div className="sticky left-0 top-0 z-30 border-b border-r border-border bg-card px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <div
+          data-matrix-head
+          className="sticky left-0 top-0 z-30 border-b border-r border-border bg-card px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
+        >
           Datum
         </div>
         {areas.map((area) => (
