@@ -108,6 +108,8 @@ function toRecord(input: EventInput) {
     end_time: input.all_day ? null : input.end_time,
     pax: input.pax,
     notes: input.notes,
+    deposit_received: input.deposit_received,
+    deposit_amount: input.deposit_received ? input.deposit_amount : null,
   };
 }
 
