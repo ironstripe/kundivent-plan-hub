@@ -44,8 +44,8 @@ function useUsersMutation<TInput, TResult>(fn: (data: TInput) => Promise<TResult
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: fn,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["managed-users"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["managed-users"] });
     },
   });
 }
