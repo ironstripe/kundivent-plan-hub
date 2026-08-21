@@ -435,7 +435,15 @@ export function UserAdmin() {
                 />
               </div>
 
-              {formError ? <p className="text-xs text-destructive">{formError}</p> : null}
+              {formError ? (
+                <p
+                  ref={errorRef}
+                  role="alert"
+                  className="rounded-sm border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive"
+                >
+                  {formError}
+                </p>
+              ) : null}
             </div>
 
             <div className="flex shrink-0 justify-end gap-2 border-t border-border px-4 py-3">
