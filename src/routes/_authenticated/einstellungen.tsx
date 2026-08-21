@@ -9,6 +9,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useCategories, usePlanningAreas } from "@/lib/master-data";
+import { useMyProfile } from "@/lib/users";
+import { UserAdmin } from "@/components/kundivent/user-admin";
 
 export const Route = createFileRoute("/_authenticated/einstellungen")({
   head: () => ({
