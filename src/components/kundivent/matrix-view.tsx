@@ -164,13 +164,41 @@ export function MatrixView({
     return map;
   }, [events, areas, year]);
 
-  useEffect(() => {
-    if (!jumpMonth) return;
-    monthRefs.current[jumpMonth.index]?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [jumpMonth]);
+  // Month the user asked to jump to; suppresses scroll feedback until reached.
+  const pendingJump = useRef<number | null>(null);
 
   useEffect(() => {
-    // reset scroll to top on year change
+    if (!jumpMonth) return;
+    pendingJump.current = jumpMonth.index;
+    let frame = 0;
+    let tries = 0;
+    const attempt = () => {
+      frame = 0;
+      const el = scrollRef.current;
+      const node = monthRefs.current[jumpMonth.index];
+      if (el && node) {
+        // offsetTop is relative to the scrolling grid; subtract the sticky header row
+        const headerH = el.querySelector<HTMLElement>("[data-matrix-head]")?.offsetHeight ?? 0;
+        el.scrollTo({ top: Math.max(0, node.offsetTop - headerH) });
+        return;
+      }
+      // rows for a newly selected year may not be mounted yet
+      if (tries++ < 30) frame = requestAnimationFrame(attempt);
+    };
+    frame = requestAnimationFrame(attempt);
+    const clear = setTimeout(() => {
+      pendingJump.current = null;
+    }, 1500);
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      clearTimeout(clear);
+    };
+  }, [jumpMonth]);
+
+
+  useEffect(() => {
+    // reset scroll to top on year change, unless a jump is in flight
+    if (pendingJump.current !== null) return;
     scrollRef.current?.scrollTo({ top: 0 });
   }, [year]);
 
@@ -189,6 +217,10 @@ export function MatrixView({
         if (!node) continue;
         if (node.getBoundingClientRect().top - top <= 8) visible = m;
       }
+      if (pendingJump.current !== null) {
+        if (visible !== pendingJump.current) return;
+        pendingJump.current = null;
+      }
       if (visible !== last) {
         last = visible;
         onVisibleMonthChange(visible);
@@ -203,6 +235,7 @@ export function MatrixView({
       if (frame) cancelAnimationFrame(frame);
     };
   }, [onVisibleMonthChange, areas.length, year]);
+
 
 
   const gridTemplate = `132px repeat(${areas.length}, minmax(148px, 1fr))`;
@@ -222,7 +255,10 @@ export function MatrixView({
     >
       <div className="min-w-max" style={{ display: "grid", gridTemplateColumns: gridTemplate }}>
         {/* header */}
-        <div className="sticky left-0 top-0 z-30 border-b border-r border-border bg-card px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <div
+          data-matrix-head
+          className="sticky left-0 top-0 z-30 border-b border-r border-border bg-card px-2 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
+        >
           Datum
         </div>
         {areas.map((area) => (
