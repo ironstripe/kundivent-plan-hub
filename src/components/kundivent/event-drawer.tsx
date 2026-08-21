@@ -253,8 +253,11 @@ export function EventDrawer({
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-md">
-          <SheetHeader className="border-b border-border px-4 py-3">
+        <SheetContent
+          side="right"
+          className="flex h-full w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-md"
+        >
+          <SheetHeader className="shrink-0 border-b border-border px-4 py-3">
             <SheetTitle className="text-sm font-semibold">
               {event ? "Eintrag bearbeiten" : "Neuer Eintrag"}
             </SheetTitle>
@@ -264,7 +267,7 @@ export function EventDrawer({
           </SheetHeader>
 
           <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
-            <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4">
+            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 pt-4 pb-6">
               <div className="space-y-1.5">
                 <Label htmlFor="title" className="text-xs">
                   Titel
@@ -466,7 +469,7 @@ export function EventDrawer({
               </div>
             </div>
 
-            <div className="flex items-center gap-2 border-t border-border px-4 py-3">
+            <div className="flex shrink-0 items-center gap-2 border-t border-border px-4 py-3">
               {event ? (
                 <Button
                   type="button"
