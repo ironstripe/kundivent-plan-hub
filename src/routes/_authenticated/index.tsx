@@ -98,8 +98,19 @@ function Uebersicht() {
   const currentYear = Number(today.slice(0, 4));
   const currentMonth = Number(today.slice(5, 7)) - 1;
 
-  const [cursor, setCursor] = useState({ year: currentYear, month: currentMonth });
-  const [view, setView] = useState<"month" | "matrix">("month");
+  const urlSearch = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const mode: Mode = urlSearch.mode ?? "kalender";
+  const cursor = {
+    year: urlSearch.y ?? currentYear,
+    month: urlSearch.m ?? currentMonth,
+  };
+
+  function patchSearch(patch: { mode?: Mode; y?: number; m?: number }) {
+    navigate({ to: ".", replace: true, search: (prev) => ({ ...prev, ...patch }) });
+  }
+
+  const [weekdays, setWeekdays] = useState<number[]>([1, 2, 3, 4, 5, 6, 7]);
   const [areaIds, setAreaIds] = useState<string[]>([]);
   const [categoryId, setCategoryId] = useState(ALL);
   const [status, setStatus] = useState(ALL);
