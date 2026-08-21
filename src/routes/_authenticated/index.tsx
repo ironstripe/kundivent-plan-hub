@@ -226,6 +226,11 @@ function Uebersicht() {
     patchSearch({ y: currentYear, m: currentMonth });
   }
 
+  function goToMonth(year: number, month: number) {
+    if (mode === "matrix") setJumpMonth({ index: month, nonce: Date.now() });
+    patchSearch({ y: year, m: month });
+  }
+
   function switchMode(next: Mode) {
     if (next === "matrix") setJumpMonth({ index: cursor.month, nonce: Date.now() });
     patchSearch({ mode: next });
