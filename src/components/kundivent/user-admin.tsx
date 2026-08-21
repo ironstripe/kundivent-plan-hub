@@ -347,9 +347,10 @@ export function UserAdmin() {
                 </Label>
                 <Input
                   id="user-name"
+                  ref={nameRef}
                   value={form.display_name}
                   onChange={(e) => setForm({ ...form, display_name: e.target.value })}
-                  className="h-8 text-sm"
+                  className={`h-8 text-sm ${invalidField === "display_name" ? "border-destructive" : ""}`}
                 />
               </div>
               <div className="space-y-1.5">
@@ -358,10 +359,11 @@ export function UserAdmin() {
                 </Label>
                 <Input
                   id="user-email"
+                  ref={emailRef}
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="h-8 text-sm"
+                  className={`h-8 text-sm ${invalidField === "email" ? "border-destructive" : ""}`}
                 />
               </div>
               {editing ? null : (
@@ -369,15 +371,45 @@ export function UserAdmin() {
                   <Label htmlFor="user-password" className="text-xs">
                     Initiales Passwort
                   </Label>
-                  <Input
-                    id="user-password"
-                    type="text"
-                    value={form.password}
-                    onChange={(e) => setForm({ ...form, password: e.target.value })}
-                    className="h-8 text-sm"
-                  />
-                  <p className="text-[11px] text-muted-foreground">
-                    Mindestens 8 Zeichen. Wird beim ersten Login geändert.
+                  <div className="flex gap-2">
+                    <Input
+                      id="user-password"
+                      ref={passwordRef}
+                      type="text"
+                      value={form.password}
+                      onChange={(e) => setForm({ ...form, password: e.target.value })}
+                      className={`h-8 text-sm ${
+                        form.password.length > 0 && form.password.length < MIN_PASSWORD_LENGTH
+                          ? "border-destructive"
+                          : ""
+                      }`}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 shrink-0 text-xs"
+                      onClick={() => {
+                        const pw = generatePassword();
+                        setForm({ ...form, password: pw });
+                        setInvalidField(null);
+                        setFormError(null);
+                        void navigator.clipboard?.writeText(pw).catch(() => undefined);
+                        toast.success("Passwort generiert und kopiert.");
+                      }}
+                    >
+                      Generieren
+                    </Button>
+                  </div>
+                  <p
+                    className={`text-[11px] ${
+                      form.password.length < MIN_PASSWORD_LENGTH
+                        ? "text-destructive"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {form.password.length} / mind. {MIN_PASSWORD_LENGTH} Zeichen. Wird beim ersten
+                    Login geändert.
                   </p>
                 </div>
               )}
