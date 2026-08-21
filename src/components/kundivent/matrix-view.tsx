@@ -179,7 +179,7 @@ export function MatrixView({
       if (el && node) {
         // offsetTop is relative to the scrolling grid; subtract the sticky header row
         const headerH = el.querySelector<HTMLElement>("[data-matrix-head]")?.offsetHeight ?? 0;
-        el.scrollTo({ top: Math.max(0, node.offsetTop - headerH), behavior: "smooth" });
+        el.scrollTo({ top: Math.max(0, node.offsetTop - headerH) });
         return;
       }
       // rows for a newly selected year may not be mounted yet
