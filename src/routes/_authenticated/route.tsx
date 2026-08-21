@@ -54,10 +54,10 @@ function AuthenticatedLayout() {
   }
 
   if (profile.data && !profile.data.active) return <InactiveNotice />;
-  if (profile.data?.must_change_password) return <ForcePasswordChange email={user.email} />;
+  if (profile.data?.must_change_password) return <ForcePasswordChange email={user.email ?? null} />;
 
   return (
-    <AppShell email={user.email ?? null} isAdmin={profile.data?.is_admin ?? false}>
+    <AppShell email={user.email ?? null}>
       <Outlet />
     </AppShell>
   );
