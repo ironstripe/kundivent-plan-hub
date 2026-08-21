@@ -459,6 +459,7 @@ function EventBar({
             eventBlockClasses(status, isHoliday),
             continuesFrom && "rounded-l-none border-l-0",
             continuesTo && "rounded-r-none border-r-0",
+            dimmed && "opacity-50 hover:opacity-100",
           )}
           style={{
             ...AREA_STYLE[areaKey],
