@@ -35,6 +35,7 @@ import { cn } from "@/lib/utils";
 import { useCategories, usePlanningAreas } from "@/lib/master-data";
 import {
   EVENT_STATUSES,
+  formatCreatedAt,
   HOLIDAY_ALLOWED_AREAS,
   HOLIDAY_CATEGORY,
   useDeleteEvent,
