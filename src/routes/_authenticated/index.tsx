@@ -20,11 +20,32 @@ import { MonthCalendar } from "@/components/kundivent/month-calendar";
 import { MatrixView } from "@/components/kundivent/matrix-view";
 import { useCategories, usePlanningAreas } from "@/lib/master-data";
 import { EVENT_STATUSES, useEvents, type EventWithRelations } from "@/lib/events";
+import {
+  AVAILABILITY_LABEL,
+  buildAvailabilityIndex,
+  calculateAvailability,
+  eachDate,
+  type AvailabilityState,
+  type DayAvailability,
+} from "@/lib/availability";
 import { areaKeyFromName } from "@/lib/area-theme";
 import { cn } from "@/lib/utils";
 
+type Mode = "kalender" | "verfuegbarkeit" | "matrix";
+
+const MODES: Mode[] = ["kalender", "verfuegbarkeit", "matrix"];
 
 export const Route = createFileRoute("/_authenticated/")({
+  validateSearch: (search: Record<string, unknown>) => {
+    const mode = MODES.includes(search['mode'] as Mode) ? (search['mode'] as Mode) : "kalender";
+    const y = Number(search['y']);
+    const m = Number(search['m']);
+    return {
+      mode,
+      ...(Number.isInteger(y) && y > 1900 ? { y } : {}),
+      ...(Number.isInteger(m) && m >= 0 && m <= 11 ? { m } : {}),
+    };
+  },
   head: () => ({
     meta: [
       { title: "Kalender – Kundivent" },
