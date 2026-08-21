@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -61,6 +61,15 @@ const EMPTY: FormState = {
   is_admin: false,
 };
 
+const MIN_PASSWORD_LENGTH = 8;
+
+function generatePassword() {
+  const alphabet = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!?%+";
+  const bytes = new Uint32Array(12);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => alphabet[b % alphabet.length]).join("");
+}
+
 export function UserAdmin() {
   const users = useUsers(true);
   const createUser = useCreateUser();
@@ -79,11 +88,28 @@ export function UserAdmin() {
   const [resetError, setResetError] = useState<string | null>(null);
 
   const [deleteTarget, setDeleteTarget] = useState<ManagedUser | null>(null);
+  const [invalidField, setInvalidField] = useState<keyof FormState | null>(null);
+
+  const nameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const errorRef = useRef<HTMLParagraphElement>(null);
+
+  function fail(field: keyof FormState, message: string) {
+    setFormError(message);
+    setInvalidField(field);
+    toast.error(message);
+    const ref =
+      field === "display_name" ? nameRef : field === "email" ? emailRef : passwordRef;
+    ref.current?.focus();
+    errorRef.current?.scrollIntoView({ block: "nearest" });
+  }
 
   function openCreate() {
     setEditing(null);
     setForm(EMPTY);
     setFormError(null);
+    setInvalidField(null);
     setOpen(true);
   }
 
@@ -97,23 +123,28 @@ export function UserAdmin() {
       is_admin: user.is_admin,
     });
     setFormError(null);
+    setInvalidField(null);
     setOpen(true);
   }
 
   async function submitForm(e: React.FormEvent) {
     e.preventDefault();
     setFormError(null);
+    setInvalidField(null);
 
     if (!form.display_name.trim()) {
-      setFormError("Bitte einen Namen angeben.");
+      fail("display_name", "Bitte einen Namen angeben.");
       return;
     }
-    if (!form.email.trim()) {
-      setFormError("Bitte eine E-Mail-Adresse angeben.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      fail("email", "Bitte eine gültige E-Mail-Adresse angeben.");
       return;
     }
-    if (!editing && form.password.length < 8) {
-      setFormError("Das initiale Passwort muss mindestens 8 Zeichen lang sein.");
+    if (!editing && form.password.length < MIN_PASSWORD_LENGTH) {
+      fail(
+        "password",
+        `Das initiale Passwort muss mindestens ${MIN_PASSWORD_LENGTH} Zeichen lang sein (aktuell ${form.password.length}).`,
+      );
       return;
     }
 
@@ -129,17 +160,30 @@ export function UserAdmin() {
         toast.success("Benutzer gespeichert.");
       } else {
         await createUser.mutateAsync({
-          email: form.email,
+          email: form.email.trim(),
           password: form.password,
-          display_name: form.display_name,
+          display_name: form.display_name.trim(),
           active: form.active,
           is_admin: form.is_admin,
         });
+        const list = await users.refetch();
+        const created = list.data?.some(
+          (u) => u.email.toLowerCase() === form.email.trim().toLowerCase(),
+        );
+        if (!created) {
+          setFormError(
+            "Der Benutzer konnte nicht bestätigt werden. Bitte Liste prüfen und erneut versuchen.",
+          );
+          toast.error("Benutzer erscheint nicht in der Liste.");
+          return;
+        }
         toast.success("Benutzer erstellt. Zugangsdaten separat weitergeben.");
       }
       setOpen(false);
     } catch (error) {
-      setFormError(errorMessage(error));
+      const message = errorMessage(error);
+      setFormError(message);
+      toast.error(message);
     }
   }
 
@@ -303,9 +347,10 @@ export function UserAdmin() {
                 </Label>
                 <Input
                   id="user-name"
+                  ref={nameRef}
                   value={form.display_name}
                   onChange={(e) => setForm({ ...form, display_name: e.target.value })}
-                  className="h-8 text-sm"
+                  className={`h-8 text-sm ${invalidField === "display_name" ? "border-destructive" : ""}`}
                 />
               </div>
               <div className="space-y-1.5">
@@ -314,10 +359,11 @@ export function UserAdmin() {
                 </Label>
                 <Input
                   id="user-email"
+                  ref={emailRef}
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="h-8 text-sm"
+                  className={`h-8 text-sm ${invalidField === "email" ? "border-destructive" : ""}`}
                 />
               </div>
               {editing ? null : (
@@ -325,15 +371,45 @@ export function UserAdmin() {
                   <Label htmlFor="user-password" className="text-xs">
                     Initiales Passwort
                   </Label>
-                  <Input
-                    id="user-password"
-                    type="text"
-                    value={form.password}
-                    onChange={(e) => setForm({ ...form, password: e.target.value })}
-                    className="h-8 text-sm"
-                  />
-                  <p className="text-[11px] text-muted-foreground">
-                    Mindestens 8 Zeichen. Wird beim ersten Login geändert.
+                  <div className="flex gap-2">
+                    <Input
+                      id="user-password"
+                      ref={passwordRef}
+                      type="text"
+                      value={form.password}
+                      onChange={(e) => setForm({ ...form, password: e.target.value })}
+                      className={`h-8 text-sm ${
+                        form.password.length > 0 && form.password.length < MIN_PASSWORD_LENGTH
+                          ? "border-destructive"
+                          : ""
+                      }`}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-8 shrink-0 text-xs"
+                      onClick={() => {
+                        const pw = generatePassword();
+                        setForm({ ...form, password: pw });
+                        setInvalidField(null);
+                        setFormError(null);
+                        void navigator.clipboard?.writeText(pw).catch(() => undefined);
+                        toast.success("Passwort generiert und kopiert.");
+                      }}
+                    >
+                      Generieren
+                    </Button>
+                  </div>
+                  <p
+                    className={`text-[11px] ${
+                      form.password.length < MIN_PASSWORD_LENGTH
+                        ? "text-destructive"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {form.password.length} / mind. {MIN_PASSWORD_LENGTH} Zeichen. Wird beim ersten
+                    Login geändert.
                   </p>
                 </div>
               )}
@@ -359,7 +435,15 @@ export function UserAdmin() {
                 />
               </div>
 
-              {formError ? <p className="text-xs text-destructive">{formError}</p> : null}
+              {formError ? (
+                <p
+                  ref={errorRef}
+                  role="alert"
+                  className="rounded-sm border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive"
+                >
+                  {formError}
+                </p>
+              ) : null}
             </div>
 
             <div className="flex shrink-0 justify-end gap-2 border-t border-border px-4 py-3">
