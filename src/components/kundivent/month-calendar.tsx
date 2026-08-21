@@ -514,6 +514,14 @@ function EventBar({
         {responsible ? (
           <p className="mt-1 text-xs text-muted-foreground">Verantwortlich: {responsible}</p>
         ) : null}
+        <p className="mt-1 text-[11px] text-muted-foreground">
+          Erstellt von{" "}
+          {event.created_by
+            ? profileLabel((profiles.data ?? []).find((p) => p.id === event.created_by)) ||
+              "Unbekannt"
+            : "Import"}{" "}
+          am {formatCreatedAt(event.created_at)}
+        </p>
       </HoverCardContent>
     </HoverCard>
   );
