@@ -369,6 +369,14 @@ function Eintraege() {
                     </TableCell>
                     <TableCell className="py-1.5 text-right text-xs tabular-nums">
                       {event.pax ?? "—"}
+                      {event.deposit_received ? (
+                        <span className="ml-1 block text-[10px] text-muted-foreground">
+                          Anzahlung
+                          {event.deposit_amount != null
+                            ? ` CHF ${Number(event.deposit_amount).toFixed(2)}`
+                            : ""}
+                        </span>
+                      ) : null}
                     </TableCell>
                   </TableRow>
                 );
