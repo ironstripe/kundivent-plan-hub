@@ -85,6 +85,7 @@ export type Database = {
           all_day: boolean
           category_id: string
           created_at: string
+          created_by: string | null
           deposit_amount: number | null
           deposit_received: boolean
           deposit_received_at: string | null
@@ -111,6 +112,7 @@ export type Database = {
           all_day?: boolean
           category_id: string
           created_at?: string
+          created_by?: string | null
           deposit_amount?: number | null
           deposit_received?: boolean
           deposit_received_at?: string | null
@@ -137,6 +139,7 @@ export type Database = {
           all_day?: boolean
           category_id?: string
           created_at?: string
+          created_by?: string | null
           deposit_amount?: number | null
           deposit_received?: boolean
           deposit_received_at?: string | null
@@ -165,6 +168,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
