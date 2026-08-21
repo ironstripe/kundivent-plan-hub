@@ -544,6 +544,11 @@ function Uebersicht() {
           today={today}
           categoryById={categoryById}
           areaNameById={areaNameById}
+          availability={
+            mode === "verfuegbarkeit" && availabilityStates
+              ? { states: availabilityStates, weekdays, onCreateFree: openFreeDate }
+              : undefined
+          }
           onOpenEvent={openEvent}
           onCreate={(date) => openNew(date)}
         />
@@ -555,6 +560,7 @@ function Uebersicht() {
         event={selected}
         {...(prefillDate ? { defaultDate: prefillDate } : {})}
         {...(prefillAreas.length ? { defaultAreaIds: prefillAreas } : {})}
+        {...(prefillStatus ? { defaultStatus: prefillStatus } : {})}
       />
     </div>
   );
