@@ -28,6 +28,7 @@ import { profileLabel, useProfiles, type Profile } from "@/lib/users";
 import { cn } from "@/lib/utils";
 import {
   EVENT_STATUSES,
+  formatCreatedAt,
   formatDateRange,
   formatTimeRange,
   useEvents,
@@ -71,6 +72,7 @@ function Eintraege() {
   const [categoryId, setCategoryId] = useState<string>(ALL);
   const [status, setStatus] = useState<string>(ALL);
   const [responsible, setResponsible] = useState<string>(ALL);
+  const [creator, setCreator] = useState<string>(ALL);
   const [search, setSearch] = useState("");
 
   const areaName = useMemo(() => {
@@ -98,6 +100,13 @@ function Eintraege() {
     return (profiles.data ?? []).filter((p) => p.active || assigned.has(p.id));
   }, [profiles.data, events.data]);
 
+  const creatorOptions = useMemo(() => {
+    const assigned = new Set(
+      (events.data ?? []).map((e) => e.created_by).filter(Boolean) as string[],
+    );
+    return (profiles.data ?? []).filter((p) => p.active || assigned.has(p.id));
+  }, [profiles.data, events.data]);
+
   const years = useMemo(() => {
     const set = new Set<string>();
     for (const event of events.data ?? []) {
@@ -121,13 +130,15 @@ function Eintraege() {
       if (responsible === UNASSIGNED && event.responsible_user_id) return false;
       if (responsible !== ALL && responsible !== UNASSIGNED && event.responsible_user_id !== responsible)
         return false;
+      if (creator === UNASSIGNED && event.created_by) return false;
+      if (creator !== ALL && creator !== UNASSIGNED && event.created_by !== creator) return false;
       if (term) {
         const haystack = `${event.title} ${event.notes ?? ""}`.toLowerCase();
         if (!haystack.includes(term)) return false;
       }
       return true;
     });
-  }, [events.data, year, areaId, categoryId, status, responsible, search]);
+  }, [events.data, year, areaId, categoryId, status, responsible, creator, search]);
 
   function openNew() {
     setSelected(null);
@@ -244,6 +255,26 @@ function Eintraege() {
           </SelectContent>
         </Select>
 
+        <Select value={creator} onValueChange={setCreator}>
+          <SelectTrigger className="h-8 w-[160px] text-xs">
+            <SelectValue placeholder="Erstellt von" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL} className="text-xs">
+              Alle Ersteller
+            </SelectItem>
+            <SelectItem value={UNASSIGNED} className="text-xs">
+              Ohne Angabe
+            </SelectItem>
+            {creatorOptions.map((profile) => (
+              <SelectItem key={profile.id} value={profile.id} className="text-xs">
+                {profileLabel(profile)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+
         <div className="ml-auto flex items-center gap-2">
           <div
             className="inline-flex items-center rounded-sm bg-muted p-0.5"
@@ -347,6 +378,7 @@ function Eintraege() {
                 <TableHead className="h-8 w-40 text-xs">Verantwortlich</TableHead>
                 <TableHead className="h-8 w-28 text-xs">Zeit</TableHead>
                 <TableHead className="h-8 w-20 text-right text-xs">Personen</TableHead>
+                <TableHead className="h-8 w-32 text-xs">Erstellt</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -422,6 +454,14 @@ function Eintraege() {
                             : ""}
                         </span>
                       ) : null}
+                    </TableCell>
+                    <TableCell className="py-1.5 text-xs text-muted-foreground tabular-nums">
+                      {formatCreatedAt(event.created_at, false)}
+                      <span className="block text-[10px] tabular-nums-none">
+                        {event.created_by
+                          ? profileLabel(profileById.get(event.created_by)) || "Unbekannt"
+                          : "Import"}
+                      </span>
                     </TableCell>
                   </TableRow>
                 );

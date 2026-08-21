@@ -35,6 +35,7 @@ import { cn } from "@/lib/utils";
 import { useCategories, usePlanningAreas } from "@/lib/master-data";
 import {
   EVENT_STATUSES,
+  formatCreatedAt,
   HOLIDAY_ALLOWED_AREAS,
   HOLIDAY_CATEGORY,
   useDeleteEvent,
@@ -581,7 +582,19 @@ export function EventDrawer({
                   className="text-sm"
                 />
               </div>
+
+              {event ? (
+                <p className="border-t border-border pt-3 text-[11px] text-muted-foreground">
+                  Erstellt von{" "}
+                  {event.created_by
+                    ? profileLabel((profiles.data ?? []).find((p) => p.id === event.created_by)) ||
+                      "Unbekannt"
+                    : "Import"}{" "}
+                  am {formatCreatedAt(event.created_at)}
+                </p>
+              ) : null}
             </div>
+
 
             <div className="flex shrink-0 items-center gap-2 border-t border-border px-4 py-3">
               {event ? (
