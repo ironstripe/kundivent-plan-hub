@@ -61,6 +61,15 @@ const EMPTY: FormState = {
   is_admin: false,
 };
 
+const MIN_PASSWORD_LENGTH = 8;
+
+function generatePassword() {
+  const alphabet = "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!?%+";
+  const bytes = new Uint32Array(12);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => alphabet[b % alphabet.length]).join("");
+}
+
 export function UserAdmin() {
   const users = useUsers(true);
   const createUser = useCreateUser();
