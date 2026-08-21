@@ -377,6 +377,7 @@ function Eintraege() {
                 <TableHead className="h-8 w-40 text-xs">Verantwortlich</TableHead>
                 <TableHead className="h-8 w-28 text-xs">Zeit</TableHead>
                 <TableHead className="h-8 w-20 text-right text-xs">Personen</TableHead>
+                <TableHead className="h-8 w-32 text-xs">Erstellt</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
