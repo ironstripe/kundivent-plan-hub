@@ -129,13 +129,15 @@ function Eintraege() {
       if (responsible === UNASSIGNED && event.responsible_user_id) return false;
       if (responsible !== ALL && responsible !== UNASSIGNED && event.responsible_user_id !== responsible)
         return false;
+      if (creator === UNASSIGNED && event.created_by) return false;
+      if (creator !== ALL && creator !== UNASSIGNED && event.created_by !== creator) return false;
       if (term) {
         const haystack = `${event.title} ${event.notes ?? ""}`.toLowerCase();
         if (!haystack.includes(term)) return false;
       }
       return true;
     });
-  }, [events.data, year, areaId, categoryId, status, responsible, search]);
+  }, [events.data, year, areaId, categoryId, status, responsible, creator, search]);
 
   function openNew() {
     setSelected(null);
