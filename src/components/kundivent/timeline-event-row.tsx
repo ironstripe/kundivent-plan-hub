@@ -71,7 +71,7 @@ export function TimelineEventRow({
       }}
       style={AREA_STYLE[areaKey]}
       className={cn(
-        "group grid cursor-pointer grid-cols-[3px_1fr] gap-0 rounded-sm border border-border bg-card transition-colors hover:border-[var(--ev-border)] hover:bg-[var(--ev-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "group grid cursor-pointer grid-cols-[7px_1fr] gap-0 rounded-sm border border-border bg-card transition-colors hover:border-[var(--ev-border)] hover:bg-[var(--ev-soft)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         isHoliday && "border-dashed bg-muted/40",
         isCancelled && "opacity-60",
       )}

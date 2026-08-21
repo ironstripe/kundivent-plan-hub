@@ -221,7 +221,7 @@ export function MonthCalendar({
       </div>
 
       {weekLayouts.map(({ week, segments, hiddenByDate, laneCount }) => (
-        <div key={week[0]} className="relative min-h-[92px] border-b border-border last:border-b-0">
+        <div key={week[0]} className="relative min-h-[120px] border-b border-border last:border-b-0">
           <div className="absolute inset-0 grid grid-cols-7">
             {week.map((date, i) => {
               const isOtherMonth = parse(date).getUTCMonth() !== month;
@@ -466,7 +466,7 @@ function EventBar({
             left: `calc(${(col / 7) * 100}% + 2px)`,
             width: `calc(${(span / 7) * 100}% - 4px)`,
             top: lane * LANE_HEIGHT,
-            height: LANE_HEIGHT - 3,
+            height: LANE_HEIGHT - 2,
           }}
         >
           <span aria-hidden className="shrink-0 text-[7px] opacity-70">
