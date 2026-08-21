@@ -51,8 +51,14 @@ function useUsersMutation<TInput, TResult>(fn: (data: TInput) => Promise<TResult
 }
 
 export function useCreateUser() {
-  return useUsersMutation((data: Parameters<typeof createUser>[0] extends { data: infer D } ? D : never) =>
-    createUser({ data }),
+  return useUsersMutation(
+    (data: {
+      email: string;
+      password: string;
+      display_name: string;
+      active: boolean;
+      is_admin: boolean;
+    }) => createUser({ data }),
   );
 }
 
