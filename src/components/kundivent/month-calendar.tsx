@@ -25,7 +25,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const WEEKDAYS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
-const LANE_HEIGHT = 20;
+const LANE_HEIGHT = 24;
 const MAX_LANES = 3;
 
 
