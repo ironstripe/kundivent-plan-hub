@@ -24,6 +24,7 @@ import { EventDrawer } from "@/components/kundivent/event-drawer";
 import { EventStatusBadge } from "@/components/kundivent/event-status-badge";
 import { TimelineEventRow } from "@/components/kundivent/timeline-event-row";
 import { useCategories, usePlanningAreas } from "@/lib/master-data";
+import { profileLabel, useProfiles } from "@/lib/users";
 import { cn } from "@/lib/utils";
 import {
   EVENT_STATUSES,
@@ -53,11 +54,13 @@ export const Route = createFileRoute("/_authenticated/eintraege")({
 });
 
 const ALL = "all";
+const UNASSIGNED = "unassigned";
 
 function Eintraege() {
   const events = useEvents();
   const areas = usePlanningAreas();
   const categories = useCategories();
+  const profiles = useProfiles();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selected, setSelected] = useState<EventWithRelations | null>(null);
@@ -67,6 +70,7 @@ function Eintraege() {
   const [areaId, setAreaId] = useState<string>(ALL);
   const [categoryId, setCategoryId] = useState<string>(ALL);
   const [status, setStatus] = useState<string>(ALL);
+  const [responsible, setResponsible] = useState<string>(ALL);
   const [search, setSearch] = useState("");
 
   const areaName = useMemo(() => {
@@ -80,6 +84,20 @@ function Eintraege() {
     for (const c of categories.data ?? []) map.set(c.id, { name: c.name, color: c.color });
     return map;
   }, [categories.data]);
+
+  const profileById = useMemo(() => {
+    const map = new Map<string, (typeof list)[number]>();
+    const list = profiles.data ?? [];
+    for (const p of list) map.set(p.id, p);
+    return map;
+  }, [profiles.data]);
+
+  const responsibleOptions = useMemo(() => {
+    const assigned = new Set(
+      (events.data ?? []).map((e) => e.responsible_user_id).filter(Boolean) as string[],
+    );
+    return (profiles.data ?? []).filter((p) => p.active || assigned.has(p.id));
+  }, [profiles.data, events.data]);
 
   const years = useMemo(() => {
     const set = new Set<string>();
@@ -101,13 +119,16 @@ function Eintraege() {
       if (areaId !== ALL && !event.planning_area_ids.includes(areaId)) return false;
       if (categoryId !== ALL && event.category_id !== categoryId) return false;
       if (status !== ALL && event.status !== status) return false;
+      if (responsible === UNASSIGNED && event.responsible_user_id) return false;
+      if (responsible !== ALL && responsible !== UNASSIGNED && event.responsible_user_id !== responsible)
+        return false;
       if (term) {
         const haystack = `${event.title} ${event.notes ?? ""}`.toLowerCase();
         if (!haystack.includes(term)) return false;
       }
       return true;
     });
-  }, [events.data, year, areaId, categoryId, status, search]);
+  }, [events.data, year, areaId, categoryId, status, responsible, search]);
 
   function openNew() {
     setSelected(null);
@@ -200,6 +221,25 @@ function Eintraege() {
             {EVENT_STATUSES.map((s) => (
               <SelectItem key={s.value} value={s.value} className="text-xs">
                 {s.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={responsible} onValueChange={setResponsible}>
+          <SelectTrigger className="h-8 w-[170px] text-xs">
+            <SelectValue placeholder="Verantwortlich" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL} className="text-xs">
+              Alle Verantwortlichen
+            </SelectItem>
+            <SelectItem value={UNASSIGNED} className="text-xs">
+              Nicht zugewiesen
+            </SelectItem>
+            {responsibleOptions.map((profile) => (
+              <SelectItem key={profile.id} value={profile.id} className="text-xs">
+                {profileLabel(profile)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -305,6 +345,7 @@ function Eintraege() {
                 <TableHead className="h-8 text-xs">Planungsbereiche</TableHead>
                 <TableHead className="h-8 w-40 text-xs">Kategorie</TableHead>
                 <TableHead className="h-8 w-32 text-xs">Status</TableHead>
+                <TableHead className="h-8 w-40 text-xs">Verantwortlich</TableHead>
                 <TableHead className="h-8 w-28 text-xs">Zeit</TableHead>
                 <TableHead className="h-8 w-20 text-right text-xs">Personen</TableHead>
               </TableRow>
@@ -363,6 +404,11 @@ function Eintraege() {
                     </TableCell>
                     <TableCell className="py-1.5">
                       <EventStatusBadge status={event.status as EventStatus} />
+                    </TableCell>
+                    <TableCell className="py-1.5 text-xs text-muted-foreground">
+                      {(event.responsible_user_id
+                        ? profileLabel(profileById.get(event.responsible_user_id))
+                        : null) ?? "–"}
                     </TableCell>
                     <TableCell className="py-1.5 text-xs text-muted-foreground tabular-nums">
                       {formatTimeRange(event.all_day, event.start_time, event.end_time)}
