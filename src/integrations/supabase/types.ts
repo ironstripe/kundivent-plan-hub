@@ -184,12 +184,42 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          active: boolean
+          created_at: string
+          display_name: string
+          id: string
+          is_admin: boolean
+          must_change_password: boolean
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          display_name?: string
+          id: string
+          is_admin?: boolean
+          must_change_password?: boolean
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          display_name?: string
+          id?: string
+          is_admin?: boolean
+          must_change_password?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_active_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       event_status: "idea" | "provisional" | "confirmed" | "cancelled"

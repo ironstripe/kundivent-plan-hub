@@ -9,6 +9,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useCategories, usePlanningAreas } from "@/lib/master-data";
+import { useMyProfile } from "@/lib/users";
+import { UserAdmin } from "@/components/kundivent/user-admin";
 
 export const Route = createFileRoute("/_authenticated/einstellungen")({
   head: () => ({
@@ -59,6 +61,9 @@ function Section({
 function Einstellungen() {
   const areas = usePlanningAreas();
   const categories = useCategories();
+  const profile = useMyProfile();
+  const isAdmin = profile.data?.is_admin ?? false;
+
 
   return (
     <div className="space-y-4">
@@ -84,6 +89,7 @@ function Einstellungen() {
         </Link>
       </div>
 
+      {isAdmin ? <UserAdmin /> : null}
 
 
       <Section title="Planungsbereiche" hint={`${areas.data?.length ?? 0} Einträge`}>
