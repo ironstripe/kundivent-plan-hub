@@ -122,6 +122,8 @@ function Uebersicht() {
   const [prefillAreas, setPrefillAreas] = useState<string[]>([]);
   const [prefillStatus, setPrefillStatus] = useState<"provisional" | undefined>(undefined);
   const [jumpMonth, setJumpMonth] = useState<{ index: number; nonce: number } | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerYear, setPickerYear] = useState<number | null>(null);
 
   const activeAreas = useMemo(() => (areas.data ?? []).filter((a) => a.active), [areas.data]);
   const activeCategories = useMemo(
@@ -226,6 +228,11 @@ function Uebersicht() {
     patchSearch({ y: currentYear, m: currentMonth });
   }
 
+  function goToMonth(year: number, month: number) {
+    if (mode === "matrix") setJumpMonth({ index: month, nonce: Date.now() });
+    patchSearch({ y: year, m: month });
+  }
+
   function switchMode(next: Mode) {
     if (next === "matrix") setJumpMonth({ index: cursor.month, nonce: Date.now() });
     patchSearch({ mode: next });
@@ -282,9 +289,88 @@ function Uebersicht() {
           >
             <ChevronLeft className="size-4" />
           </Button>
-          <h1 className="min-w-[150px] text-center text-sm font-semibold tracking-tight tabular-nums">
-            {MONTHS[cursor.month]} {cursor.year}
-          </h1>
+          <Popover
+            open={pickerOpen}
+            onOpenChange={(open) => {
+              setPickerOpen(open);
+              if (open) setPickerYear(cursor.year);
+            }}
+          >
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                className="h-8 min-w-[150px] gap-1 px-2 text-sm font-semibold tracking-tight tabular-nums"
+                aria-label="Monat und Jahr wählen"
+              >
+                <h1 className="text-sm font-semibold">
+                  {MONTHS[cursor.month]} {cursor.year}
+                </h1>
+                <ChevronDown className="size-3.5 opacity-60" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-64 space-y-2 p-2">
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-7"
+                  aria-label="Vorheriges Jahr"
+                  onClick={() => setPickerYear((y) => (y ?? cursor.year) - 1)}
+                >
+                  <ChevronLeft className="size-4" />
+                </Button>
+                <Select
+                  value={String(pickerYear ?? cursor.year)}
+                  onValueChange={(v) => setPickerYear(Number(v))}
+                >
+                  <SelectTrigger className="h-7 flex-1 text-xs tabular-nums">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 11 }, (_, i) => currentYear - 5 + i).map((y) => (
+                      <SelectItem key={y} value={String(y)} className="text-xs tabular-nums">
+                        {y}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-7"
+                  aria-label="Nächstes Jahr"
+                  onClick={() => setPickerYear((y) => (y ?? cursor.year) + 1)}
+                >
+                  <ChevronRight className="size-4" />
+                </Button>
+              </div>
+              <div className="grid grid-cols-4 gap-1">
+                {MONTHS.map((label, index) => {
+                  const year = pickerYear ?? cursor.year;
+                  const active = index === cursor.month && year === cursor.year;
+                  return (
+                    <button
+                      key={label}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => {
+                        goToMonth(year, index);
+                        setPickerOpen(false);
+                      }}
+                      className={cn(
+                        "rounded-sm px-1 py-1.5 text-[11px] font-medium transition-colors",
+                        active
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                      )}
+                    >
+                      {label.slice(0, 3)}
+                    </button>
+                  );
+                })}
+              </div>
+            </PopoverContent>
+          </Popover>
           <Button
             variant="ghost"
             size="icon"
