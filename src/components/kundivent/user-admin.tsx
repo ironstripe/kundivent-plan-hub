@@ -88,11 +88,28 @@ export function UserAdmin() {
   const [resetError, setResetError] = useState<string | null>(null);
 
   const [deleteTarget, setDeleteTarget] = useState<ManagedUser | null>(null);
+  const [invalidField, setInvalidField] = useState<keyof FormState | null>(null);
+
+  const nameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const errorRef = useRef<HTMLParagraphElement>(null);
+
+  function fail(field: keyof FormState, message: string) {
+    setFormError(message);
+    setInvalidField(field);
+    toast.error(message);
+    const ref =
+      field === "display_name" ? nameRef : field === "email" ? emailRef : passwordRef;
+    ref.current?.focus();
+    errorRef.current?.scrollIntoView({ block: "nearest" });
+  }
 
   function openCreate() {
     setEditing(null);
     setForm(EMPTY);
     setFormError(null);
+    setInvalidField(null);
     setOpen(true);
   }
 
