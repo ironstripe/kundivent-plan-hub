@@ -12,6 +12,7 @@ import {
 } from "@/lib/availability";
 import {
   HOLIDAY_CATEGORY,
+  formatCreatedAt,
   formatDateRange,
   formatTimeRange,
   type EventStatus,
