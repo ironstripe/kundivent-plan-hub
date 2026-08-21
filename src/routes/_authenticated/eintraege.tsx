@@ -98,6 +98,13 @@ function Eintraege() {
     return (profiles.data ?? []).filter((p) => p.active || assigned.has(p.id));
   }, [profiles.data, events.data]);
 
+  const creatorOptions = useMemo(() => {
+    const assigned = new Set(
+      (events.data ?? []).map((e) => e.created_by).filter(Boolean) as string[],
+    );
+    return (profiles.data ?? []).filter((p) => p.active || assigned.has(p.id));
+  }, [profiles.data, events.data]);
+
   const years = useMemo(() => {
     const set = new Set<string>();
     for (const event of events.data ?? []) {
