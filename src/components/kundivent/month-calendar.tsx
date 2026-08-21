@@ -79,6 +79,28 @@ function isHolidayEvent(
 }
 
 
+/** Availability overlay — presentation only, states are computed by the caller. */
+export type AvailabilityOverlay = {
+  states: Map<string, DayAvailability>;
+  /** ISO weekdays (1 = Mo … 7 = So) the search focuses on. */
+  weekdays: number[];
+  onCreateFree: (date: string) => void;
+};
+
+const AVAIL_CELL: Record<AvailabilityState, string> = {
+  free: "bg-[var(--avail-free-bg)] hover:bg-[var(--avail-free-hover)]",
+  provisional: "bg-[var(--avail-provisional-bg)] hover:bg-[var(--avail-provisional-hover)]",
+  occupied: "bg-[var(--avail-occupied-bg)] hover:bg-[var(--avail-occupied-hover)]",
+  closed: "surface-hatch bg-[var(--avail-closed-bg)] hover:bg-[var(--avail-closed-hover)]",
+};
+
+const AVAIL_TEXT: Record<AvailabilityState, string> = {
+  free: "text-[var(--avail-free)]",
+  provisional: "text-[var(--avail-provisional)]",
+  occupied: "text-[var(--avail-occupied)]",
+  closed: "text-[var(--avail-closed)]",
+};
+
 export function MonthCalendar({
   year,
   month,
@@ -86,6 +108,7 @@ export function MonthCalendar({
   today,
   categoryById,
   areaNameById,
+  availability,
   onOpenEvent,
   onCreate,
 }: {
@@ -95,6 +118,7 @@ export function MonthCalendar({
   today: string;
   categoryById: Map<string, { name: string; color: string }>;
   areaNameById: Map<string, string>;
+  availability?: AvailabilityOverlay | undefined;
   onOpenEvent: (event: EventWithRelations) => void;
   onCreate: (date: string) => void;
 }) {
