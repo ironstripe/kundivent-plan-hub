@@ -231,6 +231,19 @@ function Uebersicht() {
     patchSearch({ mode: next });
   }
 
+  /** Matrix scrolls through a whole year — keep the header month in sync. */
+  const handleVisibleMonth = useCallback(
+    (month: number) => {
+      navigate({
+        to: ".",
+        replace: true,
+        search: (prev) => (prev.m === month ? prev : { ...prev, m: month }),
+      });
+    },
+    [navigate],
+  );
+
+
   function openEvent(event: EventWithRelations) {
     setPrefillDate(null);
     setPrefillAreas([]);
