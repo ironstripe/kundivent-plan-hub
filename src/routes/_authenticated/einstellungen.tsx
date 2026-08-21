@@ -89,6 +89,7 @@ function Einstellungen() {
         </Link>
       </div>
 
+      {isAdmin ? <UserAdmin /> : null}
 
 
       <Section title="Planungsbereiche" hint={`${areas.data?.length ?? 0} Einträge`}>
