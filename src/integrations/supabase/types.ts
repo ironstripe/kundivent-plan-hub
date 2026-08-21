@@ -87,6 +87,7 @@ export type Database = {
           created_at: string
           deposit_amount: number | null
           deposit_received: boolean
+          deposit_received_at: string | null
           end_date: string | null
           end_time: string | null
           external_id: string | null
@@ -111,6 +112,7 @@ export type Database = {
           created_at?: string
           deposit_amount?: number | null
           deposit_received?: boolean
+          deposit_received_at?: string | null
           end_date?: string | null
           end_time?: string | null
           external_id?: string | null
@@ -135,6 +137,7 @@ export type Database = {
           created_at?: string
           deposit_amount?: number | null
           deposit_received?: boolean
+          deposit_received_at?: string | null
           end_date?: string | null
           end_time?: string | null
           external_id?: string | null

@@ -1,0 +1,1 @@
+ALTER TABLE public.events ADD COLUMN deposit_received_at date;
