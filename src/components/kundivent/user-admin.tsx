@@ -123,23 +123,28 @@ export function UserAdmin() {
       is_admin: user.is_admin,
     });
     setFormError(null);
+    setInvalidField(null);
     setOpen(true);
   }
 
   async function submitForm(e: React.FormEvent) {
     e.preventDefault();
     setFormError(null);
+    setInvalidField(null);
 
     if (!form.display_name.trim()) {
-      setFormError("Bitte einen Namen angeben.");
+      fail("display_name", "Bitte einen Namen angeben.");
       return;
     }
-    if (!form.email.trim()) {
-      setFormError("Bitte eine E-Mail-Adresse angeben.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      fail("email", "Bitte eine gültige E-Mail-Adresse angeben.");
       return;
     }
-    if (!editing && form.password.length < 8) {
-      setFormError("Das initiale Passwort muss mindestens 8 Zeichen lang sein.");
+    if (!editing && form.password.length < MIN_PASSWORD_LENGTH) {
+      fail(
+        "password",
+        `Das initiale Passwort muss mindestens ${MIN_PASSWORD_LENGTH} Zeichen lang sein (aktuell ${form.password.length}).`,
+      );
       return;
     }
 
