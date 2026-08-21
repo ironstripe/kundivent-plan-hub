@@ -122,6 +122,8 @@ function Uebersicht() {
   const [prefillAreas, setPrefillAreas] = useState<string[]>([]);
   const [prefillStatus, setPrefillStatus] = useState<"provisional" | undefined>(undefined);
   const [jumpMonth, setJumpMonth] = useState<{ index: number; nonce: number } | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerYear, setPickerYear] = useState<number | null>(null);
 
   const activeAreas = useMemo(() => (areas.data ?? []).filter((a) => a.active), [areas.data]);
   const activeCategories = useMemo(
