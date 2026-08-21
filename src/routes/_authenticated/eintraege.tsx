@@ -86,9 +86,8 @@ function Eintraege() {
   }, [categories.data]);
 
   const profileById = useMemo(() => {
-    const map = new Map<string, (typeof list)[number]>();
-    const list = profiles.data ?? [];
-    for (const p of list) map.set(p.id, p);
+    const map = new Map<string, Profile>();
+    for (const p of profiles.data ?? []) map.set(p.id, p);
     return map;
   }, [profiles.data]);
 
