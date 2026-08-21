@@ -293,18 +293,19 @@ function Uebersicht() {
         >
           {(
             [
-              ["month", "Monat"],
+              ["kalender", "Kalender"],
+              ["verfuegbarkeit", "Verfügbarkeit"],
               ["matrix", "Matrix"],
             ] as const
           ).map(([value, label]) => (
             <button
               key={value}
               type="button"
-              aria-pressed={view === value}
-              onClick={() => switchView(value)}
+              aria-pressed={mode === value}
+              onClick={() => switchMode(value)}
               className={cn(
                 "rounded-[3px] px-2.5 py-1 text-xs transition-colors",
-                view === value
+                mode === value
                   ? "bg-card font-semibold text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground",
               )}
@@ -313,6 +314,47 @@ function Uebersicht() {
             </button>
           ))}
         </div>
+
+        {mode === "verfuegbarkeit" ? (
+          <div className="flex items-center gap-1" role="group" aria-label="Wochentage">
+            {(
+              [
+                [1, "Mo"],
+                [2, "Di"],
+                [3, "Mi"],
+                [4, "Do"],
+                [5, "Fr"],
+                [6, "Sa"],
+                [7, "So"],
+              ] as const
+            ).map(([value, label]) => {
+              const on = weekdays.includes(value);
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() =>
+                    setWeekdays((prev) =>
+                      on ? prev.filter((d) => d !== value) : [...prev, value].sort(),
+                    )
+                  }
+                  className={cn(
+                    "h-8 w-8 rounded-sm border text-[11px] font-medium transition-colors",
+                    on
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-background text-muted-foreground hover:bg-accent",
+                  )}
+                >
+                  {label}
+                </button>
+              );
+            })}
+            <span className="ml-1 text-[11px] text-muted-foreground">
+              {freeCount} {AVAILABILITY_LABEL["free" as AvailabilityState].toLowerCase()}
+            </span>
+          </div>
+        ) : null}
 
 
         <div className="ml-auto flex items-center gap-2">
