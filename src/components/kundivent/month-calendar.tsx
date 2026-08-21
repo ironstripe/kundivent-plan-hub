@@ -431,11 +431,13 @@ function EventBar({
   segment,
   categoryById,
   areaNameById,
+  dimmed = false,
   onOpenEvent,
 }: {
   segment: Segment;
   categoryById: Map<string, { name: string; color: string }>;
   areaNameById: Map<string, string>;
+  dimmed?: boolean;
   onOpenEvent: (event: EventWithRelations) => void;
 }) {
   const { event, col, span, lane, continuesFrom, continuesTo } = segment;
