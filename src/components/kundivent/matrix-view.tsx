@@ -173,15 +173,19 @@ export function MatrixView({
     let frame = 0;
     let tries = 0;
     const attempt = () => {
+      frame = 0;
+      const el = scrollRef.current;
       const node = monthRefs.current[jumpMonth.index];
-      if (node) {
-        node.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (el && node) {
+        // offsetTop is relative to the scrolling grid; subtract the sticky header row
+        const headerH = el.querySelector<HTMLElement>("[data-matrix-head]")?.offsetHeight ?? 0;
+        el.scrollTo({ top: Math.max(0, node.offsetTop - headerH), behavior: "smooth" });
         return;
       }
       // rows for a newly selected year may not be mounted yet
       if (tries++ < 30) frame = requestAnimationFrame(attempt);
     };
-    attempt();
+    frame = requestAnimationFrame(attempt);
     const clear = setTimeout(() => {
       pendingJump.current = null;
     }, 1500);
@@ -190,6 +194,7 @@ export function MatrixView({
       clearTimeout(clear);
     };
   }, [jumpMonth]);
+
 
   useEffect(() => {
     // reset scroll to top on year change, unless a jump is in flight
