@@ -63,6 +63,8 @@ export type EventInput = {
   end_time: string | null;
   pax: number | null;
   notes: string | null;
+  deposit_received: boolean;
+  deposit_amount: number | null;
 };
 
 async function syncPlanningAreas(eventId: string, areaIds: string[]) {
