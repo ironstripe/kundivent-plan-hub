@@ -174,6 +174,37 @@ export function MatrixView({
     scrollRef.current?.scrollTo({ top: 0 });
   }, [year]);
 
+  // Keep the header month in sync with what is actually scrolled into view.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || !onVisibleMonthChange) return;
+    let frame = 0;
+    let last = -1;
+    const update = () => {
+      frame = 0;
+      const top = el.getBoundingClientRect().top;
+      let visible = 0;
+      for (let m = 0; m < 12; m += 1) {
+        const node = monthRefs.current[m];
+        if (!node) continue;
+        if (node.getBoundingClientRect().top - top <= 8) visible = m;
+      }
+      if (visible !== last) {
+        last = visible;
+        onVisibleMonthChange(visible);
+      }
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, [onVisibleMonthChange, areas.length, year]);
+
+
   const gridTemplate = `132px repeat(${areas.length}, minmax(148px, 1fr))`;
 
   if (!areas.length) {
