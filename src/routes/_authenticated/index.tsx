@@ -177,29 +177,63 @@ function Uebersicht() {
       : `${areaIds.length} Bereiche`
     : "Alle Bereiche";
 
+  /** Availability is derived from all events (filters are a display concern). */
+  const availabilityIndex = useMemo(
+    () => buildAvailabilityIndex(events.data ?? [], categories.data ?? []),
+    [events.data, categories.data],
+  );
+
+  const availabilityAreaIds = useMemo(
+    () => (areaIds.length ? areaIds : activeAreas.map((a) => a.id)),
+    [areaIds, activeAreas],
+  );
+
+  const availabilityStates = useMemo(() => {
+    if (mode !== "verfuegbarkeit" || availabilityAreaIds.length === 0) return null;
+    const first = new Date(Date.UTC(cursor.year, cursor.month, 1));
+    const last = new Date(Date.UTC(cursor.year, cursor.month + 1, 0));
+    const from = new Date(first.getTime() - 7 * 86400000).toISOString().slice(0, 10);
+    const to = new Date(last.getTime() + 7 * 86400000).toISOString().slice(0, 10);
+    const map = new Map<string, DayAvailability>();
+    for (const date of eachDate(from, to))
+      map.set(date, calculateAvailability(date, availabilityAreaIds, availabilityIndex));
+    return map;
+  }, [mode, cursor.year, cursor.month, availabilityAreaIds, availabilityIndex]);
+
+  const freeCount = useMemo(() => {
+    if (!availabilityStates) return 0;
+    let count = 0;
+    for (const [date, day] of availabilityStates) {
+      if (Number(date.slice(5, 7)) - 1 !== cursor.month) continue;
+      const wd = new Date(`${date}T00:00:00Z`).getUTCDay() || 7;
+      if (weekdays.length && !weekdays.includes(wd)) continue;
+      if (day.state === "free") count += 1;
+    }
+    return count;
+  }, [availabilityStates, cursor.month, weekdays]);
+
   function shiftMonth(delta: number) {
-    setCursor((c) => {
-      const next = c.month + delta;
-      const year = c.year + Math.floor(next / 12);
-      const month = ((next % 12) + 12) % 12;
-      if (view === "matrix") setJumpMonth({ index: month, nonce: Date.now() });
-      return { year, month };
-    });
+    const next = cursor.month + delta;
+    const year = cursor.year + Math.floor(next / 12);
+    const month = ((next % 12) + 12) % 12;
+    if (mode === "matrix") setJumpMonth({ index: month, nonce: Date.now() });
+    patchSearch({ y: year, m: month });
   }
 
   function goToday() {
-    setCursor({ year: currentYear, month: currentMonth });
-    if (view === "matrix") setJumpMonth({ index: currentMonth, nonce: Date.now() });
+    if (mode === "matrix") setJumpMonth({ index: currentMonth, nonce: Date.now() });
+    patchSearch({ y: currentYear, m: currentMonth });
   }
 
-  function switchView(next: "month" | "matrix") {
-    setView(next);
+  function switchMode(next: Mode) {
     if (next === "matrix") setJumpMonth({ index: cursor.month, nonce: Date.now() });
+    patchSearch({ mode: next });
   }
 
   function openEvent(event: EventWithRelations) {
     setPrefillDate(null);
     setPrefillAreas([]);
+    setPrefillStatus(undefined);
     setSelected(event);
     setDrawerOpen(true);
   }
@@ -207,6 +241,16 @@ function Uebersicht() {
   function openNew(date?: string, areaId?: string) {
     setPrefillDate(date ?? null);
     setPrefillAreas(areaId ? [areaId] : areaIds.length === 1 ? [areaIds[0]!] : []);
+    setPrefillStatus(undefined);
+    setSelected(null);
+    setDrawerOpen(true);
+  }
+
+  /** Verfügbarkeit: clicking a free date pre-books it provisionally. */
+  function openFreeDate(date: string) {
+    setPrefillDate(date);
+    setPrefillAreas(areaIds.length ? areaIds : []);
+    setPrefillStatus("provisional");
     setSelected(null);
     setDrawerOpen(true);
   }
