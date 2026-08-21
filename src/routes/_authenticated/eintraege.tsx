@@ -28,6 +28,7 @@ import { profileLabel, useProfiles, type Profile } from "@/lib/users";
 import { cn } from "@/lib/utils";
 import {
   EVENT_STATUSES,
+  formatCreatedAt,
   formatDateRange,
   formatTimeRange,
   useEvents,
