@@ -254,6 +254,26 @@ function Eintraege() {
           </SelectContent>
         </Select>
 
+        <Select value={creator} onValueChange={setCreator}>
+          <SelectTrigger className="h-8 w-[160px] text-xs">
+            <SelectValue placeholder="Erstellt von" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL} className="text-xs">
+              Alle Ersteller
+            </SelectItem>
+            <SelectItem value={UNASSIGNED} className="text-xs">
+              Ohne Angabe
+            </SelectItem>
+            {creatorOptions.map((profile) => (
+              <SelectItem key={profile.id} value={profile.id} className="text-xs">
+                {profileLabel(profile)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+
         <div className="ml-auto flex items-center gap-2">
           <div
             className="inline-flex items-center rounded-sm bg-muted p-0.5"
