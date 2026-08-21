@@ -4,6 +4,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { EventStatusBadge } from "@/components/kundivent/event-status-badge";
 import { publicHolidays } from "@/lib/holidays";
 import {
+  AVAILABILITY_LABEL,
+  isoWeekday,
+  type AvailabilityState,
+  type DayAvailability,
+} from "@/lib/availability";
+import {
   HOLIDAY_CATEGORY,
   formatDateRange,
   formatTimeRange,
@@ -73,6 +79,28 @@ function isHolidayEvent(
 }
 
 
+/** Availability overlay — presentation only, states are computed by the caller. */
+export type AvailabilityOverlay = {
+  states: Map<string, DayAvailability>;
+  /** ISO weekdays (1 = Mo … 7 = So) the search focuses on. */
+  weekdays: number[];
+  onCreateFree: (date: string) => void;
+};
+
+const AVAIL_CELL: Record<AvailabilityState, string> = {
+  free: "bg-[var(--avail-free-bg)] hover:bg-[var(--avail-free-hover)]",
+  provisional: "bg-[var(--avail-provisional-bg)] hover:bg-[var(--avail-provisional-hover)]",
+  occupied: "bg-[var(--avail-occupied-bg)] hover:bg-[var(--avail-occupied-hover)]",
+  closed: "surface-hatch bg-[var(--avail-closed-bg)] hover:bg-[var(--avail-closed-hover)]",
+};
+
+const AVAIL_TEXT: Record<AvailabilityState, string> = {
+  free: "text-[var(--avail-free)]",
+  provisional: "text-[var(--avail-provisional)]",
+  occupied: "text-[var(--avail-occupied)]",
+  closed: "text-[var(--avail-closed)]",
+};
+
 export function MonthCalendar({
   year,
   month,
@@ -80,6 +108,7 @@ export function MonthCalendar({
   today,
   categoryById,
   areaNameById,
+  availability,
   onOpenEvent,
   onCreate,
 }: {
@@ -89,6 +118,7 @@ export function MonthCalendar({
   today: string;
   categoryById: Map<string, { name: string; color: string }>;
   areaNameById: Map<string, string>;
+  availability?: AvailabilityOverlay | undefined;
   onOpenEvent: (event: EventWithRelations) => void;
   onCreate: (date: string) => void;
 }) {
@@ -195,20 +225,92 @@ export function MonthCalendar({
           <div className="absolute inset-0 grid grid-cols-7">
             {week.map((date, i) => {
               const isOtherMonth = parse(date).getUTCMonth() !== month;
+              const day = availability?.states.get(date);
+              const focused = availability
+                ? availability.weekdays.length === 0 ||
+                  availability.weekdays.includes(isoWeekday(date))
+                : true;
+              const cellClass = cn(
+                "h-full w-full transition-colors",
+                i > 0 && "border-l border-border/60",
+                i >= 5 && "bg-muted",
+                i === 4 && "bg-muted/50",
+                isOtherMonth && "bg-muted/60",
+                availability && !focused && "opacity-40",
+                day && focused ? AVAIL_CELL[day.state] : "hover:bg-accent/40",
+              );
+
+              if (day && focused && day.state !== "free") {
+                return (
+                  <Popover key={date}>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label={`${AVAILABILITY_LABEL[day.state]} am ${date}`}
+                        className={cellClass}
+                      />
+                    </PopoverTrigger>
+                    <PopoverContent align="start" className="w-72 p-3">
+                      <p className="text-xs font-semibold">{formatDateRange(date, null)}</p>
+                      <p className={cn("text-[11px] font-medium", AVAIL_TEXT[day.state])}>
+                        {AVAILABILITY_LABEL[day.state]}
+                      </p>
+                      <div className="mt-2 space-y-1">
+                        {day.areas.map((area) => (
+                          <p
+                            key={area.areaId}
+                            className="flex items-center justify-between gap-2 text-[11px]"
+                          >
+                            <span className="truncate text-muted-foreground">
+                              {areaNameById.get(area.areaId) ?? "—"}
+                            </span>
+                            <span className={cn("shrink-0", AVAIL_TEXT[area.state])}>
+                              {AVAILABILITY_LABEL[area.state]}
+                            </span>
+                          </p>
+                        ))}
+                      </div>
+                      {day.blockingEvents.length ? (
+                        <div className="mt-2 space-y-1 border-t border-border pt-2">
+                          {day.blockingEvents.map((event) => (
+                            <button
+                              key={event.id}
+                              type="button"
+                              onClick={() => onOpenEvent(event)}
+                              style={
+                                AREA_STYLE[displayAreaKey(event.planning_area_ids, areaNameById)]
+                              }
+                              className={cn(
+                                "block w-full truncate rounded-[3px] px-1.5 py-1 text-left text-xs",
+                                eventBlockClasses(
+                                  event.status as EventStatus,
+                                  isHolidayEvent(event, categoryById),
+                                ),
+                              )}
+                            >
+                              {event.title}
+                            </button>
+                          ))}
+                        </div>
+                      ) : null}
+                    </PopoverContent>
+                  </Popover>
+                );
+              }
+
               return (
                 <button
                   key={date}
                   type="button"
-                  aria-label={`Eintrag am ${date} erstellen`}
-                  onClick={() => onCreate(date)}
-                  className={cn(
-                    "h-full w-full transition-colors hover:bg-accent/40",
-                    i > 0 && "border-l border-border/60",
-                    i >= 5 && "bg-muted",
-                    i === 4 && "bg-muted/50",
-
-                    isOtherMonth && "bg-muted/60",
-                  )}
+                  aria-label={
+                    day && focused
+                      ? `Freien Termin am ${date} buchen`
+                      : `Eintrag am ${date} erstellen`
+                  }
+                  onClick={() =>
+                    day && focused ? availability!.onCreateFree(date) : onCreate(date)
+                  }
+                  className={cellClass}
                 />
               );
             })}
@@ -219,6 +321,11 @@ export function MonthCalendar({
               {week.map((date) => {
                 const isOtherMonth = parse(date).getUTCMonth() !== month;
                 const holiday = holidayByDate.get(date);
+                const day = availability?.states.get(date);
+                const focused = availability
+                  ? availability.weekdays.length === 0 ||
+                    availability.weekdays.includes(isoWeekday(date))
+                  : true;
                 return (
                   <div key={date} className="flex items-center gap-1 px-1.5 pb-0.5 pt-1">
                     <span
@@ -231,7 +338,16 @@ export function MonthCalendar({
                     >
                       {Number(date.slice(8, 10))}
                     </span>
-                    {holiday ? (
+                    {day && focused ? (
+                      <span
+                        className={cn(
+                          "truncate text-[10px] font-medium",
+                          AVAIL_TEXT[day.state],
+                        )}
+                      >
+                        {AVAILABILITY_LABEL[day.state]}
+                      </span>
+                    ) : holiday ? (
                       <span className="truncate text-[10px] text-muted-foreground/70">
                         {holiday}
                       </span>
@@ -251,6 +367,7 @@ export function MonthCalendar({
                   segment={seg}
                   categoryById={categoryById}
                   areaNameById={areaNameById}
+                  dimmed={!!availability}
                   onOpenEvent={onOpenEvent}
                 />
               ))}
@@ -314,11 +431,13 @@ function EventBar({
   segment,
   categoryById,
   areaNameById,
+  dimmed = false,
   onOpenEvent,
 }: {
   segment: Segment;
   categoryById: Map<string, { name: string; color: string }>;
   areaNameById: Map<string, string>;
+  dimmed?: boolean;
   onOpenEvent: (event: EventWithRelations) => void;
 }) {
   const { event, col, span, lane, continuesFrom, continuesTo } = segment;
@@ -340,6 +459,7 @@ function EventBar({
             eventBlockClasses(status, isHoliday),
             continuesFrom && "rounded-l-none border-l-0",
             continuesTo && "rounded-r-none border-r-0",
+            dimmed && "opacity-50 hover:opacity-100",
           )}
           style={{
             ...AREA_STYLE[areaKey],

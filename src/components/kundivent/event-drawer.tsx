@@ -452,14 +452,15 @@ export function EventDrawer({
 
               <div className="space-y-1.5">
                 <Label htmlFor="notes" className="text-xs">
-                  Notiz
+                  Bemerkungen
                 </Label>
                 <Textarea
                   id="notes"
-                  rows={3}
+                  rows={4}
                   maxLength={2000}
                   value={form.notes}
                   onChange={(e) => update({ notes: e.target.value })}
+                  placeholder="Interne Bemerkungen zum Eintrag…"
                   className="text-sm"
                 />
               </div>

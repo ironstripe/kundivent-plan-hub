@@ -20,11 +20,32 @@ import { MonthCalendar } from "@/components/kundivent/month-calendar";
 import { MatrixView } from "@/components/kundivent/matrix-view";
 import { useCategories, usePlanningAreas } from "@/lib/master-data";
 import { EVENT_STATUSES, useEvents, type EventWithRelations } from "@/lib/events";
+import {
+  AVAILABILITY_LABEL,
+  buildAvailabilityIndex,
+  calculateAvailability,
+  eachDate,
+  type AvailabilityState,
+  type DayAvailability,
+} from "@/lib/availability";
 import { areaKeyFromName } from "@/lib/area-theme";
 import { cn } from "@/lib/utils";
 
+type Mode = "kalender" | "verfuegbarkeit" | "matrix";
+
+const MODES: Mode[] = ["kalender", "verfuegbarkeit", "matrix"];
 
 export const Route = createFileRoute("/_authenticated/")({
+  validateSearch: (search: Record<string, unknown>) => {
+    const mode = MODES.includes(search['mode'] as Mode) ? (search['mode'] as Mode) : undefined;
+    const y = Number(search['y']);
+    const m = Number(search['m']);
+    return {
+      ...(mode ? { mode } : {}),
+      ...(Number.isInteger(y) && y > 1900 ? { y } : {}),
+      ...(Number.isInteger(m) && m >= 0 && m <= 11 ? { m } : {}),
+    };
+  },
   head: () => ({
     meta: [
       { title: "Kalender – Kundivent" },
@@ -77,8 +98,19 @@ function Uebersicht() {
   const currentYear = Number(today.slice(0, 4));
   const currentMonth = Number(today.slice(5, 7)) - 1;
 
-  const [cursor, setCursor] = useState({ year: currentYear, month: currentMonth });
-  const [view, setView] = useState<"month" | "matrix">("month");
+  const urlSearch = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const mode: Mode = urlSearch.mode ?? "kalender";
+  const cursor = {
+    year: urlSearch.y ?? currentYear,
+    month: urlSearch.m ?? currentMonth,
+  };
+
+  function patchSearch(patch: { mode?: Mode; y?: number; m?: number }) {
+    navigate({ to: ".", replace: true, search: (prev) => ({ ...prev, ...patch }) });
+  }
+
+  const [weekdays, setWeekdays] = useState<number[]>([1, 2, 3, 4, 5, 6, 7]);
   const [areaIds, setAreaIds] = useState<string[]>([]);
   const [categoryId, setCategoryId] = useState(ALL);
   const [status, setStatus] = useState(ALL);
@@ -88,6 +120,7 @@ function Uebersicht() {
   const [selected, setSelected] = useState<EventWithRelations | null>(null);
   const [prefillDate, setPrefillDate] = useState<string | null>(null);
   const [prefillAreas, setPrefillAreas] = useState<string[]>([]);
+  const [prefillStatus, setPrefillStatus] = useState<"provisional" | undefined>(undefined);
   const [jumpMonth, setJumpMonth] = useState<{ index: number; nonce: number } | null>(null);
 
   const activeAreas = useMemo(() => (areas.data ?? []).filter((a) => a.active), [areas.data]);
@@ -145,29 +178,63 @@ function Uebersicht() {
       : `${areaIds.length} Bereiche`
     : "Alle Bereiche";
 
+  /** Availability is derived from all events (filters are a display concern). */
+  const availabilityIndex = useMemo(
+    () => buildAvailabilityIndex(events.data ?? [], categories.data ?? []),
+    [events.data, categories.data],
+  );
+
+  const availabilityAreaIds = useMemo(
+    () => (areaIds.length ? areaIds : activeAreas.map((a) => a.id)),
+    [areaIds, activeAreas],
+  );
+
+  const availabilityStates = useMemo(() => {
+    if (mode !== "verfuegbarkeit" || availabilityAreaIds.length === 0) return null;
+    const first = new Date(Date.UTC(cursor.year, cursor.month, 1));
+    const last = new Date(Date.UTC(cursor.year, cursor.month + 1, 0));
+    const from = new Date(first.getTime() - 7 * 86400000).toISOString().slice(0, 10);
+    const to = new Date(last.getTime() + 7 * 86400000).toISOString().slice(0, 10);
+    const map = new Map<string, DayAvailability>();
+    for (const date of eachDate(from, to))
+      map.set(date, calculateAvailability(date, availabilityAreaIds, availabilityIndex));
+    return map;
+  }, [mode, cursor.year, cursor.month, availabilityAreaIds, availabilityIndex]);
+
+  const freeCount = useMemo(() => {
+    if (!availabilityStates) return 0;
+    let count = 0;
+    for (const [date, day] of availabilityStates) {
+      if (Number(date.slice(5, 7)) - 1 !== cursor.month) continue;
+      const wd = new Date(`${date}T00:00:00Z`).getUTCDay() || 7;
+      if (weekdays.length && !weekdays.includes(wd)) continue;
+      if (day.state === "free") count += 1;
+    }
+    return count;
+  }, [availabilityStates, cursor.month, weekdays]);
+
   function shiftMonth(delta: number) {
-    setCursor((c) => {
-      const next = c.month + delta;
-      const year = c.year + Math.floor(next / 12);
-      const month = ((next % 12) + 12) % 12;
-      if (view === "matrix") setJumpMonth({ index: month, nonce: Date.now() });
-      return { year, month };
-    });
+    const next = cursor.month + delta;
+    const year = cursor.year + Math.floor(next / 12);
+    const month = ((next % 12) + 12) % 12;
+    if (mode === "matrix") setJumpMonth({ index: month, nonce: Date.now() });
+    patchSearch({ y: year, m: month });
   }
 
   function goToday() {
-    setCursor({ year: currentYear, month: currentMonth });
-    if (view === "matrix") setJumpMonth({ index: currentMonth, nonce: Date.now() });
+    if (mode === "matrix") setJumpMonth({ index: currentMonth, nonce: Date.now() });
+    patchSearch({ y: currentYear, m: currentMonth });
   }
 
-  function switchView(next: "month" | "matrix") {
-    setView(next);
+  function switchMode(next: Mode) {
     if (next === "matrix") setJumpMonth({ index: cursor.month, nonce: Date.now() });
+    patchSearch({ mode: next });
   }
 
   function openEvent(event: EventWithRelations) {
     setPrefillDate(null);
     setPrefillAreas([]);
+    setPrefillStatus(undefined);
     setSelected(event);
     setDrawerOpen(true);
   }
@@ -175,6 +242,16 @@ function Uebersicht() {
   function openNew(date?: string, areaId?: string) {
     setPrefillDate(date ?? null);
     setPrefillAreas(areaId ? [areaId] : areaIds.length === 1 ? [areaIds[0]!] : []);
+    setPrefillStatus(undefined);
+    setSelected(null);
+    setDrawerOpen(true);
+  }
+
+  /** Verfügbarkeit: clicking a free date pre-books it provisionally. */
+  function openFreeDate(date: string) {
+    setPrefillDate(date);
+    setPrefillAreas(areaIds.length ? areaIds : []);
+    setPrefillStatus("provisional");
     setSelected(null);
     setDrawerOpen(true);
   }
@@ -216,18 +293,19 @@ function Uebersicht() {
         >
           {(
             [
-              ["month", "Monat"],
+              ["kalender", "Kalender"],
+              ["verfuegbarkeit", "Verfügbarkeit"],
               ["matrix", "Matrix"],
             ] as const
           ).map(([value, label]) => (
             <button
               key={value}
               type="button"
-              aria-pressed={view === value}
-              onClick={() => switchView(value)}
+              aria-pressed={mode === value}
+              onClick={() => switchMode(value)}
               className={cn(
                 "rounded-[3px] px-2.5 py-1 text-xs transition-colors",
-                view === value
+                mode === value
                   ? "bg-card font-semibold text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground",
               )}
@@ -236,6 +314,47 @@ function Uebersicht() {
             </button>
           ))}
         </div>
+
+        {mode === "verfuegbarkeit" ? (
+          <div className="flex items-center gap-1" role="group" aria-label="Wochentage">
+            {(
+              [
+                [1, "Mo"],
+                [2, "Di"],
+                [3, "Mi"],
+                [4, "Do"],
+                [5, "Fr"],
+                [6, "Sa"],
+                [7, "So"],
+              ] as const
+            ).map(([value, label]) => {
+              const on = weekdays.includes(value);
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() =>
+                    setWeekdays((prev) =>
+                      on ? prev.filter((d) => d !== value) : [...prev, value].sort(),
+                    )
+                  }
+                  className={cn(
+                    "h-8 w-8 rounded-sm border text-[11px] font-medium transition-colors",
+                    on
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-background text-muted-foreground hover:bg-accent",
+                  )}
+                >
+                  {label}
+                </button>
+              );
+            })}
+            <span className="ml-1 text-[11px] text-muted-foreground">
+              {freeCount} {AVAILABILITY_LABEL["free" as AvailabilityState].toLowerCase()}
+            </span>
+          </div>
+        ) : null}
 
 
         <div className="ml-auto flex items-center gap-2">
@@ -405,7 +524,7 @@ function Uebersicht() {
             Erneut versuchen
           </Button>
         </div>
-      ) : view === "matrix" ? (
+      ) : mode === "matrix" ? (
         <MatrixView
           events={matrixEvents}
           areas={matrixAreas}
@@ -425,6 +544,11 @@ function Uebersicht() {
           today={today}
           categoryById={categoryById}
           areaNameById={areaNameById}
+          availability={
+            mode === "verfuegbarkeit" && availabilityStates
+              ? { states: availabilityStates, weekdays, onCreateFree: openFreeDate }
+              : undefined
+          }
           onOpenEvent={openEvent}
           onCreate={(date) => openNew(date)}
         />
@@ -436,6 +560,7 @@ function Uebersicht() {
         event={selected}
         {...(prefillDate ? { defaultDate: prefillDate } : {})}
         {...(prefillAreas.length ? { defaultAreaIds: prefillAreas } : {})}
+        {...(prefillStatus ? { defaultStatus: prefillStatus } : {})}
       />
     </div>
   );
