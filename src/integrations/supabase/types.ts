@@ -85,6 +85,8 @@ export type Database = {
           all_day: boolean
           category_id: string
           created_at: string
+          deposit_amount: number | null
+          deposit_received: boolean
           end_date: string | null
           end_time: string | null
           external_id: string | null
@@ -107,6 +109,8 @@ export type Database = {
           all_day?: boolean
           category_id: string
           created_at?: string
+          deposit_amount?: number | null
+          deposit_received?: boolean
           end_date?: string | null
           end_time?: string | null
           external_id?: string | null
@@ -129,6 +133,8 @@ export type Database = {
           all_day?: boolean
           category_id?: string
           created_at?: string
+          deposit_amount?: number | null
+          deposit_received?: boolean
           end_date?: string | null
           end_time?: string | null
           external_id?: string | null
