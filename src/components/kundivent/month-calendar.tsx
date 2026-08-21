@@ -367,6 +367,7 @@ export function MonthCalendar({
                   segment={seg}
                   categoryById={categoryById}
                   areaNameById={areaNameById}
+                  dimmed={!!availability}
                   onOpenEvent={onOpenEvent}
                 />
               ))}
