@@ -8,7 +8,6 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const NAV = [
   { to: "/", label: "Übersicht", exact: true },
-  { to: "/freie-termine", label: "Freie Termine", exact: false },
   { to: "/eintraege", label: "Einträge", exact: false },
   { to: "/einstellungen", label: "Einstellungen", exact: false },
 ] as const;
