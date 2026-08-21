@@ -120,6 +120,7 @@ function Uebersicht() {
   const [selected, setSelected] = useState<EventWithRelations | null>(null);
   const [prefillDate, setPrefillDate] = useState<string | null>(null);
   const [prefillAreas, setPrefillAreas] = useState<string[]>([]);
+  const [prefillStatus, setPrefillStatus] = useState<"provisional" | undefined>(undefined);
   const [jumpMonth, setJumpMonth] = useState<{ index: number; nonce: number } | null>(null);
 
   const activeAreas = useMemo(() => (areas.data ?? []).filter((a) => a.active), [areas.data]);
