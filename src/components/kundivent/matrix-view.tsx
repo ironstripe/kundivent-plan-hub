@@ -418,7 +418,7 @@ function MatrixCell({
   onCreate: (date: string, areaId: string) => void;
 }) {
   const base = cn(
-    "relative border-b border-r border-border/70 px-0.5 py-px last:border-r-0",
+    "relative border-b border-r border-border/70 px-0.5 py-0.5 last:border-r-0",
     isWeekend && "bg-muted/40",
     isToday && "bg-primary/5",
   );
@@ -431,7 +431,7 @@ function MatrixCell({
         type="button"
         onClick={() => onCreate(date, areaId)}
         aria-label={`Eintrag am ${date} erstellen`}
-        className={cn(base, "min-h-[24px] w-full transition-colors hover:bg-accent/60")}
+        className={cn(base, "min-h-[28px] w-full transition-colors hover:bg-accent/60")}
       />
     );
   }
@@ -440,7 +440,7 @@ function MatrixCell({
   const overflow = events.length - visible.length;
 
   return (
-    <div className={cn(base, "min-h-[24px] space-y-px")}>
+    <div className={cn(base, "min-h-[28px] space-y-px")}>
       {visible.map((event) => (
         <EventBlock
           key={event.id}
@@ -519,7 +519,7 @@ function EventBlock({
       title={tooltipText(event, areaNames, category?.name)}
       style={AREA_STYLE[areaKey]}
       className={cn(
-        "flex w-full items-center gap-1 overflow-hidden rounded-[3px] px-1 py-[3px] text-left text-[11px] leading-tight",
+        "flex w-full items-center gap-1 overflow-hidden rounded-[3px] px-1 py-[4px] text-left text-[11px] leading-tight",
         eventBlockClasses(status, isHoliday),
         continuesFrom && "rounded-t-none border-t-0",
         continuesTo && "rounded-b-none border-b-0",
