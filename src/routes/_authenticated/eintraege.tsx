@@ -71,6 +71,7 @@ function Eintraege() {
   const [categoryId, setCategoryId] = useState<string>(ALL);
   const [status, setStatus] = useState<string>(ALL);
   const [responsible, setResponsible] = useState<string>(ALL);
+  const [creator, setCreator] = useState<string>(ALL);
   const [search, setSearch] = useState("");
 
   const areaName = useMemo(() => {
