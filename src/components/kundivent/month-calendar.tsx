@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { profileLabel, useProfiles } from "@/lib/users";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { EventStatusBadge } from "@/components/kundivent/event-status-badge";
@@ -447,6 +448,10 @@ function EventBar({
   const time = !event.all_day && event.start_time ? event.start_time.slice(0, 5) : null;
   const status = event.status as EventStatus;
   const areaKey = displayAreaKey(event.planning_area_ids, areaNameById);
+  const profiles = useProfiles();
+  const responsible = event.responsible_user_id
+    ? profileLabel((profiles.data ?? []).find((p) => p.id === event.responsible_user_id))
+    : null;
 
   return (
     <HoverCard openDelay={200} closeDelay={60}>
@@ -506,6 +511,9 @@ function EventBar({
           />
           {areaNames.join(", ") || "—"}
         </p>
+        {responsible ? (
+          <p className="mt-1 text-xs text-muted-foreground">Verantwortlich: {responsible}</p>
+        ) : null}
       </HoverCardContent>
     </HoverCard>
   );

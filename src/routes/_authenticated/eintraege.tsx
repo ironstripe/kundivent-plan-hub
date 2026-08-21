@@ -24,7 +24,7 @@ import { EventDrawer } from "@/components/kundivent/event-drawer";
 import { EventStatusBadge } from "@/components/kundivent/event-status-badge";
 import { TimelineEventRow } from "@/components/kundivent/timeline-event-row";
 import { useCategories, usePlanningAreas } from "@/lib/master-data";
-import { profileLabel, useProfiles } from "@/lib/users";
+import { profileLabel, useProfiles, type Profile } from "@/lib/users";
 import { cn } from "@/lib/utils";
 import {
   EVENT_STATUSES,
