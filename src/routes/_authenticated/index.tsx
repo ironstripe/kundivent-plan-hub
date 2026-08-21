@@ -37,11 +37,11 @@ const MODES: Mode[] = ["kalender", "verfuegbarkeit", "matrix"];
 
 export const Route = createFileRoute("/_authenticated/")({
   validateSearch: (search: Record<string, unknown>) => {
-    const mode = MODES.includes(search['mode'] as Mode) ? (search['mode'] as Mode) : "kalender";
+    const mode = MODES.includes(search['mode'] as Mode) ? (search['mode'] as Mode) : undefined;
     const y = Number(search['y']);
     const m = Number(search['m']);
     return {
-      mode,
+      ...(mode ? { mode } : {}),
       ...(Number.isInteger(y) && y > 1900 ? { y } : {}),
       ...(Number.isInteger(m) && m >= 0 && m <= 11 ? { m } : {}),
     };
