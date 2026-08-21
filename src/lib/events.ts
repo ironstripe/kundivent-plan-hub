@@ -161,6 +161,15 @@ export function useDeleteEvent() {
   });
 }
 
+export function formatCreatedAt(value: string | null | undefined, withTime = true) {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const date = `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`;
+  return withTime ? `${date}, ${pad(d.getHours())}:${pad(d.getMinutes())}` : date;
+}
+
 export function formatDateRange(start: string, end: string | null) {
   const fmt = (d: string) => {
     const [y, m, day] = d.split("-");
