@@ -4,6 +4,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { EventStatusBadge } from "@/components/kundivent/event-status-badge";
 import { publicHolidays } from "@/lib/holidays";
 import {
+  AVAILABILITY_LABEL,
+  isoWeekday,
+  type AvailabilityState,
+  type DayAvailability,
+} from "@/lib/availability";
+import {
   HOLIDAY_CATEGORY,
   formatDateRange,
   formatTimeRange,
