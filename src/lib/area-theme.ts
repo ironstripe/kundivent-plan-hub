@@ -92,7 +92,7 @@ export const AREA_SWATCH: Record<AreaKey, string> = {
 };
 
 const BASE =
-  "border border-l-[3px] transition-[background-color,border-color] focus-visible:outline-none";
+  "border border-l-[7px] font-medium transition-[background-color,border-color] focus-visible:outline-none";
 
 /**
  * Status modulates the planning-area colour — it is not a second colour system.
