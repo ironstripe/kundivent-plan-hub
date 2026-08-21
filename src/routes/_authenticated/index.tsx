@@ -535,6 +535,8 @@ function Uebersicht() {
           jumpMonth={jumpMonth}
           onOpenEvent={openEvent}
           onCreate={openNew}
+          onVisibleMonthChange={handleVisibleMonth}
+
         />
       ) : (
         <MonthCalendar
