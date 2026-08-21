@@ -66,6 +66,7 @@ export type EventInput = {
   deposit_received: boolean;
   deposit_amount: number | null;
   deposit_received_at: string | null;
+  responsible_user_id: string | null;
 };
 
 async function syncPlanningAreas(eventId: string, areaIds: string[]) {
@@ -112,6 +113,7 @@ function toRecord(input: EventInput) {
     deposit_received: input.deposit_received,
     deposit_amount: input.deposit_received ? input.deposit_amount : null,
     deposit_received_at: input.deposit_received ? input.deposit_received_at : null,
+    responsible_user_id: input.responsible_user_id,
   };
 }
 
