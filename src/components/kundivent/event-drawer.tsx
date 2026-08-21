@@ -58,6 +58,7 @@ type FormState = {
   notes: string;
   deposit_received: boolean;
   deposit_amount: string;
+  deposit_received_at: string;
 };
 
 const EMPTY: FormState = {
@@ -74,6 +75,7 @@ const EMPTY: FormState = {
   notes: "",
   deposit_received: false,
   deposit_amount: "",
+  deposit_received_at: "",
 };
 
 function fromEvent(event: EventWithRelations): FormState {
@@ -91,6 +93,7 @@ function fromEvent(event: EventWithRelations): FormState {
     notes: event.notes ?? "",
     deposit_received: event.deposit_received ?? false,
     deposit_amount: event.deposit_amount != null ? String(event.deposit_amount) : "",
+    deposit_received_at: event.deposit_received_at ?? "",
   };
 }
 
@@ -237,6 +240,7 @@ export function EventDrawer({
       notes: form.notes.trim() || null,
       deposit_received: form.deposit_received,
       deposit_amount: form.deposit_received ? depositAmount : null,
+      deposit_received_at: form.deposit_received ? form.deposit_received_at || null : null,
     };
   }
 
@@ -481,7 +485,11 @@ export function EventDrawer({
                       update(
                         checked === true
                           ? { deposit_received: true }
-                          : { deposit_received: false, deposit_amount: "" },
+                          : {
+                              deposit_received: false,
+                              deposit_amount: "",
+                              deposit_received_at: "",
+                            },
                       )
                     }
                   />
@@ -505,6 +513,19 @@ export function EventDrawer({
                     className="h-8 w-32 text-xs"
                   />
                   <FieldError message={errors['deposit_amount']} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="deposit_received_at" className="text-xs">
+                    Zahlungseingang
+                  </Label>
+                  <Input
+                    id="deposit_received_at"
+                    type="date"
+                    disabled={!form.deposit_received}
+                    value={form.deposit_received_at}
+                    onChange={(e) => update({ deposit_received_at: e.target.value })}
+                    className="h-8 w-40 text-xs"
+                  />
                 </div>
               </div>
 
