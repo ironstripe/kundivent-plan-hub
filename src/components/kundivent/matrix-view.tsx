@@ -164,13 +164,36 @@ export function MatrixView({
     return map;
   }, [events, areas, year]);
 
+  // Month the user asked to jump to; suppresses scroll feedback until reached.
+  const pendingJump = useRef<number | null>(null);
+
   useEffect(() => {
     if (!jumpMonth) return;
-    monthRefs.current[jumpMonth.index]?.scrollIntoView({ behavior: "smooth", block: "start" });
+    pendingJump.current = jumpMonth.index;
+    let frame = 0;
+    let tries = 0;
+    const attempt = () => {
+      const node = monthRefs.current[jumpMonth.index];
+      if (node) {
+        node.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+      // rows for a newly selected year may not be mounted yet
+      if (tries++ < 30) frame = requestAnimationFrame(attempt);
+    };
+    attempt();
+    const clear = setTimeout(() => {
+      pendingJump.current = null;
+    }, 1500);
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      clearTimeout(clear);
+    };
   }, [jumpMonth]);
 
   useEffect(() => {
-    // reset scroll to top on year change
+    // reset scroll to top on year change, unless a jump is in flight
+    if (pendingJump.current !== null) return;
     scrollRef.current?.scrollTo({ top: 0 });
   }, [year]);
 
@@ -189,6 +212,10 @@ export function MatrixView({
         if (!node) continue;
         if (node.getBoundingClientRect().top - top <= 8) visible = m;
       }
+      if (pendingJump.current !== null) {
+        if (visible !== pendingJump.current) return;
+        pendingJump.current = null;
+      }
       if (visible !== last) {
         last = visible;
         onVisibleMonthChange(visible);
@@ -203,6 +230,7 @@ export function MatrixView({
       if (frame) cancelAnimationFrame(frame);
     };
   }, [onVisibleMonthChange, areas.length, year]);
+
 
 
   const gridTemplate = `132px repeat(${areas.length}, minmax(148px, 1fr))`;
