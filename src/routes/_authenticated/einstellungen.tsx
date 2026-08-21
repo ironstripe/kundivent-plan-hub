@@ -61,6 +61,9 @@ function Section({
 function Einstellungen() {
   const areas = usePlanningAreas();
   const categories = useCategories();
+  const profile = useMyProfile();
+  const isAdmin = profile.data?.is_admin ?? false;
+
 
   return (
     <div className="space-y-4">
