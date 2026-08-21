@@ -160,17 +160,30 @@ export function UserAdmin() {
         toast.success("Benutzer gespeichert.");
       } else {
         await createUser.mutateAsync({
-          email: form.email,
+          email: form.email.trim(),
           password: form.password,
-          display_name: form.display_name,
+          display_name: form.display_name.trim(),
           active: form.active,
           is_admin: form.is_admin,
         });
+        const list = await users.refetch();
+        const created = list.data?.some(
+          (u) => u.email.toLowerCase() === form.email.trim().toLowerCase(),
+        );
+        if (!created) {
+          setFormError(
+            "Der Benutzer konnte nicht bestätigt werden. Bitte Liste prüfen und erneut versuchen.",
+          );
+          toast.error("Benutzer erscheint nicht in der Liste.");
+          return;
+        }
         toast.success("Benutzer erstellt. Zugangsdaten separat weitergeben.");
       }
       setOpen(false);
     } catch (error) {
-      setFormError(errorMessage(error));
+      const message = errorMessage(error);
+      setFormError(message);
+      toast.error(message);
     }
   }
 
