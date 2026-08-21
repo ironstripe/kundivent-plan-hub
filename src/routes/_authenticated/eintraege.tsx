@@ -454,6 +454,14 @@ function Eintraege() {
                         </span>
                       ) : null}
                     </TableCell>
+                    <TableCell className="py-1.5 text-xs text-muted-foreground tabular-nums">
+                      {formatCreatedAt(event.created_at, false)}
+                      <span className="block text-[10px] tabular-nums-none">
+                        {event.created_by
+                          ? profileLabel(profileById.get(event.created_by)) || "Unbekannt"
+                          : "Import"}
+                      </span>
+                    </TableCell>
                   </TableRow>
                 );
               })}
