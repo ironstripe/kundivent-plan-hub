@@ -4,6 +4,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import {
   createUser,
   deleteUser,
+  listDirectory,
   listUsers,
   resetUserPassword,
   setUserActive,
@@ -11,6 +12,8 @@ import {
 } from "./users.functions";
 
 export type Profile = Tables<"profiles">;
+/** Safe subset of a profile that any authenticated user may see. */
+export type DirectoryProfile = Pick<Profile, "id" | "display_name" | "active">;
 
 export const myProfileQuery = queryOptions({
   queryKey: ["my-profile"],

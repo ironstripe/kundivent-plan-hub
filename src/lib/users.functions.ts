@@ -56,6 +56,19 @@ async function guardLastAdmin(db: any, targetId: string, stillActiveAdmin: boole
   }
 }
 
+/** Minimal, non-sensitive directory of all users (name pickers, creator labels). */
+export const listDirectory = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async (): Promise<{ id: string; display_name: string; active: boolean }[]> => {
+    const db = await admin();
+    const { data, error } = await db
+      .from("profiles")
+      .select("id, display_name, active")
+      .order("display_name", { ascending: true });
+    if (error) throw new Error("Benutzerliste konnte nicht geladen werden.");
+    return data ?? [];
+  });
+
 export const listUsers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<ManagedUser[]> => {
