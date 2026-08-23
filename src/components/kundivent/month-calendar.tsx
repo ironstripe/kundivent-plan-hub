@@ -535,7 +535,7 @@ function EventPreview({
 }: {
   event: EventWithRelations;
   status: EventStatus;
-  category?: { name: string; color: string };
+  category: { name: string; color: string } | undefined;
   areaKey: string;
   areaNameById: Map<string, string>;
 }) {
