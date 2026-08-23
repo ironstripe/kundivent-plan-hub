@@ -1,7 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { profileLabel, useProfiles } from "@/lib/users";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 import { EventStatusBadge } from "@/components/kundivent/event-status-badge";
 import { publicHolidays } from "@/lib/holidays";
 import {
