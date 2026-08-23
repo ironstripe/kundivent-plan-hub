@@ -1,7 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { profileLabel, useProfiles } from "@/lib/users";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 import { EventStatusBadge } from "@/components/kundivent/event-status-badge";
 import { publicHolidays } from "@/lib/holidays";
 import {
@@ -445,86 +447,144 @@ function EventBar({
   const { event, col, span, lane, continuesFrom, continuesTo } = segment;
   const category = categoryById.get(event.category_id);
   const isHoliday = category?.name === HOLIDAY_CATEGORY;
-  const areaNames = event.planning_area_ids.map((id) => areaNameById.get(id) ?? "").filter(Boolean);
   const time = !event.all_day && event.start_time ? event.start_time.slice(0, 5) : null;
   const status = event.status as EventStatus;
   const areaKey = displayAreaKey(event.planning_area_ids, areaNameById);
+  const isMobile = useIsMobile();
+  const [previewOpen, setPreviewOpen] = useState(false);
+
+  const bar = (
+    <button
+      type="button"
+      onClick={() => (isMobile ? setPreviewOpen(true) : onOpenEvent(event))}
+      className={cn(
+        "pointer-events-auto absolute flex items-center gap-1 overflow-hidden rounded-[3px] px-1.5 text-left text-[11px] leading-none",
+        eventBlockClasses(status, isHoliday),
+        continuesFrom && "rounded-l-none border-l-0",
+        continuesTo && "rounded-r-none border-r-0",
+        dimmed && "opacity-50 hover:opacity-100",
+      )}
+      style={{
+        ...AREA_STYLE[areaKey],
+        left: `calc(${(col / 7) * 100}% + 2px)`,
+        width: `calc(${(span / 7) * 100}% - 4px)`,
+        top: lane * LANE_HEIGHT,
+        height: LANE_HEIGHT - 2,
+      }}
+    >
+      <span aria-hidden className="shrink-0 text-[7px] opacity-70">
+        {statusMark(status, isHoliday)}
+      </span>
+      {continuesFrom ? <span className="text-[9px] opacity-60">↳</span> : null}
+      {time && !continuesFrom ? (
+        <span className="shrink-0 tabular-nums opacity-70">{time}</span>
+      ) : null}
+      <span className="truncate">{event.title}</span>
+    </button>
+  );
+
+  if (isMobile) {
+    return (
+      <Popover open={previewOpen} onOpenChange={setPreviewOpen}>
+        <PopoverTrigger asChild>{bar}</PopoverTrigger>
+        <PopoverContent align="start" className="w-72 p-3">
+          <EventPreview
+            event={event}
+            status={status}
+            category={category}
+            areaKey={areaKey}
+            areaNameById={areaNameById}
+          />
+          <Button
+            size="sm"
+            className="mt-3 h-8 w-full text-xs"
+            onClick={() => {
+              setPreviewOpen(false);
+              onOpenEvent(event);
+            }}
+          >
+            Details öffnen
+          </Button>
+        </PopoverContent>
+      </Popover>
+    );
+  }
+
+  return (
+    <HoverCard openDelay={200} closeDelay={60}>
+      <HoverCardTrigger asChild>{bar}</HoverCardTrigger>
+      <HoverCardContent align="start" className="w-72 p-3">
+        <EventPreview
+          event={event}
+          status={status}
+          category={category}
+          areaKey={areaKey}
+          areaNameById={areaNameById}
+        />
+      </HoverCardContent>
+    </HoverCard>
+  );
+}
+
+function EventPreview({
+  event,
+  status,
+  category,
+  areaKey,
+  areaNameById,
+}: {
+  event: EventWithRelations;
+  status: EventStatus;
+  category: { name: string; color: string } | undefined;
+  areaKey: string;
+  areaNameById: Map<string, string>;
+}) {
+  const areaNames = event.planning_area_ids.map((id) => areaNameById.get(id) ?? "").filter(Boolean);
   const profiles = useProfiles();
   const responsible = event.responsible_user_id
     ? profileLabel((profiles.data ?? []).find((p) => p.id === event.responsible_user_id))
     : null;
 
   return (
-    <HoverCard openDelay={200} closeDelay={60}>
-      <HoverCardTrigger asChild>
-        <button
-          type="button"
-          onClick={() => onOpenEvent(event)}
-          className={cn(
-            "pointer-events-auto absolute flex items-center gap-1 overflow-hidden rounded-[3px] px-1.5 text-left text-[11px] leading-none",
-            eventBlockClasses(status, isHoliday),
-            continuesFrom && "rounded-l-none border-l-0",
-            continuesTo && "rounded-r-none border-r-0",
-            dimmed && "opacity-50 hover:opacity-100",
-          )}
-          style={{
-            ...AREA_STYLE[areaKey],
-            left: `calc(${(col / 7) * 100}% + 2px)`,
-            width: `calc(${(span / 7) * 100}% - 4px)`,
-            top: lane * LANE_HEIGHT,
-            height: LANE_HEIGHT - 2,
-          }}
-        >
-          <span aria-hidden className="shrink-0 text-[7px] opacity-70">
-            {statusMark(status, isHoliday)}
+    <div>
+      <p className="text-sm font-semibold leading-snug">{event.title}</p>
+      <p className="mt-0.5 text-xs tabular-nums text-muted-foreground">
+        {formatDateRange(event.start_date, event.end_date)} ·{" "}
+        {formatTimeRange(event.all_day, event.start_time, event.end_time)}
+      </p>
+      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+        <EventStatusBadge status={status} />
+        {category ? (
+          <span className="rounded-sm border border-border bg-muted px-1.5 py-0.5 text-[11px] leading-none text-muted-foreground">
+            {category.name}
           </span>
-          {continuesFrom ? <span className="text-[9px] opacity-60">↳</span> : null}
-          {time && !continuesFrom ? (
-            <span className="shrink-0 tabular-nums opacity-70">{time}</span>
-          ) : null}
-          <span className="truncate">{event.title}</span>
-        </button>
-      </HoverCardTrigger>
-      <HoverCardContent align="start" className="hidden w-72 p-3 md:block">
-        <p className="text-sm font-semibold leading-snug">{event.title}</p>
-        <p className="mt-0.5 text-xs tabular-nums text-muted-foreground">
-          {formatDateRange(event.start_date, event.end_date)} ·{" "}
-          {formatTimeRange(event.all_day, event.start_time, event.end_time)}
-        </p>
-        <div className="mt-2 flex flex-wrap items-center gap-1.5">
-          <EventStatusBadge status={status} />
-          {category ? (
-            <span className="rounded-sm border border-border bg-muted px-1.5 py-0.5 text-[11px] leading-none text-muted-foreground">
-              {category.name}
-            </span>
-          ) : null}
-          {event.pax ? (
-            <span className="rounded-sm border border-border bg-muted px-1.5 py-0.5 text-[11px] leading-none tabular-nums text-muted-foreground">
-              {event.pax} Pers.
-            </span>
-          ) : null}
-        </div>
-        <p className="mt-2 flex items-start gap-1.5 text-xs text-muted-foreground">
-          <span
-            aria-hidden
-            className="mt-[3px] size-2 shrink-0 rounded-[2px]"
-            style={{ backgroundColor: `var(--area-${areaKey})` }}
-          />
-          {areaNames.join(", ") || "—"}
-        </p>
-        {responsible ? (
-          <p className="mt-1 text-xs text-muted-foreground">Verantwortlich: {responsible}</p>
         ) : null}
-        <p className="mt-1 text-[11px] text-muted-foreground">
-          Erstellt von{" "}
-          {event.created_by
-            ? profileLabel((profiles.data ?? []).find((p) => p.id === event.created_by)) ||
-              "Unbekannt"
-            : "Import"}{" "}
-          am {formatCreatedAt(event.created_at)}
-        </p>
-      </HoverCardContent>
-    </HoverCard>
+        {event.pax ? (
+          <span className="rounded-sm border border-border bg-muted px-1.5 py-0.5 text-[11px] leading-none tabular-nums text-muted-foreground">
+            {event.pax} Pers.
+          </span>
+        ) : null}
+      </div>
+      <p className="mt-2 flex items-start gap-1.5 text-xs text-muted-foreground">
+        <span
+          aria-hidden
+          className="mt-[3px] size-2 shrink-0 rounded-[2px]"
+          style={{ backgroundColor: `var(--area-${areaKey})` }}
+        />
+        {areaNames.join(", ") || "—"}
+      </p>
+      {responsible ? (
+        <p className="mt-1 text-xs text-muted-foreground">Verantwortlich: {responsible}</p>
+      ) : null}
+      <p className="mt-1 text-[11px] text-muted-foreground">
+        Erstellt von{" "}
+        {event.created_by
+          ? profileLabel((profiles.data ?? []).find((p) => p.id === event.created_by)) ||
+            "Unbekannt"
+          : "Import"}{" "}
+        am {formatCreatedAt(event.created_at)}
+      </p>
+    </div>
   );
 }
 
