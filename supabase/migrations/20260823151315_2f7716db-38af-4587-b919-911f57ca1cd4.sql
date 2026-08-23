@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.is_active_admin(uuid) TO authenticated;

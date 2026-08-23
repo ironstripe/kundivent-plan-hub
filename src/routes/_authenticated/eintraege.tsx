@@ -24,7 +24,7 @@ import { EventDrawer } from "@/components/kundivent/event-drawer";
 import { EventStatusBadge } from "@/components/kundivent/event-status-badge";
 import { TimelineEventRow } from "@/components/kundivent/timeline-event-row";
 import { useCategories, usePlanningAreas } from "@/lib/master-data";
-import { profileLabel, useProfiles, type Profile } from "@/lib/users";
+import { profileLabel, useProfiles, type DirectoryProfile } from "@/lib/users";
 import { cn } from "@/lib/utils";
 import {
   EVENT_STATUSES,
@@ -88,7 +88,7 @@ function Eintraege() {
   }, [categories.data]);
 
   const profileById = useMemo(() => {
-    const map = new Map<string, Profile>();
+    const map = new Map<string, DirectoryProfile>();
     for (const p of profiles.data ?? []) map.set(p.id, p);
     return map;
   }, [profiles.data]);

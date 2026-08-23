@@ -4,6 +4,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import {
   createUser,
   deleteUser,
+  listDirectory,
   listUsers,
   resetUserPassword,
   setUserActive,
@@ -11,6 +12,8 @@ import {
 } from "./users.functions";
 
 export type Profile = Tables<"profiles">;
+/** Safe subset of a profile that any authenticated user may see. */
+export type DirectoryProfile = Pick<Profile, "id" | "display_name" | "active">;
 
 export const myProfileQuery = queryOptions({
   queryKey: ["my-profile"],
@@ -31,17 +34,11 @@ export function useMyProfile() {
   return useQuery(myProfileQuery);
 }
 
-/** All profiles (incl. inactive) — used to render/select "Verantwortlich". */
+/** All profiles (incl. inactive) — used to render/select "Verantwortlich".
+ *  Served by a protected server function that only exposes safe fields. */
 export const profilesQuery = queryOptions({
   queryKey: ["profiles"],
-  queryFn: async (): Promise<Profile[]> => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .order("display_name", { ascending: true });
-    if (error) throw error;
-    return data ?? [];
-  },
+  queryFn: (): Promise<DirectoryProfile[]> => listDirectory(),
   staleTime: 5 * 60 * 1000,
 });
 
@@ -49,7 +46,7 @@ export function useProfiles() {
   return useQuery(profilesQuery);
 }
 
-export function profileLabel(profile: Profile | undefined) {
+export function profileLabel(profile: DirectoryProfile | undefined) {
   if (!profile) return null;
   const name = profile.display_name.trim() || "Unbenannt";
   return profile.active ? name : `${name} · Inaktiv`;
