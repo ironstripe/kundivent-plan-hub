@@ -393,7 +393,8 @@ function Uebersicht() {
         >
           {(
             [
-              ["kalender", "Kalender"],
+              ["kalender", "Monat"],
+              ["jahr", "Jahr"],
               ["verfuegbarkeit", "Verfügbarkeit"],
               ["matrix", "Matrix"],
             ] as const
