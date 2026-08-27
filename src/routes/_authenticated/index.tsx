@@ -31,9 +31,9 @@ import {
 import { areaKeyFromName } from "@/lib/area-theme";
 import { cn } from "@/lib/utils";
 
-type Mode = "kalender" | "verfuegbarkeit" | "matrix";
+type Mode = "kalender" | "jahr" | "verfuegbarkeit" | "matrix";
 
-const MODES: Mode[] = ["kalender", "verfuegbarkeit", "matrix"];
+const MODES: Mode[] = ["kalender", "jahr", "verfuegbarkeit", "matrix"];
 
 export const Route = createFileRoute("/_authenticated/")({
   validateSearch: (search: Record<string, unknown>) => {
