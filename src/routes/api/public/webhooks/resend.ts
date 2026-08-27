@@ -306,24 +306,18 @@ export const Route = createFileRoute("/api/public/webhooks/resend")({
         }
 
         // Attachments are best effort: a failure must never discard the mail.
-        let attachmentError: string | null = null;
-        for (const attachment of full.attachments ?? []) {
-          try {
-            await storeAttachment(supabaseAdmin, event.id, inserted.id, attachment);
-          } catch (error) {
-            attachmentError = error instanceof Error ? error.message : "unknown error";
-            console.error(
-              `[resend-webhook] attachment failed for email ${resendEmailId}:`,
-              attachmentError,
-            );
-          }
-        }
+        const result = await storeAttachments(supabaseAdmin, {
+          eventId: event.id,
+          emailRowId: inserted.id,
+          resendEmailId,
+          attachments: full.attachments,
+        });
 
         await logDelivery(supabaseAdmin, {
           ...base,
           outcome: "stored",
           event_id: event.id,
-          detail: attachmentError ? `Anhang-Fehler: ${attachmentError}` : null,
+          detail: result.detail,
         });
 
         return ok("stored");
@@ -332,79 +326,3 @@ export const Route = createFileRoute("/api/public/webhooks/resend")({
   },
 });
 
-
-/** Falls back to the Resend API when the webhook payload carries no body/attachments. */
-async function fetchFullEmail(emailId: string, data: InboundEmail): Promise<InboundEmail> {
-  const hasBody = Boolean(data.text || data.html);
-  const hasAttachments = Array.isArray(data.attachments);
-  if (hasBody && hasAttachments) return data;
-
-  const apiKey = process.env["RESEND_API_KEY"];
-  if (!apiKey) return data;
-
-  for (const url of [
-    `https://api.resend.com/emails/inbound/${emailId}`,
-    `https://api.resend.com/emails/${emailId}`,
-  ]) {
-    try {
-      const response = await fetch(url, { headers: { Authorization: `Bearer ${apiKey}` } });
-      if (!response.ok) continue;
-      const body = (await response.json()) as InboundEmail;
-      return { ...data, ...body };
-    } catch (error) {
-      console.error(
-        `[resend-webhook] retrieval failed for ${emailId}:`,
-        error instanceof Error ? error.message : "unknown error",
-      );
-    }
-  }
-  return data;
-}
-
-type AdminClient = Awaited<
-  typeof import("@/integrations/supabase/client.server")
->["supabaseAdmin"];
-
-async function storeAttachment(
-  supabaseAdmin: AdminClient,
-  eventId: string,
-  emailId: string,
-  attachment: ResendAttachment,
-) {
-  const fileName = attachment.filename ?? attachment.name ?? "anhang";
-  const mimeType = attachment.content_type ?? attachment.contentType ?? "application/octet-stream";
-
-  let bytes: Uint8Array | null = null;
-  if (attachment.content) {
-    bytes = base64ToBytes(attachment.content);
-  } else {
-    const url = attachment.content_url ?? attachment.url;
-    if (!url) throw new Error(`attachment ${fileName} has no content`);
-    const apiKey = process.env["RESEND_API_KEY"];
-    const response = await fetch(url, {
-      headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {},
-    });
-    if (!response.ok) throw new Error(`download failed with status ${response.status}`);
-    bytes = new Uint8Array(await response.arrayBuffer());
-  }
-
-  const path = `${eventId}/${crypto.randomUUID()}-${safeName(fileName)}`;
-  const { error: uploadError } = await supabaseAdmin.storage
-    .from("event-attachments")
-    .upload(path, bytes as unknown as ArrayBuffer, { contentType: mimeType, upsert: false });
-  if (uploadError) throw uploadError;
-
-  const { error } = await supabaseAdmin.from("event_attachments").insert({
-    event_id: eventId,
-    event_email_id: emailId,
-    source: "email",
-    file_name: fileName,
-    storage_path: path,
-    mime_type: mimeType,
-    file_size: attachment.size ?? bytes.byteLength,
-  });
-  if (error) {
-    await supabaseAdmin.storage.from("event-attachments").remove([path]);
-    throw error;
-  }
-}
