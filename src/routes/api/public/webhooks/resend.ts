@@ -1,5 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { inboundTokenFromText, parseInboundToken } from "@/lib/event-email";
+import {
+  fetchFullEmail,
+  storeAttachments,
+  type InboundEmailPayload,
+} from "@/lib/inbound-attachments.server";
 
 
 /**
