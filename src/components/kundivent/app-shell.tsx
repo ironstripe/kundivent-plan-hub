@@ -5,6 +5,7 @@ import { LogOut, Menu } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { usePendingEvents } from "@/lib/offline-sync";
 
 const NAV = [
   { to: "/", label: "Übersicht", exact: true },
@@ -17,8 +18,18 @@ export function AppShell({ email, children }: { email?: string | null; children:
   const navigate = useNavigate();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const pending = usePendingEvents();
 
   async function signOut() {
+    // Pending offline entries live per user — warn before leaving them behind.
+    if (
+      pending.length &&
+      !window.confirm(
+        `${pending.length} Offline-${pending.length === 1 ? "Eintrag ist" : "Einträge sind"} noch nicht synchronisiert. Beim Abmelden bleiben sie auf diesem Gerät gespeichert und werden erst nach erneuter Anmeldung übertragen. Trotzdem abmelden?`,
+      )
+    ) {
+      return;
+    }
     await queryClient.cancelQueries();
     queryClient.clear();
     await supabase.auth.signOut();
