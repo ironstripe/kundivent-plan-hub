@@ -28,8 +28,8 @@ export function AppShell({ email, children }: { email?: string | null; children:
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-30 border-b border-border bg-card/95 backdrop-blur">
-        <div className="mx-auto flex h-12 max-w-[1600px] items-center gap-4 px-3 sm:px-5">
+      <header className="sticky top-0 z-30 border-b border-border bg-card/95 pt-[env(safe-area-inset-top)] backdrop-blur">
+        <div className="mx-auto flex h-12 max-w-[1600px] items-center gap-4 px-[max(0.75rem,env(safe-area-inset-left))] pr-[max(0.75rem,env(safe-area-inset-right))] sm:px-5">
           <Link to="/" className="flex items-center gap-2">
             <span className="grid size-6 place-items-center rounded-sm bg-primary text-[11px] font-semibold text-primary-foreground">
               K
@@ -86,7 +86,9 @@ export function AppShell({ email, children }: { email?: string | null; children:
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1600px] px-3 py-5 sm:px-5">{children}</main>
+      <main className="mx-auto max-w-[1600px] px-3 py-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-5">
+        {children}
+      </main>
     </div>
   );
 }
