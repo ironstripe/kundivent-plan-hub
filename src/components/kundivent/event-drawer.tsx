@@ -369,6 +369,13 @@ export function EventDrawer({
   async function onDelete() {
     if (!event) return;
     try {
+      if (isLocal) {
+        await removePending(event.id);
+        setConfirmDelete(false);
+        toast.success("Offline-Eintrag verworfen");
+        onOpenChange(false);
+        return;
+      }
       await remove.mutateAsync(event.id);
       setConfirmDelete(false);
       toast.success("Eintrag gelöscht");
