@@ -686,8 +686,9 @@ export function EventDrawer({
                 />
               </div>
 
-              <AttachmentSection
-                eventId={event?.id ?? null}
+              <CommunicationSection
+                eventId={isLocal ? null : (event?.id ?? null)}
+                inboundToken={isLocal ? null : (event?.inbound_email_token ?? null)}
                 pendingFiles={pendingFiles}
                 onPendingFilesChange={setPendingFiles}
               />
