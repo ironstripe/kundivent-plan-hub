@@ -103,3 +103,65 @@ export function useDeletePlanningArea() {
     },
   });
 }
+
+export type CategoryInput = {
+  name: string;
+  color: string;
+  sort_order: number;
+  active: boolean;
+};
+
+export function useSaveCategory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, input }: { id?: string; input: CategoryInput }) => {
+      assertOnline();
+      if (id) {
+        const { error } = await supabase.from("categories").update(input).eq("id", id);
+        if (error) throw error;
+        return id;
+      }
+      const { data, error } = await supabase
+        .from("categories")
+        .insert(input)
+        .select("id")
+        .single();
+      if (error) throw error;
+      return data.id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      queryClient.invalidateQueries({ queryKey: ["events"] });
+    },
+  });
+}
+
+/** Number of events currently linked to a category. */
+export async function countCategoryUsage(id: string) {
+  const { count, error } = await supabase
+    .from("events")
+    .select("id", { count: "exact", head: true })
+    .eq("category_id", id);
+  if (error) throw error;
+  return count ?? 0;
+}
+
+export function useDeleteCategory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      assertOnline();
+      const usage = await countCategoryUsage(id);
+      if (usage > 0) {
+        throw new Error(
+          `Diese Kategorie wird in ${usage} ${usage === 1 ? "Eintrag" : "Einträgen"} verwendet und kann nicht gelöscht werden. Sie kann stattdessen deaktiviert werden.`,
+        );
+      }
+      const { error } = await supabase.from("categories").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+    },
+  });
+}
