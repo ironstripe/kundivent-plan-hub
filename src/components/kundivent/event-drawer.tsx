@@ -144,9 +144,12 @@ export function EventDrawer({
     [categories.data],
   );
 
+  const queryClient = useQueryClient();
+
   useEffect(() => {
     if (!open) return;
     setErrors({});
+    setPendingFiles([]);
     setForm(
       event
         ? fromEvent(event)
