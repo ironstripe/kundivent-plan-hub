@@ -1,9 +1,15 @@
 // Reusable availability domain logic.
 // Availability is derived from events — never stored in the database.
 
+import { useMemo } from "react";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { HOLIDAY_CATEGORY, type EventRow, type EventWithRelations } from "@/lib/events";
+import {
+  HOLIDAY_CATEGORY,
+  usePendingEventRows,
+  type EventRow,
+  type EventWithRelations,
+} from "@/lib/events";
 import type { Category } from "@/lib/master-data";
 
 export type AvailabilityState = "free" | "provisional" | "occupied" | "closed";
