@@ -714,15 +714,17 @@ export function EventDrawer({
                   size="sm"
                   className="h-8 gap-1.5 px-2 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
                   onClick={() => setConfirmDelete(true)}
-                  disabled={!online}
+                  disabled={!online && !isLocal}
                 >
                   <Trash2 className="size-3.5" />
-                  Löschen
+                  {isLocal ? "Verwerfen" : "Löschen"}
                 </Button>
               ) : null}
               <div className="ml-auto flex items-center gap-2">
-                {!online ? (
-                  <span className="text-[11px] text-destructive">Offline – kein Speichern</span>
+                {readOnly ? (
+                  <span className="text-[11px] text-destructive">
+                    Offline – nur Ansicht
+                  </span>
                 ) : null}
                 <Button
                   type="button"
@@ -731,16 +733,22 @@ export function EventDrawer({
                   className="h-8 text-xs"
                   onClick={() => onOpenChange(false)}
                 >
-                  Abbrechen
+                  {readOnly ? "Schliessen" : "Abbrechen"}
                 </Button>
-                <Button
-                  type="submit"
-                  size="sm"
-                  className="h-8 text-xs"
-                  disabled={save.isPending || !online}
-                >
-                  {save.isPending ? "Speichern…" : "Speichern"}
-                </Button>
+                {!readOnly ? (
+                  <Button
+                    type="submit"
+                    size="sm"
+                    className="h-8 text-xs"
+                    disabled={save.isPending}
+                  >
+                    {save.isPending
+                      ? "Speichern…"
+                      : !online
+                        ? "Offline speichern"
+                        : "Speichern"}
+                  </Button>
+                ) : null}
               </div>
             </div>
 
