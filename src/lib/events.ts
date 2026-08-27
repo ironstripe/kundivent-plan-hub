@@ -198,7 +198,7 @@ export function useSaveEvent() {
           .select("id")
           .single());
       }
-      if (error) throw error;
+      if (error || !data) throw error ?? new Error("Eintrag konnte nicht erstellt werden.");
       await syncPlanningAreas(data.id, input.planning_area_ids);
       return data.id;
     },
