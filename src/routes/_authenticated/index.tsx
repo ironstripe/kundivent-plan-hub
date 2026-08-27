@@ -125,6 +125,7 @@ function Uebersicht() {
   const [jumpMonth, setJumpMonth] = useState<{ index: number; nonce: number } | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerYear, setPickerYear] = useState<number | null>(null);
+  const [areaPopoverOpen, setAreaPopoverOpen] = useState(false);
 
   const activeAreas = useMemo(() => (areas.data ?? []).filter((a) => a.active), [areas.data]);
   const activeCategories = useMemo(
@@ -464,7 +465,7 @@ function Uebersicht() {
 
 
         <div className="ml-auto flex items-center gap-2">
-          <Popover>
+          <Popover open={areaPopoverOpen} onOpenChange={setAreaPopoverOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
@@ -514,6 +515,16 @@ function Uebersicht() {
                     </label>
                   );
                 })}
+              </div>
+              <div className="mt-2 flex items-center justify-end border-t border-border pt-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  className="h-7 px-3 text-xs"
+                  onClick={() => setAreaPopoverOpen(false)}
+                >
+                  Fertig
+                </Button>
               </div>
             </PopoverContent>
           </Popover>
