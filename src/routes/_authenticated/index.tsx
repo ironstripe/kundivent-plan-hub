@@ -224,6 +224,10 @@ function Uebersicht() {
     patchSearch({ y: year, m: month });
   }
 
+  function shiftYear(delta: number) {
+    patchSearch({ y: cursor.year + delta });
+  }
+
   function goToday() {
     if (mode === "matrix") setJumpMonth({ index: currentMonth, nonce: Date.now() });
     patchSearch({ y: currentYear, m: currentMonth });
