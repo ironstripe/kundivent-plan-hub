@@ -268,8 +268,24 @@ export function EventDrawer({
     const input = validate();
     if (!input) return;
     try {
-      await save.mutateAsync(event ? { id: event.id, input } : { input });
+      const savedId = await save.mutateAsync(event ? { id: event.id, input } : { input });
       toast.success(event ? "Eintrag aktualisiert" : "Eintrag erstellt");
+
+      // Attachments picked before the event existed are uploaded now.
+      if (!event && pendingFiles.length && savedId) {
+        try {
+          for (const file of pendingFiles) await uploadAttachment(savedId, file);
+          await queryClient.invalidateQueries({ queryKey: ["event_attachments", savedId] });
+          toast.success(
+            pendingFiles.length === 1 ? "Datei hochgeladen" : "Dateien hochgeladen",
+          );
+        } catch (err) {
+          toast.error("Anhänge konnten nicht hochgeladen werden", {
+            description: err instanceof Error ? err.message : undefined,
+          });
+        }
+      }
+      setPendingFiles([]);
       onOpenChange(false);
     } catch (err) {
       toast.error("Speichern fehlgeschlagen", {
