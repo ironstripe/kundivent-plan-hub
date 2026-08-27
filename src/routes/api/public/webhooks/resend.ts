@@ -180,6 +180,13 @@ export const Route = createFileRoute("/api/public/webhooks/resend")({
           return new Response("Invalid signature", { status: 401 });
         }
 
+        let payload: { type?: string; data?: InboundEmail };
+        try {
+          payload = JSON.parse(rawBody) as { type?: string; data?: InboundEmail };
+        } catch {
+          console.warn("[resend-webhook] unparseable payload");
+          return ok("ignored");
+        }
 
         if (payload.type !== "email.received") {
           await logDelivery(supabaseAdmin, {
