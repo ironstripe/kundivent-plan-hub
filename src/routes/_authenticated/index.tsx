@@ -285,8 +285,8 @@ function Uebersicht() {
             variant="ghost"
             size="icon"
             className="size-8"
-            aria-label="Vorheriger Monat"
-            onClick={() => shiftMonth(-1)}
+            aria-label={mode === "jahr" ? "Vorheriges Jahr" : "Vorheriger Monat"}
+            onClick={() => (mode === "jahr" ? shiftYear(-1) : shiftMonth(-1))}
           >
             <ChevronLeft className="size-4" />
           </Button>
@@ -304,7 +304,7 @@ function Uebersicht() {
                 aria-label="Monat und Jahr wählen"
               >
                 <h1 className="text-sm font-semibold">
-                  {MONTHS[cursor.month]} {cursor.year}
+                  {mode === "jahr" ? cursor.year : `${MONTHS[cursor.month]} ${cursor.year}`}
                 </h1>
                 <ChevronDown className="size-3.5 opacity-60" />
               </Button>
