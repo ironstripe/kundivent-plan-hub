@@ -71,29 +71,9 @@ async function verifySignature(
 
 type ResendAddress = string | { address?: string; email?: string; name?: string };
 
-type ResendAttachment = {
-  filename?: string;
-  name?: string;
-  content_type?: string;
-  contentType?: string;
-  content?: string;
-  content_url?: string;
-  url?: string;
-  size?: number;
-};
-
-type InboundEmail = {
-  email_id?: string;
-  id?: string;
-  message_id?: string;
+type InboundEmail = InboundEmailPayload & {
   from?: ResendAddress;
   to?: ResendAddress[] | ResendAddress;
-  subject?: string;
-  text?: string;
-  html?: string;
-  created_at?: string;
-  received_at?: string;
-  attachments?: ResendAttachment[];
 };
 
 function addressOf(value: ResendAddress | undefined): { address: string; name: string | null } {
@@ -112,9 +92,6 @@ function recipientList(value: InboundEmail["to"]): ResendAddress[] {
   return Array.isArray(value) ? value : [value];
 }
 
-function safeName(name: string) {
-  return name.replace(/[^\w.\-]+/g, "_").slice(-120);
-}
 
 const ok = (message: string) => new Response(JSON.stringify({ ok: true, message }), {
   status: 200,
