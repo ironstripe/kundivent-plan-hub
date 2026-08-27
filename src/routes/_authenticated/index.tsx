@@ -518,6 +518,7 @@ function Uebersicht() {
           </Popover>
 
 
+          {mode === "jahr" ? null : (
           <Popover>
             <PopoverTrigger asChild>
               <Button
