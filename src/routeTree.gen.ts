@@ -16,6 +16,7 @@ import { Route as AuthenticatedEinstellungenRouteImport } from './routes/_authen
 import { Route as AuthenticatedEintraegeRouteImport } from './routes/_authenticated/eintraege'
 import { Route as AuthenticatedFreieTermineRouteImport } from './routes/_authenticated/freie-termine'
 import { Route as AuthenticatedMigrationRouteImport } from './routes/_authenticated/migration'
+import { Route as ApiPublicResendConfigCheckRouteImport } from './routes/api/public/_resend-config-check'
 import { Route as ApiPublicWebhooksResendRouteImport } from './routes/api/public/webhooks/resend'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -54,6 +55,12 @@ const AuthenticatedMigrationRoute = AuthenticatedMigrationRouteImport.update({
   path: '/migration',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicResendConfigCheckRoute =
+  ApiPublicResendConfigCheckRouteImport.update({
+    id: '/api/public/_resend-config-check',
+    path: '/api/public',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWebhooksResendRoute = ApiPublicWebhooksResendRouteImport.update({
   id: '/api/public/webhooks/resend',
   path: '/api/public/webhooks/resend',
@@ -67,6 +74,7 @@ export interface FileRoutesByFullPath {
   '/eintraege': typeof AuthenticatedEintraegeRoute
   '/freie-termine': typeof AuthenticatedFreieTermineRoute
   '/migration': typeof AuthenticatedMigrationRoute
+  '/api/public': typeof ApiPublicResendConfigCheckRoute
   '/api/public/webhooks/resend': typeof ApiPublicWebhooksResendRoute
 }
 export interface FileRoutesByTo {
@@ -76,6 +84,7 @@ export interface FileRoutesByTo {
   '/freie-termine': typeof AuthenticatedFreieTermineRoute
   '/migration': typeof AuthenticatedMigrationRoute
   '/': typeof AuthenticatedIndexRoute
+  '/api/public': typeof ApiPublicResendConfigCheckRoute
   '/api/public/webhooks/resend': typeof ApiPublicWebhooksResendRoute
 }
 export interface FileRoutesById {
@@ -87,6 +96,7 @@ export interface FileRoutesById {
   '/_authenticated/freie-termine': typeof AuthenticatedFreieTermineRoute
   '/_authenticated/migration': typeof AuthenticatedMigrationRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/api/public/_resend-config-check': typeof ApiPublicResendConfigCheckRoute
   '/api/public/webhooks/resend': typeof ApiPublicWebhooksResendRoute
 }
 export interface FileRouteTypes {
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/eintraege'
     | '/freie-termine'
     | '/migration'
+    | '/api/public'
     | '/api/public/webhooks/resend'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/freie-termine'
     | '/migration'
     | '/'
+    | '/api/public'
     | '/api/public/webhooks/resend'
   id:
     | '__root__'
@@ -117,12 +129,14 @@ export interface FileRouteTypes {
     | '/_authenticated/freie-termine'
     | '/_authenticated/migration'
     | '/_authenticated/'
+    | '/api/public/_resend-config-check'
     | '/api/public/webhooks/resend'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicResendConfigCheckRoute: typeof ApiPublicResendConfigCheckRoute
   ApiPublicWebhooksResendRoute: typeof ApiPublicWebhooksResendRoute
 }
 
@@ -177,6 +191,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMigrationRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/_resend-config-check': {
+      id: '/api/public/_resend-config-check'
+      path: '/api/public'
+      fullPath: '/api/public'
+      preLoaderRoute: typeof ApiPublicResendConfigCheckRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/resend': {
       id: '/api/public/webhooks/resend'
       path: '/api/public/webhooks/resend'
@@ -209,6 +230,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicResendConfigCheckRoute: ApiPublicResendConfigCheckRoute,
   ApiPublicWebhooksResendRoute: ApiPublicWebhooksResendRoute,
 }
 export const routeTree = rootRouteImport
