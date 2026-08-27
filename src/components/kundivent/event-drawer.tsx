@@ -583,6 +583,13 @@ export function EventDrawer({
                 />
               </div>
 
+              <AttachmentSection
+                eventId={event?.id ?? null}
+                pendingFiles={pendingFiles}
+                onPendingFilesChange={setPendingFiles}
+              />
+
+
               {event ? (
                 <p className="border-t border-border pt-3 text-[11px] text-muted-foreground">
                   Erstellt von{" "}
