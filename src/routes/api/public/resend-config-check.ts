@@ -6,7 +6,7 @@ import { createClient } from "@supabase/supabase-js";
  * registriert sind (URL + aktivierte Events). Nur für eingeloggte Admins.
  * Gibt bewusst keine Secrets oder fremden URLs vollständig aus.
  */
-export const Route = createFileRoute("/api/public/_resend-config-check")({
+export const Route = createFileRoute("/api/public/resend-config-check")({
   server: {
     handlers: {
       GET: async ({ request }) => {
@@ -19,9 +19,9 @@ export const Route = createFileRoute("/api/public/_resend-config-check")({
         const supabase = createClient(url, key, {
           auth: { persistSession: false },
           global: {
+            headers: { Authorization: `Bearer ${token}` },
             fetch: (input, init) => {
               const h = new Headers(init?.headers);
-              if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
               h.set("apikey", key);
               return fetch(input, { ...init, headers: h });
             },
