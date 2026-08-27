@@ -116,7 +116,7 @@ async function findConflicts(record: PendingEvent) {
 
   return (data ?? []).filter((row) => {
     if (!BLOCKING.has(row.status)) return false;
-    const areas
+    const areas = (row.event_planning_areas ?? []).map((a) => a.planning_area_id);
     return areas.some((id) => record.input.planning_area_ids.includes(id));
   });
 }
