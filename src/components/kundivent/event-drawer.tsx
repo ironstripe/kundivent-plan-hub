@@ -49,7 +49,7 @@ import {
 import { profileLabel, useProfiles } from "@/lib/users";
 import { addPending, removePending } from "@/lib/offline-queue";
 import { useCurrentUserId } from "@/lib/offline-sync";
-import { AttachmentSection } from "@/components/kundivent/attachment-section";
+import { CommunicationSection } from "@/components/kundivent/communication-section";
 import { uploadAttachment } from "@/lib/attachments";
 
 type FormState = {
@@ -686,8 +686,9 @@ export function EventDrawer({
                 />
               </div>
 
-              <AttachmentSection
-                eventId={event?.id ?? null}
+              <CommunicationSection
+                eventId={isLocal ? null : (event?.id ?? null)}
+                inboundToken={isLocal ? null : (event?.inbound_email_token ?? null)}
                 pendingFiles={pendingFiles}
                 onPendingFilesChange={setPendingFiles}
               />

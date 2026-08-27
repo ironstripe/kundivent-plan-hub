@@ -16,6 +16,7 @@ import { Route as AuthenticatedEinstellungenRouteImport } from './routes/_authen
 import { Route as AuthenticatedEintraegeRouteImport } from './routes/_authenticated/eintraege'
 import { Route as AuthenticatedFreieTermineRouteImport } from './routes/_authenticated/freie-termine'
 import { Route as AuthenticatedMigrationRouteImport } from './routes/_authenticated/migration'
+import { Route as ApiPublicWebhooksResendRouteImport } from './routes/api/public/webhooks/resend'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -53,6 +54,11 @@ const AuthenticatedMigrationRoute = AuthenticatedMigrationRouteImport.update({
   path: '/migration',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicWebhooksResendRoute = ApiPublicWebhooksResendRouteImport.update({
+  id: '/api/public/webhooks/resend',
+  path: '/api/public/webhooks/resend',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/eintraege': typeof AuthenticatedEintraegeRoute
   '/freie-termine': typeof AuthenticatedFreieTermineRoute
   '/migration': typeof AuthenticatedMigrationRoute
+  '/api/public/webhooks/resend': typeof ApiPublicWebhooksResendRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
@@ -69,6 +76,7 @@ export interface FileRoutesByTo {
   '/freie-termine': typeof AuthenticatedFreieTermineRoute
   '/migration': typeof AuthenticatedMigrationRoute
   '/': typeof AuthenticatedIndexRoute
+  '/api/public/webhooks/resend': typeof ApiPublicWebhooksResendRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -79,6 +87,7 @@ export interface FileRoutesById {
   '/_authenticated/freie-termine': typeof AuthenticatedFreieTermineRoute
   '/_authenticated/migration': typeof AuthenticatedMigrationRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/api/public/webhooks/resend': typeof ApiPublicWebhooksResendRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/eintraege'
     | '/freie-termine'
     | '/migration'
+    | '/api/public/webhooks/resend'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
@@ -97,6 +107,7 @@ export interface FileRouteTypes {
     | '/freie-termine'
     | '/migration'
     | '/'
+    | '/api/public/webhooks/resend'
   id:
     | '__root__'
     | '/_authenticated'
@@ -106,11 +117,13 @@ export interface FileRouteTypes {
     | '/_authenticated/freie-termine'
     | '/_authenticated/migration'
     | '/_authenticated/'
+    | '/api/public/webhooks/resend'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicWebhooksResendRoute: typeof ApiPublicWebhooksResendRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -164,6 +177,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMigrationRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/webhooks/resend': {
+      id: '/api/public/webhooks/resend'
+      path: '/api/public/webhooks/resend'
+      fullPath: '/api/public/webhooks/resend'
+      preLoaderRoute: typeof ApiPublicWebhooksResendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -189,6 +209,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicWebhooksResendRoute: ApiPublicWebhooksResendRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
