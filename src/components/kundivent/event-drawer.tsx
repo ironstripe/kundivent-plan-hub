@@ -45,6 +45,8 @@ import {
   type EventWithRelations,
 } from "@/lib/events";
 import { profileLabel, useProfiles } from "@/lib/users";
+import { AttachmentSection } from "@/components/kundivent/attachment-section";
+import { uploadAttachment } from "@/lib/attachments";
 
 type FormState = {
   title: string;
