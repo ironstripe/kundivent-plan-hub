@@ -257,7 +257,7 @@ export const Route = createFileRoute("/api/public/webhooks/resend")({
           return ok("unknown event token");
         }
 
-        const full = await fetchFullEmail(resendEmailId, data);
+        const full = (await fetchFullEmail(resendEmailId, data)) as InboundEmail;
         const from = addressOf(full.from);
 
         const { data: inserted, error: insertError } = await supabaseAdmin
