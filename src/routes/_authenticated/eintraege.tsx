@@ -322,14 +322,14 @@ function Eintraege() {
         ) : filtered.length === 0 ? (
           <div className="px-3 py-12 text-center">
             <p className="text-sm font-medium">
-              {events.data.length === 0 ? "Noch keine Einträge" : "Keine Treffer"}
+              {(events.data ?? []).length === 0 ? "Noch keine Einträge" : "Keine Treffer"}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              {events.data.length === 0
+              {(events.data ?? []).length === 0
                 ? "Erstelle den ersten Eintrag für die Eventplanung."
                 : "Passe Suche oder Filter an."}
             </p>
-            {events.data.length === 0 ? (
+            {(events.data ?? []).length === 0 ? (
               <Button size="sm" className="mt-4 h-8 gap-1.5 text-xs" onClick={openNew}>
                 <Plus className="size-3.5" />
                 Eintrag
