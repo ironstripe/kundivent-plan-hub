@@ -1,3 +1,4 @@
+import { assertOnline } from "@/lib/connection";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -64,7 +65,10 @@ export function useUsers(enabled: boolean) {
 function useUsersMutation<TInput, TResult>(fn: (data: TInput) => Promise<TResult>) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: fn,
+    mutationFn: async (data: TInput) => {
+      assertOnline();
+      return fn(data);
+    },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["managed-users"] });
     },

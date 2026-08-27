@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { setFormDirty, useIsOnline } from "@/lib/connection";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
@@ -138,6 +139,10 @@ export function EventDrawer({
   const [confirmDelete, setConfirmDelete] = useState(false);
   /** Files chosen before a new event exists — uploaded right after saving. */
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const online = useIsOnline();
+  const baselineRef = useRef<string>("");
+  const dirtyRef = useRef(false);
+
 
   const activeAreas = useMemo(() => (areas.data ?? []).filter((a) => a.active), [areas.data]);
   const activeCategories = useMemo(
@@ -151,19 +156,37 @@ export function EventDrawer({
     if (!open) return;
     setErrors({});
     setPendingFiles([]);
-    setForm(
-      event
-        ? fromEvent(event)
-        : {
-            ...EMPTY,
-            ...(defaultDate ? { start_date: defaultDate } : {}),
-            ...(defaultAreaIds?.length ? { planning_area_ids: [...defaultAreaIds] } : {}),
-            ...(defaultStatus ? { status: defaultStatus } : {}),
-          },
-    );
+    const initial: FormState = event
+      ? fromEvent(event)
+      : {
+          ...EMPTY,
+          ...(defaultDate ? { start_date: defaultDate } : {}),
+          ...(defaultAreaIds?.length ? { planning_area_ids: [...defaultAreaIds] } : {}),
+          ...(defaultStatus ? { status: defaultStatus } : {}),
+        };
+    baselineRef.current = JSON.stringify(initial);
+    setForm(initial);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, event, defaultDate, defaultAreaIds?.join(","), defaultStatus]);
 
+
+  // Keeps the PWA update prompt from discarding in-progress edits.
+  useEffect(() => {
+    const dirty = open && JSON.stringify(form) !== baselineRef.current;
+    if (dirty === dirtyRef.current) return;
+    dirtyRef.current = dirty;
+    setFormDirty(dirty);
+  }, [open, form]);
+
+  useEffect(
+    () => () => {
+      if (dirtyRef.current) {
+        dirtyRef.current = false;
+        setFormDirty(false);
+      }
+    },
+    [],
+  );
 
   const responsibleOptions = useMemo(() => {
     const all = profiles.data ?? [];
@@ -627,7 +650,7 @@ export function EventDrawer({
             </div>
 
 
-            <div className="flex shrink-0 items-center gap-2 border-t border-border px-4 py-3">
+            <div className="flex shrink-0 items-center gap-2 border-t border-border px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
               {event ? (
                 <Button
                   type="button"
@@ -635,12 +658,16 @@ export function EventDrawer({
                   size="sm"
                   className="h-8 gap-1.5 px-2 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
                   onClick={() => setConfirmDelete(true)}
+                  disabled={!online}
                 >
                   <Trash2 className="size-3.5" />
                   Löschen
                 </Button>
               ) : null}
               <div className="ml-auto flex items-center gap-2">
+                {!online ? (
+                  <span className="text-[11px] text-destructive">Offline – kein Speichern</span>
+                ) : null}
                 <Button
                   type="button"
                   variant="outline"
@@ -650,11 +677,17 @@ export function EventDrawer({
                 >
                   Abbrechen
                 </Button>
-                <Button type="submit" size="sm" className="h-8 text-xs" disabled={save.isPending}>
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="h-8 text-xs"
+                  disabled={save.isPending || !online}
+                >
                   {save.isPending ? "Speichern…" : "Speichern"}
                 </Button>
               </div>
             </div>
+
           </form>
         </SheetContent>
       </Sheet>

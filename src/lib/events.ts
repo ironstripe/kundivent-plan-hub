@@ -1,4 +1,5 @@
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { assertOnline } from "@/lib/connection";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -121,6 +122,7 @@ export function useSaveEvent() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, input }: { id?: string; input: EventInput }) => {
+      assertOnline();
       if (id) {
         const { error } = await supabase.from("events").update(toRecord(input)).eq("id", id);
         if (error) throw error;
@@ -147,6 +149,7 @@ export function useDeleteEvent() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
+      assertOnline();
       const { error: linkError } = await supabase
         .from("event_planning_areas")
         .delete()

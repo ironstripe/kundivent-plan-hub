@@ -1,3 +1,4 @@
+import { assertOnline } from "@/lib/connection";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -99,6 +100,7 @@ export function useUploadAttachments(eventId: string | null | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (files: File[]) => {
+      assertOnline();
       if (!eventId) throw new Error("Eintrag muss zuerst gespeichert werden.");
       for (const file of files) await uploadAttachment(eventId, file);
     },
@@ -112,6 +114,7 @@ export function useDeleteAttachment(eventId: string | null | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (attachment: EventAttachment) => {
+      assertOnline();
       const { error: storageError } = await supabase.storage
         .from(ATTACHMENT_BUCKET)
         .remove([attachment.storage_path]);
