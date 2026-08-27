@@ -156,7 +156,15 @@ export function eventsInRangeQuery(from: string, to: string) {
 }
 
 export function useEventsInRange(from: string, to: string) {
-  return useQuery(eventsInRangeQuery(from, to));
+  const query = useQuery(eventsInRangeQuery(from, to));
+  const pending = usePendingEventRows();
+  return useMemo(() => {
+    const overlapping = pending.filter((event) => {
+      const end = event.end_date ?? event.start_date;
+      return event.start_date <= to && end >= from;
+    });
+    return { ...query, data: query.data ? [...overlapping, ...query.data] : query.data };
+  }, [query, pending, from, to]);
 }
 
 export function eachDate(from: string, to: string): string[] {
