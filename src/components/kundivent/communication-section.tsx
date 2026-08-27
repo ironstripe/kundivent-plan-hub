@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AttachmentSection } from "@/components/kundivent/attachment-section";
 import { attachmentUrl, formatFileSize } from "@/lib/attachments";
-import { eventEmailAddress, formatEmailDateTime } from "@/lib/event-email";
+import { eventEmailAddress, eventEmailCode, formatEmailDateTime } from "@/lib/event-email";
 import {
   emailPreview,
   senderLabel,
