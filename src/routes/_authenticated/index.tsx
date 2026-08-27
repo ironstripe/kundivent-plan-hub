@@ -359,7 +359,8 @@ function Uebersicht() {
                       type="button"
                       aria-pressed={active}
                       onClick={() => {
-                        goToMonth(year, index);
+                        if (mode === "jahr") patchSearch({ mode: "kalender", y: year, m: index });
+                        else goToMonth(year, index);
                         setPickerOpen(false);
                       }}
                       className={cn(
