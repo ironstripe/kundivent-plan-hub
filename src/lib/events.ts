@@ -111,6 +111,8 @@ export type EventInput = {
   deposit_amount: number | null;
   deposit_received_at: string | null;
   responsible_user_id: string | null;
+  /** Pre-generated inbound e-mail token for NEW entries; ignored on update. */
+  inbound_email_token?: string | null;
 };
 
 export async function syncPlanningAreas(eventId: string, areaIds: string[]) {
