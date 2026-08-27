@@ -693,7 +693,7 @@ export function EventDrawer({
 
               <CommunicationSection
                 eventId={isLocal ? null : (event?.id ?? null)}
-                inboundToken={isLocal ? null : (event?.inbound_email_token ?? null)}
+                inboundToken={event ? (event.inbound_email_token ?? null) : newToken}
                 pendingFiles={pendingFiles}
                 onPendingFilesChange={setPendingFiles}
               />
