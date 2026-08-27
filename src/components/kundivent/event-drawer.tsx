@@ -50,6 +50,7 @@ import { profileLabel, useProfiles } from "@/lib/users";
 import { addPending, removePending } from "@/lib/offline-queue";
 import { useCurrentUserId } from "@/lib/offline-sync";
 import { CommunicationSection } from "@/components/kundivent/communication-section";
+import { generateInboundToken } from "@/lib/event-email";
 import { uploadAttachment } from "@/lib/attachments";
 
 type FormState = {
