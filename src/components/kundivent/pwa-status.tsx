@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { CloudOff, RefreshCw, Wifi } from "lucide-react";
+import { CloudOff, CloudUpload, RefreshCw, Wifi } from "lucide-react";
 import { registerServiceWorker } from "@/lib/pwa";
 import { hasUnsavedWork, useIsOnline } from "@/lib/connection";
+import { useOfflineSync } from "@/lib/offline-sync";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
