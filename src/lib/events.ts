@@ -26,7 +26,15 @@ export type EventRow = Tables<"events">;
 
 export type EventWithRelations = EventRow & {
   planning_area_ids: string[];
+  /** Set for entries that only exist in the local offline queue. */
+  is_pending?: boolean;
+  local_id?: string;
+  pending_status?: "pending" | "syncing" | "error";
+  pending_error?: string | null;
+  pending_conflict?: string | null;
 };
+
+export const isPendingEvent = (event: { is_pending?: boolean }) => event.is_pending === true;
 
 export const eventsQuery = queryOptions({
   queryKey: ["events"],
@@ -70,7 +78,7 @@ export type EventInput = {
   responsible_user_id: string | null;
 };
 
-async function syncPlanningAreas(eventId: string, areaIds: string[]) {
+export async function syncPlanningAreas(eventId: string, areaIds: string[]) {
   const { data: existing, error: readError } = await supabase
     .from("event_planning_areas")
     .select("id, planning_area_id")
@@ -99,7 +107,7 @@ async function syncPlanningAreas(eventId: string, areaIds: string[]) {
   }
 }
 
-function toRecord(input: EventInput) {
+export function toEventRecord(input: EventInput) {
   return {
     title: input.title,
     status: input.status,
@@ -124,7 +132,7 @@ export function useSaveEvent() {
     mutationFn: async ({ id, input }: { id?: string; input: EventInput }) => {
       assertOnline();
       if (id) {
-        const { error } = await supabase.from("events").update(toRecord(input)).eq("id", id);
+        const { error } = await supabase.from("events").update(toEventRecord(input)).eq("id", id);
         if (error) throw error;
         await syncPlanningAreas(id, input.planning_area_ids);
         return id;
@@ -132,7 +140,7 @@ export function useSaveEvent() {
       const { data: auth } = await supabase.auth.getUser();
       const { data, error } = await supabase
         .from("events")
-        .insert({ ...toRecord(input), created_by: auth.user?.id ?? null })
+        .insert({ ...toEventRecord(input), created_by: auth.user?.id ?? null })
         .select("id")
         .single();
       if (error) throw error;
