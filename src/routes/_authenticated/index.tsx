@@ -629,6 +629,18 @@ function Uebersicht() {
             Erneut versuchen
           </Button>
         </div>
+      ) : mode === "jahr" ? (
+        <YearOverview
+          year={cursor.year}
+          events={matrixEvents}
+          today={today}
+          categoryById={categoryById}
+          areaNameById={areaNameById}
+          onOpenEvent={openEvent}
+          onOpenMonth={(month) => {
+            patchSearch({ mode: "kalender", y: cursor.year, m: month });
+          }}
+        />
       ) : mode === "matrix" ? (
         <MatrixView
           events={matrixEvents}
