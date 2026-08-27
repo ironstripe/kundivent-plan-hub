@@ -16,13 +16,16 @@ Zweiter, unabhängiger Fehler: die getestete Adresse `583549e157+583549e157@rinu
 3. Das in Lovable hinterlegte `RESEND_WEBHOOK_SECRET` stammt nicht von genau diesem Endpoint – dann verwirft unser Handler die Zustellung mit 401, bevor geloggt wird.
 4. Für die Sandbox-Domain ist keine Inbound-Regel aktiv, die Mails an den Webhook weiterleitet.
 
-## Vorgehen
+## Vorgehen (Fokus: Signing-Secret)
 
-1. Über die Resend-API auslesen, welche Webhook-Endpoints und Inbound-Routen im Konto konfiguriert sind, und ob `email.received` aktiviert ist. Damit ist eindeutig, welcher der vier Punkte zutrifft.
-2. Fehlt der Endpoint oder ist er falsch: ich nenne dir die exakte einzutragende URL und das Event; das Signing-Secret trägst du danach als Secret ein (bzw. ich ersetze `RESEND_WEBHOOK_SECRET`).
-3. Robustheit gegen stille Fehlschläge: Signaturfehler werden künftig ebenfalls im Zustellprotokoll erfasst (Ergebnis „Signatur ungültig“, ohne Inhalt). Damit sieht man in „Einstellungen → Zustellprotokoll“ sofort den Unterschied zwischen „Resend ruft nicht auf“ und „Secret falsch“.
-4. Kleiner UI-Schutz in der „Kommunikation“-Sektion: Hinweistext, dass nur die dort angezeigte Adresse (mit dem Eintrags-Token) funktioniert, plus der Betreff-Code `#<token>` als Alternative.
+Da du die Webhook-URL in Resend geändert, das Signing-Secret aber nicht neu hinterlegt hast, ist Ursache 3 die wahrscheinlichste: Resend ruft uns auf, unser Handler verwirft die Zustellung aber mit 401, bevor irgendetwas protokolliert wird – deshalb ist das Protokoll leer.
+
+1. Signaturfehler werden künftig zuerst protokolliert (Ergebnis „Signatur ungültig“, nur Metadaten, kein Inhalt). Danach zeigt „Einstellungen → Zustellprotokoll“ sofort den Unterschied zwischen „Resend ruft nicht auf“ und „Secret falsch“.
+2. Du holst in Resend beim aktuellen Webhook-Endpoint das Signing-Secret (`whsec_…`); ich ersetze damit `RESEND_WEBHOOK_SECRET`.
+3. Kontrollcheck über die Resend-API: registrierter Endpoint zeigt auf `https://kundivent-plan-hub.lovable.app/api/public/webhooks/resend` und `email.received` ist aktiviert.
+4. Kleiner UI-Schutz in der „Kommunikation“-Sektion: Hinweistext, dass nur die dort angezeigte Adresse (mit dem Eintrags-Token) funktioniert – `583549e157+<token>@…`, nicht Mailbox+Mailbox – plus der Betreff-Code `#<token>` als Alternative.
 5. Nach dem Veröffentlichen: Testmail an die im Eintrag angezeigte Adresse; das Protokoll zeigt das Ergebnis sofort.
+
 
 ## Technische Details
 
