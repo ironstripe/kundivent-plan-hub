@@ -1,5 +1,7 @@
+import { useEffect, useMemo, useState } from "react";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { assertOnline } from "@/lib/connection";
+import { listPending, pendingToEventRow, subscribePending } from "@/lib/offline-queue";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -56,8 +58,40 @@ export const eventsQuery = queryOptions({
   },
 });
 
+/** Locally queued (offline created) events for the signed-in user. */
+export function usePendingEventRows(): EventWithRelations[] {
+  const [rows, setRows] = useState<EventWithRelations[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      const { data } = await supabase.auth.getUser();
+      const userId = data.user?.id;
+      if (!userId) {
+        if (active) setRows([]);
+        return;
+      }
+      const list = await listPending(userId);
+      if (active) setRows(list.map(pendingToEventRow));
+    };
+    void load();
+    const unsubscribe = subscribePending(() => void load());
+    return () => {
+      active = false;
+      unsubscribe();
+    };
+  }, []);
+
+  return rows;
+}
+
 export function useEvents() {
-  return useQuery(eventsQuery);
+  const query = useQuery(eventsQuery);
+  const pending = usePendingEventRows();
+  return useMemo(
+    () => ({ ...query, data: query.data ? [...pending, ...query.data] : query.data }),
+    [query, pending],
+  );
 }
 
 export type EventInput = {
