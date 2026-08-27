@@ -56,8 +56,11 @@ export function parseInboundToken(address: string | null | undefined): string | 
   const plus = local.match(new RegExp(`\\+(?:event-)?(${TOKEN})$`));
   if (plus) return plus[1]!;
 
+  if (local === INBOUND_EMAIL_MAILBOX) return null;
+
   const plain = local.match(new RegExp(`^(${TOKEN})$`));
   if (plain) return plain[1]!;
+
 
   return null;
 }
