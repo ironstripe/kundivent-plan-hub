@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AttachmentSection } from "@/components/kundivent/attachment-section";
 import { attachmentUrl, formatFileSize } from "@/lib/attachments";
-import { eventEmailAddress, formatEmailDateTime } from "@/lib/event-email";
+import { eventEmailAddress, eventEmailCode, formatEmailDateTime } from "@/lib/event-email";
 import {
   emailPreview,
   senderLabel,
@@ -18,24 +18,22 @@ import { sanitizeEmailHtml } from "@/lib/sanitize-html";
 const HELPER_TEXT =
   "Relevante E-Mails an diese Adresse weiterleiten. Sie werden automatisch diesem Eintrag zugeordnet.";
 
-function EmailAddressRow({ token }: { token: string }) {
-  const address = eventEmailAddress(token);
-
+function CopyRow({ label, value, hint }: { label: string; value: string; hint?: string }) {
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(address);
-      toast.success("Adresse kopiert");
+      await navigator.clipboard.writeText(value);
+      toast.success("Kopiert");
     } catch {
-      toast.error("Kopieren nicht möglich", { description: address });
+      toast.error("Kopieren nicht möglich", { description: value });
     }
   };
 
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs">E-Mail-Adresse für diesen Eintrag</Label>
+      <Label className="text-xs">{label}</Label>
       <div className="flex flex-wrap items-center gap-2">
         <code className="min-w-0 flex-1 truncate rounded-md border border-border bg-muted/40 px-2 py-1.5 text-xs">
-          {address}
+          {value}
         </code>
         <Button
           type="button"
@@ -48,10 +46,28 @@ function EmailAddressRow({ token }: { token: string }) {
           Kopieren
         </Button>
       </div>
-      <p className="text-[11px] text-muted-foreground">{HELPER_TEXT}</p>
+      {hint ? <p className="text-[11px] text-muted-foreground">{hint}</p> : null}
     </div>
   );
 }
+
+function EmailAddressRow({ token }: { token: string }) {
+  return (
+    <div className="space-y-2.5">
+      <CopyRow
+        label="E-Mail-Adresse für diesen Eintrag"
+        value={eventEmailAddress(token)}
+        hint={HELPER_TEXT}
+      />
+      <CopyRow
+        label="Zuordnungscode (alternativ im Betreff)"
+        value={eventEmailCode(token)}
+        hint="Falls die Weiterleitung an die Adresse nicht klappt: diesen Code irgendwo in den Betreff schreiben."
+      />
+    </div>
+  );
+}
+
 
 function AttachmentLink({
   name,

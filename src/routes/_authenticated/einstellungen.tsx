@@ -3,6 +3,8 @@ import { useMyProfile } from "@/lib/users";
 import { UserAdmin } from "@/components/kundivent/user-admin";
 import { PlanningAreaAdmin } from "@/components/kundivent/planning-area-admin";
 import { CategoryAdmin } from "@/components/kundivent/category-admin";
+import { InboundEmailLog } from "@/components/kundivent/inbound-email-log";
+
 
 export const Route = createFileRoute("/_authenticated/einstellungen")({
   head: () => ({
@@ -57,6 +59,10 @@ function Einstellungen() {
       <PlanningAreaAdmin canManage={isAdmin} />
 
       <CategoryAdmin canManage={isAdmin} />
+
+      {isAdmin ? <InboundEmailLog /> : null}
+
+
 
     </div>
   );
