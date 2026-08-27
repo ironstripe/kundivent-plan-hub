@@ -380,8 +380,8 @@ function Uebersicht() {
             variant="ghost"
             size="icon"
             className="size-8"
-            aria-label="Nächster Monat"
-            onClick={() => shiftMonth(1)}
+            aria-label={mode === "jahr" ? "Nächstes Jahr" : "Nächster Monat"}
+            onClick={() => (mode === "jahr" ? shiftYear(1) : shiftMonth(1))}
           >
             <ChevronRight className="size-4" />
           </Button>
