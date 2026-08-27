@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
+import { PendingMark } from "@/components/kundivent/pending-mark";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import {
@@ -472,7 +473,7 @@ function MatrixCell({
                   onClick={() => onOpenEvent(event)}
                   className="block w-full truncate rounded-sm px-1.5 py-1 text-left text-xs hover:bg-accent"
                 >
-                  {event.title}
+                  <PendingMark event={event} />{event.title}
                 </button>
               ))}
             </div>
@@ -533,7 +534,7 @@ function EventBlock({
       ) : (
         <span className="truncate">
           {time ? <span className="tabular-nums opacity-70">{time} </span> : null}
-          {event.title}
+          <PendingMark event={event} />{event.title}
         </span>
       )}
 

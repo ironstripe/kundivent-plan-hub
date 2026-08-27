@@ -1,4 +1,5 @@
 import { CalendarClock, Clock, Users, MoveRight, Lock } from "lucide-react";
+import { PendingMark } from "@/components/kundivent/pending-mark";
 import { cn } from "@/lib/utils";
 import { EventStatusBadge } from "@/components/kundivent/event-status-badge";
 import { AREA_STYLE, displayAreaKeyFromNames } from "@/lib/area-theme";
@@ -94,7 +95,7 @@ export function TimelineEventRow({
           {isHoliday ? (
             <Lock aria-hidden className="mr-1.5 inline size-3.5 align-[-2px] text-muted-foreground" />
           ) : null}
-          <span className={cn(isCancelled && "line-through")}>{event.title}</span>
+          <PendingMark event={event} /><span className={cn(isCancelled && "line-through")}>{event.title}</span>
           {continues ? (
             <MoveRight
               aria-label="läuft in den Folgemonat"

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { PendingMark } from "@/components/kundivent/pending-mark";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus, Search } from "lucide-react";
 import { displayAreaKeyFromNames } from "@/lib/area-theme";
@@ -413,7 +414,7 @@ function Eintraege() {
                           }}
                         />
                         <span className={cn(event.status === "cancelled" && "line-through")}>
-                          {event.title}
+                          <PendingMark event={event} />{event.title}
                         </span>
                       </span>
                     </TableCell>
