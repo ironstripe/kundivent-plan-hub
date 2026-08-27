@@ -141,6 +141,8 @@ export function EventDrawer({
   const [confirmDelete, setConfirmDelete] = useState(false);
   /** Files chosen before a new event exists — uploaded right after saving. */
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  /** Inbound e-mail token for a NEW entry — generated as soon as the drawer opens. */
+  const [newToken, setNewToken] = useState<string | null>(null);
   const online = useIsOnline();
   const userId = useCurrentUserId();
   const baselineRef = useRef<string>("");
@@ -164,6 +166,7 @@ export function EventDrawer({
     if (!open) return;
     setErrors({});
     setPendingFiles([]);
+    setNewToken(event ? null : generateInboundToken());
     const initial: FormState = event
       ? fromEvent(event)
       : {
