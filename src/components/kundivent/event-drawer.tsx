@@ -396,10 +396,14 @@ export function EventDrawer({
         >
           <SheetHeader className="shrink-0 border-b border-border px-4 py-3">
             <SheetTitle className="text-sm font-semibold">
-              {event ? "Eintrag bearbeiten" : "Neuer Eintrag"}
+              {event ? (isLocal ? "Offline-Eintrag" : "Eintrag bearbeiten") : "Neuer Eintrag"}
             </SheetTitle>
             <SheetDescription className="text-xs">
-              Event, Belegung oder Betriebsferien erfassen.
+              {isLocal
+                ? "Noch nicht synchronisiert – wird übertragen, sobald wieder eine Verbindung besteht."
+                : readOnly
+                  ? "Offline-Modus: bestehende Einträge können nur angesehen werden."
+                  : "Event, Belegung oder Betriebsferien erfassen."}
             </SheetDescription>
           </SheetHeader>
 
