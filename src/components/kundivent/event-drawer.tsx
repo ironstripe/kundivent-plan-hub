@@ -142,8 +142,14 @@ export function EventDrawer({
   /** Files chosen before a new event exists — uploaded right after saving. */
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const online = useIsOnline();
+  const userId = useCurrentUserId();
   const baselineRef = useRef<string>("");
   const dirtyRef = useRef(false);
+
+  /** Entries that only exist in the local queue. */
+  const isLocal = event?.is_pending === true;
+  /** Server entries can only be viewed while offline. */
+  const readOnly = !online && !!event;
 
 
   const activeAreas = useMemo(() => (areas.data ?? []).filter((a) => a.active), [areas.data]);
@@ -296,6 +302,43 @@ export function EventDrawer({
     e.preventDefault();
     const input = validate();
     if (!input) return;
+
+    // Offline: only NEW entries are accepted, and they go into the local queue.
+    if (!online) {
+      if (event) {
+        toast.error("Offline-Modus", {
+          description: "Bestehende Einträge können offline nicht bearbeitet werden.",
+        });
+        return;
+      }
+      if (!userId) {
+        toast.error("Offline-Speichern nicht möglich", {
+          description: "Kein angemeldeter Benutzer erkannt.",
+        });
+        return;
+      }
+      try {
+        await addPending(userId, input);
+        if (pendingFiles.length) {
+          toast.warning("Anhänge nicht möglich", {
+            description:
+              "Offline können keine Dateien hochgeladen werden. Bitte nach der Synchronisation erneut anhängen.",
+          });
+        }
+        setPendingFiles([]);
+        toast.success("Offline gespeichert", {
+          description:
+            "Der Eintrag wird synchronisiert, sobald wieder eine Verbindung besteht.",
+        });
+        onOpenChange(false);
+      } catch (err) {
+        toast.error("Offline-Speichern fehlgeschlagen", {
+          description: err instanceof Error ? err.message : undefined,
+        });
+      }
+      return;
+    }
+
     try {
       const savedId = await save.mutateAsync(event ? { id: event.id, input } : { input });
       toast.success(event ? "Eintrag aktualisiert" : "Eintrag erstellt");
