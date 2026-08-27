@@ -65,44 +65,7 @@ export type SyncResult = {
   failed: number;
 };
 
-/** Maps a queued record to the shape the calendar views already render. */
-export function pendingToEventRow(record: PendingEvent): EventWithRelations {
-  const input = record.input;
-  return {
-    id: record.id,
-    local_id: record.id,
-    is_pending: true,
-    pending_status: record.status,
-    pending_error: record.error ?? null,
-    pending_conflict: record.conflict ?? null,
-    title: input.title,
-    category_id: input.category_id,
-    planning_area_ids: [...input.planning_area_ids],
-    start_date: input.start_date,
-    end_date: input.end_date,
-    all_day: input.all_day,
-    start_time: input.start_time,
-    end_time: input.end_time,
-    status: input.status,
-    pax: input.pax,
-    notes: input.notes,
-    deposit_received: input.deposit_received,
-    deposit_amount: input.deposit_amount,
-    deposit_received_at: input.deposit_received_at,
-    responsible_user_id: input.responsible_user_id,
-    created_by: record.user_id,
-    created_at: record.created_at,
-    updated_at: record.created_at,
-    external_source: null,
-    external_id: null,
-    sync_status: null,
-    last_synced_at: null,
-    migration_source: null,
-    migration_source_ref: null,
-    migration_review_required: false,
-    offline_sync_id: record.sync_id,
-  } as unknown as EventWithRelations;
-}
+export { pendingToEventRow } from "@/lib/offline-queue";
 
 async function findConflicts(record: PendingEvent) {
   const from = record.input.start_date;
