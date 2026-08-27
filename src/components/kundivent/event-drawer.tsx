@@ -49,7 +49,7 @@ import {
 import { profileLabel, useProfiles } from "@/lib/users";
 import { addPending, removePending } from "@/lib/offline-queue";
 import { useCurrentUserId } from "@/lib/offline-sync";
-import { AttachmentSection } from "@/components/kundivent/attachment-section";
+import { CommunicationSection } from "@/components/kundivent/communication-section";
 import { uploadAttachment } from "@/lib/attachments";
 
 type FormState = {
