@@ -306,6 +306,7 @@ export function EventDrawer({
     e.preventDefault();
     const input = validate();
     if (!input) return;
+    if (!event) input.inbound_email_token = newToken;
 
     // Offline: only NEW entries are accepted, and they go into the local queue.
     if (!online) {
