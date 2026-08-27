@@ -49,6 +49,23 @@ export function PwaStatus() {
         </Banner>
       ) : null}
 
+      {pending.length ? (
+        <Banner tone="info" icon={<CloudUpload className="size-4 shrink-0" />}>
+          <span className="flex flex-wrap items-center gap-2">
+            {syncing
+              ? `${pending.length} Offline-${pending.length === 1 ? "Eintrag wird" : "Einträge werden"} synchronisiert…`
+              : hasErrors
+                ? `${pending.length} Offline-${pending.length === 1 ? "Eintrag" : "Einträge"} konnten nicht synchronisiert werden.`
+                : `${pending.length} Offline-${pending.length === 1 ? "Eintrag wartet" : "Einträge warten"} auf Synchronisation.`}
+            {online && !syncing ? (
+              <Button size="sm" className="h-7 px-2.5 text-xs" onClick={retry}>
+                Erneut versuchen
+              </Button>
+            ) : null}
+          </span>
+        </Banner>
+      ) : null}
+
       {applyUpdate ? (
         <Banner tone="info" icon={<RefreshCw className="size-4 shrink-0" />}>
           <span className="flex flex-wrap items-center gap-2">
