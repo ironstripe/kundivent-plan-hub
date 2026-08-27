@@ -606,6 +606,8 @@ function Uebersicht() {
               ) : null}
             </PopoverContent>
           </Popover>
+          )}
+
 
           <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => openNew()}>
             <Plus className="size-3.5" />
