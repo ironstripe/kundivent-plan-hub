@@ -1,13 +1,4 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useMyProfile } from "@/lib/users";
 import { UserAdmin } from "@/components/kundivent/user-admin";
 import { PlanningAreaAdmin } from "@/components/kundivent/planning-area-admin";
@@ -30,34 +21,6 @@ export const Route = createFileRoute("/_authenticated/einstellungen")({
   }),
   component: Einstellungen,
 });
-
-function StatusBadge({ active }: { active: boolean }) {
-  return (
-    <Badge variant={active ? "secondary" : "outline"} className="text-[11px] font-normal">
-      {active ? "Aktiv" : "Inaktiv"}
-    </Badge>
-  );
-}
-
-function Section({
-  title,
-  hint,
-  children,
-}: {
-  title: string;
-  hint: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="rounded-md border border-border bg-card">
-      <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-border px-3 py-2">
-        <h2 className="text-sm font-semibold tracking-tight">{title}</h2>
-        <span className="text-xs text-muted-foreground">{hint}</span>
-      </div>
-      <div className="overflow-x-auto">{children}</div>
-    </section>
-  );
-}
 
 function Einstellungen() {
   const profile = useMyProfile();
