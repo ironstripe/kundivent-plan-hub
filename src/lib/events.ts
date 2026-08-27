@@ -65,8 +65,9 @@ export function usePendingEventRows(): EventWithRelations[] {
   useEffect(() => {
     let active = true;
     const load = async () => {
-      const { data } = await supabase.auth.getUser();
-      const userId = data.user?.id;
+      // getSession() reads local storage and therefore also works offline.
+      const { data } = await supabase.auth.getSession();
+      const userId = data.session?.user.id;
       if (!userId) {
         if (active) setRows([]);
         return;

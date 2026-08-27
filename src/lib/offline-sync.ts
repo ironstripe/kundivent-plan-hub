@@ -19,8 +19,8 @@ export function useCurrentUserId() {
   const { data } = useQuery({
     queryKey: ["auth-user-id"],
     queryFn: async () => {
-      const { data: auth } = await supabase.auth.getUser();
-      return auth.user?.id ?? null;
+      const { data: auth } = await supabase.auth.getSession();
+      return auth.session?.user.id ?? null;
     },
     staleTime: 5 * 60 * 1000,
   });
