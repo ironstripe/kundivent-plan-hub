@@ -125,6 +125,7 @@ function Uebersicht() {
   const [jumpMonth, setJumpMonth] = useState<{ index: number; nonce: number } | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerYear, setPickerYear] = useState<number | null>(null);
+  const [areaPopoverOpen, setAreaPopoverOpen] = useState(false);
 
   const activeAreas = useMemo(() => (areas.data ?? []).filter((a) => a.active), [areas.data]);
   const activeCategories = useMemo(
