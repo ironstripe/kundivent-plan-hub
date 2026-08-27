@@ -6,14 +6,14 @@ Die Mails selbst kommen an (5 archivierte E-Mails, alle mit Status „stored“)
 
 `Anhang-Fehler: attachment <Datei>.pdf has no content`
 
-Das heisst: Resend meldet im Webhook zwar, dass ein PDF dabei war (Name, Typ, Grösse), liefert aber weder den Dateiinhalt noch einen Download-Link mit. Unser Code lädt Inhalte nur nach, wenn die Anhangs-Liste komplett fehlt – ist die Liste da (nur ohne Inhalt), wird nichts nachgeladen und der Anhang verworfen. In der Datenbank steht darum kein einziger Anhang aus E-Mail.
+Das heisst: der Webhook meldet zwar, dass ein PDF dabei war (Name, Typ, Grösse), enthält aber weder den Dateiinhalt noch einen Link. Bei Resend selbst liegen die Anhänge vollständig vor und sind dort herunterladbar – wir holen sie nur nicht ab. Unser Code lädt nämlich nur nach, wenn die Anhangs-Liste komplett fehlt; ist sie da (nur ohne Inhalt), wird nichts nachgeladen und der Anhang verworfen. Darum steht in der Datenbank kein einziger Anhang aus E-Mail.
 
 ## Was gemacht wird
 
-1. **Inhalt aktiv bei Resend nachladen.** Sobald ein Anhang ohne Inhalt und ohne Link ankommt, wird die Mail über die Resend-API erneut abgerufen und – falls nötig – der Anhang einzeln über den Anhangs-Endpunkt geholt. Erst wenn auch das nichts liefert, gilt der Anhang als nicht abrufbar.
-2. **Fehler sichtbar machen statt still verlieren.** Im Protokoll unter Einstellungen wird pro Anhang festgehalten, ob er gespeichert wurde oder warum nicht (kein Inhalt, Download-Fehler, Speicherfehler). Beim Öffnen eines Eintrags erscheint bei nicht abrufbaren Anhängen ein kurzer Hinweis statt gar nichts.
-3. **Diagnose-Schritt vorab.** Da unklar ist, welche Felder Resend genau mitschickt, wird die Anhangs-Struktur der nächsten eingehenden Mail (nur Feldnamen, keine Inhalte) einmalig ins Protokoll geschrieben, damit der richtige Abruf-Weg belegt ist und nicht geraten wird.
-4. **Nachziehen der bereits eingegangenen Mails.** Für die 5 bereits archivierten Mails wird ein Admin-Knopf im Protokoll ergänzt, der die Anhänge nachträglich abholt, sofern Resend sie noch vorhält.
+1. **Anhänge aktiv bei Resend abholen.** Kommt ein Anhang ohne Inhalt an, wird die Mail über die Resend-API mit dem vorhandenen API-Schlüssel erneut geladen und der Anhang über den dort gelieferten Download-Weg geholt – genau die Datei, die du im Resend-Dashboard herunterladen kannst. Danach landet sie im privaten Dateispeicher und erscheint beim Eintrag unter „Dateien“, gekennzeichnet als „aus E-Mail“.
+2. **Fehler sichtbar machen statt still verlieren.** Im Protokoll unter Einstellungen wird pro Anhang festgehalten, ob er gespeichert wurde oder warum nicht (kein Inhalt, Download-Fehler, Speicherfehler).
+3. **Nachziehen der bereits eingegangenen Mails.** Für die 5 bereits archivierten Mails kommt ein Admin-Knopf ins Protokoll, der die Anhänge nachträglich abholt, sofern Resend sie noch vorhält.
+
 
 Die bestehenden manuellen Datei-Uploads, die E-Mail-Ansicht und alles andere bleiben unverändert.
 
