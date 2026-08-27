@@ -44,6 +44,54 @@ export type Database = {
         }
         Relationships: []
       }
+      event_attachments: {
+        Row: {
+          created_at: string
+          event_id: string
+          file_name: string
+          file_size: number | null
+          id: string
+          mime_type: string | null
+          storage_path: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          file_name: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          storage_path: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          file_name?: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          storage_path?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_attachments_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_attachments_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_planning_areas: {
         Row: {
           created_at: string

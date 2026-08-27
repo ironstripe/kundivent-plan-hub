@@ -18,6 +18,7 @@ import {
 import { EventDrawer } from "@/components/kundivent/event-drawer";
 import { MonthCalendar } from "@/components/kundivent/month-calendar";
 import { MatrixView } from "@/components/kundivent/matrix-view";
+import { YearOverview } from "@/components/kundivent/year-overview";
 import { useCategories, usePlanningAreas } from "@/lib/master-data";
 import { EVENT_STATUSES, useEvents, type EventWithRelations } from "@/lib/events";
 import {
@@ -31,9 +32,9 @@ import {
 import { areaKeyFromName } from "@/lib/area-theme";
 import { cn } from "@/lib/utils";
 
-type Mode = "kalender" | "verfuegbarkeit" | "matrix";
+type Mode = "kalender" | "jahr" | "verfuegbarkeit" | "matrix";
 
-const MODES: Mode[] = ["kalender", "verfuegbarkeit", "matrix"];
+const MODES: Mode[] = ["kalender", "jahr", "verfuegbarkeit", "matrix"];
 
 export const Route = createFileRoute("/_authenticated/")({
   validateSearch: (search: Record<string, unknown>) => {
@@ -223,6 +224,10 @@ function Uebersicht() {
     patchSearch({ y: year, m: month });
   }
 
+  function shiftYear(delta: number) {
+    patchSearch({ y: cursor.year + delta });
+  }
+
   function goToday() {
     if (mode === "matrix") setJumpMonth({ index: currentMonth, nonce: Date.now() });
     patchSearch({ y: currentYear, m: currentMonth });
@@ -284,8 +289,8 @@ function Uebersicht() {
             variant="ghost"
             size="icon"
             className="size-8"
-            aria-label="Vorheriger Monat"
-            onClick={() => shiftMonth(-1)}
+            aria-label={mode === "jahr" ? "Vorheriges Jahr" : "Vorheriger Monat"}
+            onClick={() => (mode === "jahr" ? shiftYear(-1) : shiftMonth(-1))}
           >
             <ChevronLeft className="size-4" />
           </Button>
@@ -303,7 +308,7 @@ function Uebersicht() {
                 aria-label="Monat und Jahr wählen"
               >
                 <h1 className="text-sm font-semibold">
-                  {MONTHS[cursor.month]} {cursor.year}
+                  {mode === "jahr" ? cursor.year : `${MONTHS[cursor.month]} ${cursor.year}`}
                 </h1>
                 <ChevronDown className="size-3.5 opacity-60" />
               </Button>
@@ -354,7 +359,8 @@ function Uebersicht() {
                       type="button"
                       aria-pressed={active}
                       onClick={() => {
-                        goToMonth(year, index);
+                        if (mode === "jahr") patchSearch({ mode: "kalender", y: year, m: index });
+                        else goToMonth(year, index);
                         setPickerOpen(false);
                       }}
                       className={cn(
@@ -375,8 +381,8 @@ function Uebersicht() {
             variant="ghost"
             size="icon"
             className="size-8"
-            aria-label="Nächster Monat"
-            onClick={() => shiftMonth(1)}
+            aria-label={mode === "jahr" ? "Nächstes Jahr" : "Nächster Monat"}
+            onClick={() => (mode === "jahr" ? shiftYear(1) : shiftMonth(1))}
           >
             <ChevronRight className="size-4" />
           </Button>
@@ -392,7 +398,8 @@ function Uebersicht() {
         >
           {(
             [
-              ["kalender", "Kalender"],
+              ["kalender", "Monat"],
+              ["jahr", "Jahr"],
               ["verfuegbarkeit", "Verfügbarkeit"],
               ["matrix", "Matrix"],
             ] as const
@@ -512,6 +519,7 @@ function Uebersicht() {
           </Popover>
 
 
+          {mode === "jahr" ? null : (
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -599,6 +607,8 @@ function Uebersicht() {
               ) : null}
             </PopoverContent>
           </Popover>
+          )}
+
 
           <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => openNew()}>
             <Plus className="size-3.5" />
@@ -623,6 +633,18 @@ function Uebersicht() {
             Erneut versuchen
           </Button>
         </div>
+      ) : mode === "jahr" ? (
+        <YearOverview
+          year={cursor.year}
+          events={matrixEvents}
+          today={today}
+          categoryById={categoryById}
+          areaNameById={areaNameById}
+          onOpenEvent={openEvent}
+          onOpenMonth={(month) => {
+            patchSearch({ mode: "kalender", y: cursor.year, m: month });
+          }}
+        />
       ) : mode === "matrix" ? (
         <MatrixView
           events={matrixEvents}
