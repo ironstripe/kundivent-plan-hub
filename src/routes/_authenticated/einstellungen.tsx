@@ -58,6 +58,10 @@ function Einstellungen() {
 
       <CategoryAdmin canManage={isAdmin} />
 
+      {isAdmin ? <InboundEmailLog /> : null}
+
+
+
     </div>
   );
 }
