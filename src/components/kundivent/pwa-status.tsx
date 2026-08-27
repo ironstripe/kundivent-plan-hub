@@ -15,6 +15,7 @@ export function PwaStatus() {
   const [reconnected, setReconnected] = useState(false);
   const [applyUpdate, setApplyUpdate] = useState<(() => void) | null>(null);
   const wasOffline = useRef(false);
+  const { pending, syncing, retry, hasErrors } = useOfflineSync();
 
   useEffect(() => {
     if (!online) {
@@ -33,7 +34,7 @@ export function PwaStatus() {
     void registerServiceWorker((apply) => setApplyUpdate(() => apply));
   }, []);
 
-  if (!applyUpdate && online && !reconnected) return null;
+  if (!applyUpdate && online && !reconnected && pending.length === 0) return null;
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[60] flex flex-col items-center gap-2 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
