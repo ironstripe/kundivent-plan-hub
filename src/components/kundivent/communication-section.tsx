@@ -238,7 +238,13 @@ export function CommunicationSection({
       </div>
 
       {inboundToken ? (
-        <EmailAddressRow token={inboundToken} />
+        <>
+          <EmailAddressRow token={inboundToken} />
+          <p className="text-[11px] leading-snug text-muted-foreground">
+            Nur diese exakte Adresse (mit dem Code nach dem „+“) ordnet die E-Mail diesem Eintrag
+            zu. Alternativ genügt der Code {eventEmailCode(inboundToken)} im Betreff.
+          </p>
+        </>
       ) : (
         <p className="text-[11px] text-muted-foreground">
           Die E-Mail-Adresse für diesen Eintrag wird nach dem Speichern angezeigt.
