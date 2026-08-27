@@ -18,6 +18,7 @@ import {
 import { EventDrawer } from "@/components/kundivent/event-drawer";
 import { MonthCalendar } from "@/components/kundivent/month-calendar";
 import { MatrixView } from "@/components/kundivent/matrix-view";
+import { YearOverview } from "@/components/kundivent/year-overview";
 import { useCategories, usePlanningAreas } from "@/lib/master-data";
 import { EVENT_STATUSES, useEvents, type EventWithRelations } from "@/lib/events";
 import {
