@@ -21,7 +21,7 @@ Zweiter, unabhängiger Fehler: die getestete Adresse `583549e157+583549e157@rinu
 Da du die Webhook-URL in Resend geändert, das Signing-Secret aber nicht neu hinterlegt hast, ist Ursache 3 die wahrscheinlichste: Resend ruft uns auf, unser Handler verwirft die Zustellung aber mit 401, bevor irgendetwas protokolliert wird – deshalb ist das Protokoll leer.
 
 1. Signaturfehler werden künftig zuerst protokolliert (Ergebnis „Signatur ungültig“, nur Metadaten, kein Inhalt). Danach zeigt „Einstellungen → Zustellprotokoll“ sofort den Unterschied zwischen „Resend ruft nicht auf“ und „Secret falsch“.
-2. Du holst in Resend beim aktuellen Webhook-Endpoint das Signing-Secret (`whsec_…`); ich ersetze damit `RESEND_WEBHOOK_SECRET`.
+2. ✅ Erledigt: Das aktuelle Signing-Secret (`whsec_…`) aus Resend wurde als `RESEND_WEBHOOK_SECRET` hinterlegt.
 3. Kontrollcheck über die Resend-API: registrierter Endpoint zeigt auf `https://kundivent-plan-hub.lovable.app/api/public/webhooks/resend` und `email.received` ist aktiviert.
 4. Kleiner UI-Schutz in der „Kommunikation“-Sektion: Hinweistext, dass nur die dort angezeigte Adresse (mit dem Eintrags-Token) funktioniert – `583549e157+<token>@…`, nicht Mailbox+Mailbox – plus der Betreff-Code `#<token>` als Alternative.
 5. Nach dem Veröffentlichen: Testmail an die im Eintrag angezeigte Adresse; das Protokoll zeigt das Ergebnis sofort.
