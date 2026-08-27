@@ -47,6 +47,8 @@ import {
   type EventWithRelations,
 } from "@/lib/events";
 import { profileLabel, useProfiles } from "@/lib/users";
+import { addPending, removePending } from "@/lib/offline-queue";
+import { useCurrentUserId } from "@/lib/offline-sync";
 import { AttachmentSection } from "@/components/kundivent/attachment-section";
 import { uploadAttachment } from "@/lib/attachments";
 
