@@ -19,10 +19,10 @@ function env(name: string): string | undefined {
 export const INBOUND_EMAIL_DOMAIN = env("VITE_RESEND_INBOUND_DOMAIN") ?? DEFAULT_INBOUND_DOMAIN;
 
 /**
- * Resend sandbox domains route to one fixed mailbox. When it is configured,
- * per-event addresses use plus addressing on that mailbox.
+ * Optional fixed mailbox for plus addressing. Disabled by default: the Resend
+ * sandbox mailbox does not deliver plus-addressed mail, only `event-<token>@`.
  */
-export const INBOUND_EMAIL_MAILBOX = env("VITE_RESEND_INBOUND_MAILBOX") ?? "583549e157";
+export const INBOUND_EMAIL_MAILBOX = env("VITE_RESEND_INBOUND_MAILBOX");
 
 export function eventEmailAddress(
   token: string,
