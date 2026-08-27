@@ -121,6 +121,35 @@ const ok = (message: string) => new Response(JSON.stringify({ ok: true, message 
   headers: { "content-type": "application/json" },
 });
 
+type AdminClientType = Awaited<
+  typeof import("@/integrations/supabase/client.server")
+>["supabaseAdmin"];
+
+/** Every delivery is written to the log, so admins see what arrived and why it matched or not. */
+async function logDelivery(
+  supabaseAdmin: AdminClientType,
+  entry: {
+    resend_email_id?: string | null;
+    recipients?: string | null;
+    from_address?: string | null;
+    subject?: string | null;
+    outcome: string;
+    detail?: string | null;
+    event_id?: string | null;
+  },
+) {
+  const { error } = await supabaseAdmin.from("inbound_email_log").insert({
+    resend_email_id: entry.resend_email_id ?? null,
+    recipients: entry.recipients ?? null,
+    from_address: entry.from_address ?? null,
+    subject: entry.subject ?? null,
+    outcome: entry.outcome,
+    detail: entry.detail ?? null,
+    event_id: entry.event_id ?? null,
+  });
+  if (error) console.error("[resend-webhook] log insert failed", error.message);
+}
+
 export const Route = createFileRoute("/api/public/webhooks/resend")({
   server: {
     handlers: {
@@ -146,26 +175,51 @@ export const Route = createFileRoute("/api/public/webhooks/resend")({
           return ok("ignored");
         }
 
-        if (payload.type !== "email.received") return ok("ignored");
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-        const data = payload.data ?? {};
-        const resendEmailId = data.email_id ?? data.id;
-        if (!resendEmailId) {
-          console.warn("[resend-webhook] payload without email id");
+        if (payload.type !== "email.received") {
+          await logDelivery(supabaseAdmin, {
+            outcome: "ignored",
+            detail: `Ereignis ${payload.type ?? "unbekannt"}`,
+          });
           return ok("ignored");
         }
 
+        const data = payload.data ?? {};
+        const resendEmailId = data.email_id ?? data.id;
         const recipients = recipientList(data.to).map((entry) => addressOf(entry).address);
+        const recipientText = recipients.join(", ");
+        const fromPreview = addressOf(data.from).address || null;
+        const base = {
+          resend_email_id: resendEmailId ?? null,
+          recipients: recipientText || null,
+          from_address: fromPreview,
+          subject: data.subject ?? null,
+        };
+
+        if (!resendEmailId) {
+          await logDelivery(supabaseAdmin, { ...base, outcome: "error", detail: "Keine E-Mail-ID" });
+          return ok("ignored");
+        }
+
         const matched = recipients
           .map((address) => ({ address, token: parseInboundToken(address) }))
           .find((entry) => entry.token);
 
-        if (!matched?.token) {
-          console.warn(`[resend-webhook] no event token in recipients for email ${resendEmailId}`);
+        // Fallback for fixed inbound mailboxes: allow "#token" in subject or body.
+        const token =
+          matched?.token ?? inboundTokenFromText(data.subject, data.text, data.html);
+        const toAddress = matched?.address ?? recipients[0] ?? "unbekannt";
+
+        if (!token) {
+          console.warn(`[resend-webhook] no event token for email ${resendEmailId}`);
+          await logDelivery(supabaseAdmin, {
+            ...base,
+            outcome: "no_token",
+            detail: "Kein Eintrags-Token in Adresse, Betreff oder Text gefunden",
+          });
           return ok("no matching event");
         }
-
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
         // Idempotency: a retried delivery must not create a second record.
         const { data: existing, error: existingError } = await supabaseAdmin
@@ -175,24 +229,38 @@ export const Route = createFileRoute("/api/public/webhooks/resend")({
           .maybeSingle();
         if (existingError) {
           console.error("[resend-webhook] lookup failed", existingError.message);
+          await logDelivery(supabaseAdmin, {
+            ...base,
+            outcome: "error",
+            detail: existingError.message,
+          });
           return new Response("Lookup failed", { status: 500 });
         }
         if (existing) {
-          console.info(`[resend-webhook] duplicate delivery for email ${resendEmailId}`);
+          await logDelivery(supabaseAdmin, { ...base, outcome: "duplicate" });
           return ok("duplicate");
         }
 
         const { data: event, error: eventError } = await supabaseAdmin
           .from("events")
           .select("id")
-          .eq("inbound_email_token", matched.token)
+          .eq("inbound_email_token", token)
           .maybeSingle();
         if (eventError) {
           console.error("[resend-webhook] event lookup failed", eventError.message);
+          await logDelivery(supabaseAdmin, {
+            ...base,
+            outcome: "error",
+            detail: eventError.message,
+          });
           return new Response("Lookup failed", { status: 500 });
         }
         if (!event) {
-          console.warn(`[resend-webhook] unknown event token for email ${resendEmailId}`);
+          await logDelivery(supabaseAdmin, {
+            ...base,
+            outcome: "unknown_token",
+            detail: `Token ${token} gehört zu keinem Eintrag`,
+          });
           return ok("unknown event token");
         }
 
@@ -207,7 +275,7 @@ export const Route = createFileRoute("/api/public/webhooks/resend")({
             message_id: full.message_id ?? null,
             from_address: from.address || "unbekannt",
             from_name: from.name,
-            to_address: matched.address,
+            to_address: toAddress,
             subject: full.subject ?? null,
             text_body: full.text ?? null,
             html_body: full.html ?? null,
@@ -217,26 +285,42 @@ export const Route = createFileRoute("/api/public/webhooks/resend")({
           .single();
         if (insertError || !inserted) {
           console.error("[resend-webhook] insert failed", insertError?.message);
+          await logDelivery(supabaseAdmin, {
+            ...base,
+            outcome: "error",
+            detail: insertError?.message ?? "Speichern fehlgeschlagen",
+            event_id: event.id,
+          });
           return new Response("Insert failed", { status: 500 });
         }
 
         // Attachments are best effort: a failure must never discard the mail.
+        let attachmentError: string | null = null;
         for (const attachment of full.attachments ?? []) {
           try {
             await storeAttachment(supabaseAdmin, event.id, inserted.id, attachment);
           } catch (error) {
+            attachmentError = error instanceof Error ? error.message : "unknown error";
             console.error(
               `[resend-webhook] attachment failed for email ${resendEmailId}:`,
-              error instanceof Error ? error.message : "unknown error",
+              attachmentError,
             );
           }
         }
+
+        await logDelivery(supabaseAdmin, {
+          ...base,
+          outcome: "stored",
+          event_id: event.id,
+          detail: attachmentError ? `Anhang-Fehler: ${attachmentError}` : null,
+        });
 
         return ok("stored");
       },
     },
   },
 });
+
 
 /** Falls back to the Resend API when the webhook payload carries no body/attachments. */
 async function fetchFullEmail(emailId: string, data: InboundEmail): Promise<InboundEmail> {
