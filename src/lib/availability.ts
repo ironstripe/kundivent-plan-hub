@@ -1,9 +1,15 @@
 // Reusable availability domain logic.
 // Availability is derived from events — never stored in the database.
 
+import { useMemo } from "react";
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { HOLIDAY_CATEGORY, type EventRow, type EventWithRelations } from "@/lib/events";
+import {
+  HOLIDAY_CATEGORY,
+  usePendingEventRows,
+  type EventRow,
+  type EventWithRelations,
+} from "@/lib/events";
 import type { Category } from "@/lib/master-data";
 
 export type AvailabilityState = "free" | "provisional" | "occupied" | "closed";
@@ -156,7 +162,15 @@ export function eventsInRangeQuery(from: string, to: string) {
 }
 
 export function useEventsInRange(from: string, to: string) {
-  return useQuery(eventsInRangeQuery(from, to));
+  const query = useQuery(eventsInRangeQuery(from, to));
+  const pending = usePendingEventRows();
+  return useMemo(() => {
+    const overlapping = pending.filter((event) => {
+      const end = event.end_date ?? event.start_date;
+      return event.start_date <= to && end >= from;
+    });
+    return { ...query, data: query.data ? [...overlapping, ...query.data] : query.data };
+  }, [query, pending, from, to]);
 }
 
 export function eachDate(from: string, to: string): string[] {

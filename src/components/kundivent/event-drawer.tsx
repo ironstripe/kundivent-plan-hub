@@ -47,6 +47,8 @@ import {
   type EventWithRelations,
 } from "@/lib/events";
 import { profileLabel, useProfiles } from "@/lib/users";
+import { addPending, removePending } from "@/lib/offline-queue";
+import { useCurrentUserId } from "@/lib/offline-sync";
 import { AttachmentSection } from "@/components/kundivent/attachment-section";
 import { uploadAttachment } from "@/lib/attachments";
 
@@ -140,8 +142,14 @@ export function EventDrawer({
   /** Files chosen before a new event exists — uploaded right after saving. */
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const online = useIsOnline();
+  const userId = useCurrentUserId();
   const baselineRef = useRef<string>("");
   const dirtyRef = useRef(false);
+
+  /** Entries that only exist in the local queue. */
+  const isLocal = event?.is_pending === true;
+  /** Server entries can only be viewed while offline. */
+  const readOnly = !online && !!event;
 
 
   const activeAreas = useMemo(() => (areas.data ?? []).filter((a) => a.active), [areas.data]);
@@ -294,6 +302,43 @@ export function EventDrawer({
     e.preventDefault();
     const input = validate();
     if (!input) return;
+
+    // Offline: only NEW entries are accepted, and they go into the local queue.
+    if (!online) {
+      if (event) {
+        toast.error("Offline-Modus", {
+          description: "Bestehende Einträge können offline nicht bearbeitet werden.",
+        });
+        return;
+      }
+      if (!userId) {
+        toast.error("Offline-Speichern nicht möglich", {
+          description: "Kein angemeldeter Benutzer erkannt.",
+        });
+        return;
+      }
+      try {
+        await addPending(userId, input);
+        if (pendingFiles.length) {
+          toast.warning("Anhänge nicht möglich", {
+            description:
+              "Offline können keine Dateien hochgeladen werden. Bitte nach der Synchronisation erneut anhängen.",
+          });
+        }
+        setPendingFiles([]);
+        toast.success("Offline gespeichert", {
+          description:
+            "Der Eintrag wird synchronisiert, sobald wieder eine Verbindung besteht.",
+        });
+        onOpenChange(false);
+      } catch (err) {
+        toast.error("Offline-Speichern fehlgeschlagen", {
+          description: err instanceof Error ? err.message : undefined,
+        });
+      }
+      return;
+    }
+
     try {
       const savedId = await save.mutateAsync(event ? { id: event.id, input } : { input });
       toast.success(event ? "Eintrag aktualisiert" : "Eintrag erstellt");
@@ -324,6 +369,13 @@ export function EventDrawer({
   async function onDelete() {
     if (!event) return;
     try {
+      if (isLocal) {
+        await removePending(event.id);
+        setConfirmDelete(false);
+        toast.success("Offline-Eintrag verworfen");
+        onOpenChange(false);
+        return;
+      }
       await remove.mutateAsync(event.id);
       setConfirmDelete(false);
       toast.success("Eintrag gelöscht");
@@ -344,10 +396,14 @@ export function EventDrawer({
         >
           <SheetHeader className="shrink-0 border-b border-border px-4 py-3">
             <SheetTitle className="text-sm font-semibold">
-              {event ? "Eintrag bearbeiten" : "Neuer Eintrag"}
+              {event ? (isLocal ? "Offline-Eintrag" : "Eintrag bearbeiten") : "Neuer Eintrag"}
             </SheetTitle>
             <SheetDescription className="text-xs">
-              Event, Belegung oder Betriebsferien erfassen.
+              {isLocal
+                ? "Noch nicht synchronisiert – wird übertragen, sobald wieder eine Verbindung besteht."
+                : readOnly
+                  ? "Offline-Modus: bestehende Einträge können nur angesehen werden."
+                  : "Event, Belegung oder Betriebsferien erfassen."}
             </SheetDescription>
           </SheetHeader>
 
@@ -658,15 +714,17 @@ export function EventDrawer({
                   size="sm"
                   className="h-8 gap-1.5 px-2 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
                   onClick={() => setConfirmDelete(true)}
-                  disabled={!online}
+                  disabled={!online && !isLocal}
                 >
                   <Trash2 className="size-3.5" />
-                  Löschen
+                  {isLocal ? "Verwerfen" : "Löschen"}
                 </Button>
               ) : null}
               <div className="ml-auto flex items-center gap-2">
-                {!online ? (
-                  <span className="text-[11px] text-destructive">Offline – kein Speichern</span>
+                {readOnly ? (
+                  <span className="text-[11px] text-destructive">
+                    Offline – nur Ansicht
+                  </span>
                 ) : null}
                 <Button
                   type="button"
@@ -675,16 +733,22 @@ export function EventDrawer({
                   className="h-8 text-xs"
                   onClick={() => onOpenChange(false)}
                 >
-                  Abbrechen
+                  {readOnly ? "Schliessen" : "Abbrechen"}
                 </Button>
-                <Button
-                  type="submit"
-                  size="sm"
-                  className="h-8 text-xs"
-                  disabled={save.isPending || !online}
-                >
-                  {save.isPending ? "Speichern…" : "Speichern"}
-                </Button>
+                {!readOnly ? (
+                  <Button
+                    type="submit"
+                    size="sm"
+                    className="h-8 text-xs"
+                    disabled={save.isPending}
+                  >
+                    {save.isPending
+                      ? "Speichern…"
+                      : !online
+                        ? "Offline speichern"
+                        : "Speichern"}
+                  </Button>
+                ) : null}
               </div>
             </div>
 

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { PendingMark } from "@/components/kundivent/pending-mark";
 import { profileLabel, useProfiles } from "@/lib/users";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
@@ -292,7 +293,7 @@ export function MonthCalendar({
                                 ),
                               )}
                             >
-                              {event.title}
+                              <PendingMark event={event} />{event.title}
                             </button>
                           ))}
                         </div>
@@ -413,7 +414,7 @@ export function MonthCalendar({
                                   ),
                                 )}
                               >
-                                {event.title}
+                                <PendingMark event={event} />{event.title}
                               </button>
                             ))}
                           </div>
@@ -479,7 +480,7 @@ function EventBar({
       {time && !continuesFrom ? (
         <span className="shrink-0 tabular-nums opacity-70">{time}</span>
       ) : null}
-      <span className="truncate">{event.title}</span>
+      <PendingMark event={event} /><span className="truncate">{event.title}</span>
     </button>
   );
 
@@ -547,7 +548,7 @@ function EventPreview({
 
   return (
     <div>
-      <p className="text-sm font-semibold leading-snug">{event.title}</p>
+      <PendingMark event={event} /><p className="text-sm font-semibold leading-snug">{event.title}</p>
       <p className="mt-0.5 text-xs tabular-nums text-muted-foreground">
         {formatDateRange(event.start_date, event.end_date)} ·{" "}
         {formatTimeRange(event.all_day, event.start_time, event.end_time)}

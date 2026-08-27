@@ -1,4 +1,5 @@
 import { assertOnline } from "@/lib/connection";
+import { cachedFetch } from "@/lib/offline-cache";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -39,7 +40,8 @@ export function useMyProfile() {
  *  Served by a protected server function that only exposes safe fields. */
 export const profilesQuery = queryOptions({
   queryKey: ["profiles"],
-  queryFn: (): Promise<DirectoryProfile[]> => listDirectory(),
+  queryFn: (): Promise<DirectoryProfile[]> =>
+    cachedFetch("directory", () => listDirectory()),
   staleTime: 5 * 60 * 1000,
 });
 

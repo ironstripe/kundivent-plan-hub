@@ -1,0 +1,2 @@
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS offline_sync_id uuid;
+CREATE UNIQUE INDEX IF NOT EXISTS events_offline_sync_id_key ON public.events (offline_sync_id) WHERE offline_sync_id IS NOT NULL;

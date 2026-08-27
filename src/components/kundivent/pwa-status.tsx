@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { CloudOff, RefreshCw, Wifi } from "lucide-react";
+import { CloudOff, CloudUpload, RefreshCw, Wifi } from "lucide-react";
 import { registerServiceWorker } from "@/lib/pwa";
 import { hasUnsavedWork, useIsOnline } from "@/lib/connection";
+import { useOfflineSync } from "@/lib/offline-sync";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +15,7 @@ export function PwaStatus() {
   const [reconnected, setReconnected] = useState(false);
   const [applyUpdate, setApplyUpdate] = useState<(() => void) | null>(null);
   const wasOffline = useRef(false);
+  const { pending, syncing, retry, hasErrors } = useOfflineSync();
 
   useEffect(() => {
     if (!online) {
@@ -32,7 +34,7 @@ export function PwaStatus() {
     void registerServiceWorker((apply) => setApplyUpdate(() => apply));
   }, []);
 
-  if (!applyUpdate && online && !reconnected) return null;
+  if (!applyUpdate && online && !reconnected && pending.length === 0) return null;
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[60] flex flex-col items-center gap-2 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
@@ -44,6 +46,23 @@ export function PwaStatus() {
       ) : reconnected ? (
         <Banner tone="ok" icon={<Wifi className="size-4 shrink-0" />}>
           Verbindung wiederhergestellt.
+        </Banner>
+      ) : null}
+
+      {pending.length ? (
+        <Banner tone="info" icon={<CloudUpload className="size-4 shrink-0" />}>
+          <span className="flex flex-wrap items-center gap-2">
+            {syncing
+              ? `${pending.length} Offline-${pending.length === 1 ? "Eintrag wird" : "Einträge werden"} synchronisiert…`
+              : hasErrors
+                ? `${pending.length} Offline-${pending.length === 1 ? "Eintrag" : "Einträge"} konnten nicht synchronisiert werden.`
+                : `${pending.length} Offline-${pending.length === 1 ? "Eintrag wartet" : "Einträge warten"} auf Synchronisation.`}
+            {online && !syncing ? (
+              <Button size="sm" className="h-7 px-2.5 text-xs" onClick={retry}>
+                Erneut versuchen
+              </Button>
+            ) : null}
+          </span>
         </Banner>
       ) : null}
 

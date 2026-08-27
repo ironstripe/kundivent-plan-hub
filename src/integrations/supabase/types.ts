@@ -147,6 +147,7 @@ export type Database = {
           migration_source: string | null
           migration_source_ref: string | null
           notes: string | null
+          offline_sync_id: string | null
           pax: number | null
           responsible_user_id: string | null
           start_date: string
@@ -174,6 +175,7 @@ export type Database = {
           migration_source?: string | null
           migration_source_ref?: string | null
           notes?: string | null
+          offline_sync_id?: string | null
           pax?: number | null
           responsible_user_id?: string | null
           start_date: string
@@ -201,6 +203,7 @@ export type Database = {
           migration_source?: string | null
           migration_source_ref?: string | null
           notes?: string | null
+          offline_sync_id?: string | null
           pax?: number | null
           responsible_user_id?: string | null
           start_date?: string

@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { PendingMark } from "@/components/kundivent/pending-mark";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { EventStatusBadge } from "@/components/kundivent/event-status-badge";
 import { HOLIDAY_CATEGORY, formatDateRange, type EventWithRelations } from "@/lib/events";
@@ -243,7 +244,7 @@ function DayCell({
               <span aria-hidden className="text-[9px] opacity-70">
                 {statusMark(event.status, holiday)}
               </span>
-              <span className="min-w-0 flex-1 truncate">{event.title}</span>
+              <PendingMark event={event} /><span className="min-w-0 flex-1 truncate">{event.title}</span>
               <EventStatusBadge status={event.status} />
             </button>
           );
