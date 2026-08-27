@@ -306,6 +306,50 @@ export type Database = {
           },
         ]
       }
+      inbound_email_log: {
+        Row: {
+          detail: string | null
+          event_id: string | null
+          from_address: string | null
+          id: string
+          outcome: string
+          received_at: string
+          recipients: string | null
+          resend_email_id: string | null
+          subject: string | null
+        }
+        Insert: {
+          detail?: string | null
+          event_id?: string | null
+          from_address?: string | null
+          id?: string
+          outcome: string
+          received_at?: string
+          recipients?: string | null
+          resend_email_id?: string | null
+          subject?: string | null
+        }
+        Update: {
+          detail?: string | null
+          event_id?: string | null
+          from_address?: string | null
+          id?: string
+          outcome?: string
+          received_at?: string
+          recipients?: string | null
+          resend_email_id?: string | null
+          subject?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inbound_email_log_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       planning_areas: {
         Row: {
           active: boolean
