@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { RefreshCw } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
+import { Paperclip, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +16,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { formatEmailDateTime } from "@/lib/event-email";
+import { backfillEmailAttachments } from "@/lib/inbound-emails.functions";
 
 type LogRow = Tables<"inbound_email_log">;
 
@@ -50,6 +54,32 @@ export function InboundEmailLog() {
     },
   });
 
+  const backfill = useServerFn(backfillEmailAttachments);
+  const [busy, setBusy] = useState(false);
+
+  const runBackfill = async () => {
+    setBusy(true);
+    try {
+      const result = await backfill();
+      if (result.stored) {
+        toast.success(
+          `${result.stored} ${result.stored === 1 ? "Anhang" : "Anhänge"} nachgeladen`,
+        );
+      } else {
+        toast.info("Keine neuen Anhänge gefunden", {
+          description: result.problems[0] ?? undefined,
+        });
+      }
+      void log.refetch();
+    } catch (error) {
+      toast.error("Nachladen fehlgeschlagen", {
+        description: error instanceof Error ? error.message : undefined,
+      });
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <section className="space-y-3 rounded-lg border border-border bg-card p-4">
       <div className="flex items-center justify-between gap-2">
@@ -59,17 +89,31 @@ export function InboundEmailLog() {
             Letzte 50 Zustellungen an die Eintrags-Adressen – inklusive nicht zugeordneter Mails.
           </p>
         </div>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          className="h-8 gap-1.5 px-2.5 text-xs"
-          onClick={() => void log.refetch()}
-        >
-          <RefreshCw className="size-3.5" />
-          Aktualisieren
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={busy}
+            className="h-8 gap-1.5 px-2.5 text-xs"
+            onClick={() => void runBackfill()}
+          >
+            <Paperclip className="size-3.5" />
+            {busy ? "Lädt…" : "Anhänge nachladen"}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="h-8 gap-1.5 px-2.5 text-xs"
+            onClick={() => void log.refetch()}
+          >
+            <RefreshCw className="size-3.5" />
+            Aktualisieren
+          </Button>
+        </div>
       </div>
+
 
       {log.isLoading ? (
         <p className="text-xs text-muted-foreground">Protokoll wird geladen…</p>
