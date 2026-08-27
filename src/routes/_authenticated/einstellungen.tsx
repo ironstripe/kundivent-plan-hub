@@ -8,9 +8,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useCategories, usePlanningAreas } from "@/lib/master-data";
+import { useCategories } from "@/lib/master-data";
 import { useMyProfile } from "@/lib/users";
 import { UserAdmin } from "@/components/kundivent/user-admin";
+import { PlanningAreaAdmin } from "@/components/kundivent/planning-area-admin";
 
 export const Route = createFileRoute("/_authenticated/einstellungen")({
   head: () => ({
@@ -59,7 +60,6 @@ function Section({
 }
 
 function Einstellungen() {
-  const areas = usePlanningAreas();
   const categories = useCategories();
   const profile = useMyProfile();
   const isAdmin = profile.data?.is_admin ?? false;
@@ -70,7 +70,7 @@ function Einstellungen() {
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h1 className="text-base font-semibold tracking-tight">Einstellungen</h1>
         <span className="text-xs text-muted-foreground">
-          Stammdaten – Bearbeitung folgt in einer späteren Phase
+          Stammdaten von Kundivent
         </span>
       </div>
 
@@ -92,38 +92,7 @@ function Einstellungen() {
       {isAdmin ? <UserAdmin /> : null}
 
 
-      <Section title="Planungsbereiche" hint={`${areas.data?.length ?? 0} Einträge`}>
-        {areas.isPending ? (
-          <p className="px-3 py-6 text-xs text-muted-foreground">Wird geladen…</p>
-        ) : areas.isError ? (
-          <p className="px-3 py-6 text-xs text-destructive">
-            Planungsbereiche konnten nicht geladen werden.
-          </p>
-        ) : (
-          <Table className="text-sm">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="h-8 w-16 text-xs">Nr.</TableHead>
-                <TableHead className="h-8 text-xs">Name</TableHead>
-                <TableHead className="h-8 w-28 text-xs">Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {areas.data.map((area) => (
-                <TableRow key={area.id}>
-                  <TableCell className="py-1.5 tabular-nums text-muted-foreground">
-                    {area.sort_order}
-                  </TableCell>
-                  <TableCell className="py-1.5 font-medium">{area.name}</TableCell>
-                  <TableCell className="py-1.5">
-                    <StatusBadge active={area.active} />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </Section>
+      <PlanningAreaAdmin canManage={isAdmin} />
 
       <Section title="Kategorien" hint={`${categories.data?.length ?? 0} Einträge`}>
         {categories.isPending ? (
