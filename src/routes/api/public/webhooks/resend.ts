@@ -162,20 +162,24 @@ export const Route = createFileRoute("/api/public/webhooks/resend")({
 
         const rawBody = await request.text();
         const headers = readSvixHeaders(request);
-        if (!headers || !(await verifySignature(secret, headers, rawBody))) {
+
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+        if (headers && !(await verifySignature(secret, headers, rawBody))) {
           console.warn("[resend-webhook] rejected request with invalid signature");
+          // Signaturfehler ins Protokoll, damit "Resend ruft auf, aber Secret falsch"
+          // von "Resend ruft gar nicht auf" unterscheidbar bleibt.
+          await logDelivery(supabaseAdmin, {
+            outcome: "invalid_signature",
+            detail: "Signatur ungültig – prüfe, ob RESEND_WEBHOOK_SECRET zum aktuellen Resend-Webhook passt",
+          });
+          return new Response("Invalid signature", { status: 401 });
+        }
+        if (!headers) {
+          console.warn("[resend-webhook] rejected request without signature headers");
           return new Response("Invalid signature", { status: 401 });
         }
 
-        let payload: { type?: string; data?: InboundEmail };
-        try {
-          payload = JSON.parse(rawBody) as { type?: string; data?: InboundEmail };
-        } catch {
-          console.warn("[resend-webhook] unparseable payload");
-          return ok("ignored");
-        }
-
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
         if (payload.type !== "email.received") {
           await logDelivery(supabaseAdmin, {
