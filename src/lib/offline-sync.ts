@@ -114,6 +114,9 @@ export async function syncPendingEvents(userId: string): Promise<SyncResult> {
             ...toEventRecord(record.input),
             created_by: userId,
             offline_sync_id: record.sync_id,
+            ...(record.input.inbound_email_token
+              ? { inbound_email_token: record.input.inbound_email_token }
+              : {}),
           })
           .select("id")
           .single();

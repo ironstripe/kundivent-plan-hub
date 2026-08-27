@@ -98,6 +98,7 @@ export function pendingToEventRow(record: PendingEvent): EventWithRelations {
     deposit_received_at: input.deposit_received_at,
     responsible_user_id: input.responsible_user_id,
     created_by: record.user_id,
+    inbound_email_token: input.inbound_email_token ?? null,
     created_at: record.created_at,
     updated_at: record.created_at,
     external_source: null,

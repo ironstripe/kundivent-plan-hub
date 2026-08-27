@@ -50,6 +50,7 @@ import { profileLabel, useProfiles } from "@/lib/users";
 import { addPending, removePending } from "@/lib/offline-queue";
 import { useCurrentUserId } from "@/lib/offline-sync";
 import { CommunicationSection } from "@/components/kundivent/communication-section";
+import { generateInboundToken } from "@/lib/event-email";
 import { uploadAttachment } from "@/lib/attachments";
 
 type FormState = {
@@ -141,6 +142,8 @@ export function EventDrawer({
   const [confirmDelete, setConfirmDelete] = useState(false);
   /** Files chosen before a new event exists — uploaded right after saving. */
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  /** Inbound e-mail token for a NEW entry — generated as soon as the drawer opens. */
+  const [newToken, setNewToken] = useState<string | null>(null);
   const online = useIsOnline();
   const userId = useCurrentUserId();
   const baselineRef = useRef<string>("");
@@ -164,6 +167,7 @@ export function EventDrawer({
     if (!open) return;
     setErrors({});
     setPendingFiles([]);
+    setNewToken(event ? null : generateInboundToken());
     const initial: FormState = event
       ? fromEvent(event)
       : {
@@ -302,6 +306,7 @@ export function EventDrawer({
     e.preventDefault();
     const input = validate();
     if (!input) return;
+    if (!event) input.inbound_email_token = newToken;
 
     // Offline: only NEW entries are accepted, and they go into the local queue.
     if (!online) {
@@ -688,7 +693,7 @@ export function EventDrawer({
 
               <CommunicationSection
                 eventId={isLocal ? null : (event?.id ?? null)}
-                inboundToken={isLocal ? null : (event?.inbound_email_token ?? null)}
+                inboundToken={event ? (event.inbound_email_token ?? null) : newToken}
                 pendingFiles={pendingFiles}
                 onPendingFilesChange={setPendingFiles}
               />

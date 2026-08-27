@@ -32,6 +32,21 @@ export function eventEmailAddress(
   return mailbox ? `${mailbox}+${token}@${domain}` : `event-${token}@${domain}`;
 }
 
+const TOKEN_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789";
+const TOKEN_LENGTH = 10;
+
+/**
+ * Generates a random inbound token in the browser (same alphabet/length as
+ * the database default), so a new entry shows its address before saving.
+ */
+export function generateInboundToken(): string {
+  const bytes = new Uint8Array(TOKEN_LENGTH);
+  crypto.getRandomValues(bytes);
+  let token = "";
+  for (const byte of bytes) token += TOKEN_ALPHABET[byte % TOKEN_ALPHABET.length];
+  return token;
+}
+
 /** Code the user can put into the subject when plus addressing is not possible. */
 export function eventEmailCode(token: string) {
   return `#${token}`;
