@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { assertOnline } from "@/lib/connection";
+import { generateInboundToken } from "@/lib/event-email";
 import { listPending, pendingToEventRow, subscribePending } from "@/lib/offline-queue";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -175,11 +176,28 @@ export function useSaveEvent() {
         return id;
       }
       const { data: auth } = await supabase.auth.getUser();
-      const { data, error } = await supabase
+      const insertRow = (token: string | null) => ({
+        ...toEventRecord(input),
+        created_by: auth.user?.id ?? null,
+        // null → the database default generates a token as fallback.
+        ...(token ? { inbound_email_token: token } : {}),
+      });
+      let token = input.inbound_email_token ?? null;
+      let { data, error } = await supabase
         .from("events")
-        .insert({ ...toEventRecord(input), created_by: auth.user?.id ?? null })
+        .insert(insertRow(token))
         .select("id")
         .single();
+      // Unique index on inbound_email_token: on a (practically impossible)
+      // collision, retry once with a fresh token.
+      if (error?.code === "23505" && token) {
+        token = generateInboundToken();
+        ({ data, error } = await supabase
+          .from("events")
+          .insert(insertRow(token))
+          .select("id")
+          .single());
+      }
       if (error) throw error;
       await syncPlanningAreas(data.id, input.planning_area_ids);
       return data.id;
