@@ -211,6 +211,11 @@ export function AttachmentSection({
               >
                 <FileIcon name={attachment.file_name} />
                 <span className="min-w-0 flex-1 truncate">{attachment.file_name}</span>
+                {attachment.source === "email" ? (
+                  <span className="shrink-0 rounded-sm bg-muted px-1 py-0.5 text-[10px] text-muted-foreground">
+                    aus E-Mail
+                  </span>
+                ) : null}
                 <span className="shrink-0 text-[10px] text-muted-foreground">
                   {formatFileSize(attachment.file_size)}
                 </span>
