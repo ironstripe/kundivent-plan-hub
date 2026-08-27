@@ -47,35 +47,48 @@ export type Database = {
       event_attachments: {
         Row: {
           created_at: string
+          event_email_id: string | null
           event_id: string
           file_name: string
           file_size: number | null
           id: string
           mime_type: string | null
+          source: string
           storage_path: string
           uploaded_by: string | null
         }
         Insert: {
           created_at?: string
+          event_email_id?: string | null
           event_id: string
           file_name: string
           file_size?: number | null
           id?: string
           mime_type?: string | null
+          source?: string
           storage_path: string
           uploaded_by?: string | null
         }
         Update: {
           created_at?: string
+          event_email_id?: string | null
           event_id?: string
           file_name?: string
           file_size?: number | null
           id?: string
           mime_type?: string | null
+          source?: string
           storage_path?: string
           uploaded_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "event_attachments_event_email_id_fkey"
+            columns: ["event_email_id"]
+            isOneToOne: false
+            referencedRelation: "event_emails"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "event_attachments_event_id_fkey"
             columns: ["event_id"]
@@ -88,6 +101,59 @@ export type Database = {
             columns: ["uploaded_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_emails: {
+        Row: {
+          created_at: string
+          event_id: string
+          from_address: string
+          from_name: string | null
+          html_body: string | null
+          id: string
+          message_id: string | null
+          received_at: string
+          resend_email_id: string
+          subject: string | null
+          text_body: string | null
+          to_address: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          from_address: string
+          from_name?: string | null
+          html_body?: string | null
+          id?: string
+          message_id?: string | null
+          received_at?: string
+          resend_email_id: string
+          subject?: string | null
+          text_body?: string | null
+          to_address: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          from_address?: string
+          from_name?: string | null
+          html_body?: string | null
+          id?: string
+          message_id?: string | null
+          received_at?: string
+          resend_email_id?: string
+          subject?: string | null
+          text_body?: string | null
+          to_address?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_emails_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
             referencedColumns: ["id"]
           },
         ]
@@ -142,6 +208,7 @@ export type Database = {
           external_id: string | null
           external_source: string | null
           id: string
+          inbound_email_token: string
           last_synced_at: string | null
           migration_review_required: boolean
           migration_source: string | null
@@ -170,6 +237,7 @@ export type Database = {
           external_id?: string | null
           external_source?: string | null
           id?: string
+          inbound_email_token?: string
           last_synced_at?: string | null
           migration_review_required?: boolean
           migration_source?: string | null
@@ -198,6 +266,7 @@ export type Database = {
           external_id?: string | null
           external_source?: string | null
           id?: string
+          inbound_email_token?: string
           last_synced_at?: string | null
           migration_review_required?: boolean
           migration_source?: string | null
@@ -300,6 +369,7 @@ export type Database = {
     }
     Functions: {
       is_active_admin: { Args: { _user_id: string }; Returns: boolean }
+      new_inbound_email_token: { Args: never; Returns: string }
     }
     Enums: {
       event_status: "idea" | "provisional" | "confirmed" | "cancelled"
