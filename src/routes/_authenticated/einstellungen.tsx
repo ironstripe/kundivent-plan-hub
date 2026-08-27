@@ -8,10 +8,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useCategories } from "@/lib/master-data";
 import { useMyProfile } from "@/lib/users";
 import { UserAdmin } from "@/components/kundivent/user-admin";
 import { PlanningAreaAdmin } from "@/components/kundivent/planning-area-admin";
+import { CategoryAdmin } from "@/components/kundivent/category-admin";
 
 export const Route = createFileRoute("/_authenticated/einstellungen")({
   head: () => ({
@@ -60,7 +60,6 @@ function Section({
 }
 
 function Einstellungen() {
-  const categories = useCategories();
   const profile = useMyProfile();
   const isAdmin = profile.data?.is_admin ?? false;
 
@@ -94,49 +93,8 @@ function Einstellungen() {
 
       <PlanningAreaAdmin canManage={isAdmin} />
 
-      <Section title="Kategorien" hint={`${categories.data?.length ?? 0} Einträge`}>
-        {categories.isPending ? (
-          <p className="px-3 py-6 text-xs text-muted-foreground">Wird geladen…</p>
-        ) : categories.isError ? (
-          <p className="px-3 py-6 text-xs text-destructive">
-            Kategorien konnten nicht geladen werden.
-          </p>
-        ) : (
-          <Table className="text-sm">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="h-8 w-16 text-xs">Nr.</TableHead>
-                <TableHead className="h-8 text-xs">Name</TableHead>
-                <TableHead className="h-8 w-32 text-xs">Farbe</TableHead>
-                <TableHead className="h-8 w-28 text-xs">Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {categories.data.map((category) => (
-                <TableRow key={category.id}>
-                  <TableCell className="py-1.5 tabular-nums text-muted-foreground">
-                    {category.sort_order}
-                  </TableCell>
-                  <TableCell className="py-1.5 font-medium">{category.name}</TableCell>
-                  <TableCell className="py-1.5">
-                    <span className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span
-                        aria-hidden
-                        className="size-3 rounded-[3px] border border-border"
-                        style={{ backgroundColor: category.color }}
-                      />
-                      <span className="tabular-nums">{category.color}</span>
-                    </span>
-                  </TableCell>
-                  <TableCell className="py-1.5">
-                    <StatusBadge active={category.active} />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </Section>
+      <CategoryAdmin canManage={isAdmin} />
+
     </div>
   );
 }
