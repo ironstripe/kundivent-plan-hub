@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { parseInboundToken } from "@/lib/event-email";
+import { inboundTokenFromText, parseInboundToken } from "@/lib/event-email";
+
 
 /**
  * Resend inbound webhook.
