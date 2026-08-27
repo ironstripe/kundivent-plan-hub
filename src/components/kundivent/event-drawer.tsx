@@ -133,6 +133,8 @@ export function EventDrawer({
   const [form, setForm] = useState<FormState>(EMPTY);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [confirmDelete, setConfirmDelete] = useState(false);
+  /** Files chosen before a new event exists — uploaded right after saving. */
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
 
   const activeAreas = useMemo(() => (areas.data ?? []).filter((a) => a.active), [areas.data]);
   const activeCategories = useMemo(
