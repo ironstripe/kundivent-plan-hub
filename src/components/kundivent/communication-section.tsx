@@ -241,8 +241,8 @@ export function CommunicationSection({
         <>
           <EmailAddressRow token={inboundToken} />
           <p className="text-[11px] leading-snug text-muted-foreground">
-            Nur diese exakte Adresse (mit dem Code nach dem „+“) ordnet die E-Mail diesem Eintrag
-            zu. Alternativ genügt der Code {eventEmailCode(inboundToken)} im Betreff.
+            Nur diese exakte Adresse ordnet die E-Mail diesem Eintrag zu. Alternativ genügt der
+            Code {eventEmailCode(inboundToken)} im Betreff.
           </p>
         </>
       ) : (
