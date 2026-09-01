@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      backup_runs: {
+        Row: {
+          backup_type: string
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          event_count: number | null
+          file_size: number | null
+          id: string
+          started_at: string
+          status: string
+          storage_path: string | null
+        }
+        Insert: {
+          backup_type: string
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          event_count?: number | null
+          file_size?: number | null
+          id?: string
+          started_at?: string
+          status?: string
+          storage_path?: string | null
+        }
+        Update: {
+          backup_type?: string
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          event_count?: number | null
+          file_size?: number | null
+          id?: string
+          started_at?: string
+          status?: string
+          storage_path?: string | null
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           active: boolean
@@ -414,6 +453,7 @@ export type Database = {
     Functions: {
       is_active_admin: { Args: { _user_id: string }; Returns: boolean }
       new_inbound_email_token: { Args: never; Returns: string }
+      verify_backup_token: { Args: { _token: string }; Returns: boolean }
     }
     Enums: {
       event_status: "idea" | "provisional" | "confirmed" | "cancelled"
