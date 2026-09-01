@@ -61,6 +61,8 @@ function Einstellungen() {
 
       <CategoryAdmin canManage={isAdmin} />
 
+      {isAdmin ? <BackupAdmin /> : null}
+
       {isAdmin ? <InboundEmailLog /> : null}
 
 
