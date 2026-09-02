@@ -17,7 +17,11 @@ import { RADAR_CITIES, RADAR_TYPE_LABEL, THEME_CATEGORIES } from "@/lib/radar/ty
 import { RADAR_DOT_CLASS } from "@/lib/radar/theme";
 import { cn } from "@/lib/utils";
 
-type Search = { jahr?: number; monat?: number; ansicht?: "monat" | "jahr" };
+type Search = {
+  jahr?: number | undefined;
+  monat?: number | undefined;
+  ansicht?: "monat" | "jahr" | undefined;
+};
 
 const MONTHS = [
   "Januar",
