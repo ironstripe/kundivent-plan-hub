@@ -92,6 +92,7 @@ function todayIso() {
 }
 
 function Uebersicht() {
+  const { canEdit } = usePermissions();
   const events = useEvents();
   const areas = usePlanningAreas();
   const categories = useCategories();

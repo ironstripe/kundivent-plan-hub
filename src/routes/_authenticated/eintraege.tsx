@@ -60,6 +60,7 @@ const ALL = "all";
 const UNASSIGNED = "unassigned";
 
 function Eintraege() {
+  const { canEdit } = usePermissions();
   const events = useEvents();
   const areas = usePlanningAreas();
   const categories = useCategories();

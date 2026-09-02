@@ -424,6 +424,7 @@ function DayCell({
   onCreate: () => void;
   onOpenEvent: (event: EventWithRelations) => void;
 }) {
+  const { canEdit } = usePermissions();
   const style = STATE_STYLE[day.state];
   const Icon = style.Icon;
   const wd = WEEKDAYS[isoWeekday(day.date) - 1]!.short;
