@@ -5,6 +5,7 @@ import { PlanningAreaAdmin } from "@/components/kundivent/planning-area-admin";
 import { CategoryAdmin } from "@/components/kundivent/category-admin";
 import { InboundEmailLog } from "@/components/kundivent/inbound-email-log";
 import { BackupAdmin } from "@/components/kundivent/backup-admin";
+import { RadarAdmin } from "@/components/kundivent/radar-admin";
 
 
 export const Route = createFileRoute("/_authenticated/einstellungen")({
