@@ -16,8 +16,10 @@ import { Route as AuthenticatedEinstellungenRouteImport } from './routes/_authen
 import { Route as AuthenticatedEintraegeRouteImport } from './routes/_authenticated/eintraege'
 import { Route as AuthenticatedFreieTermineRouteImport } from './routes/_authenticated/freie-termine'
 import { Route as AuthenticatedMigrationRouteImport } from './routes/_authenticated/migration'
+import { Route as AuthenticatedRadarRouteImport } from './routes/_authenticated/radar'
 import { Route as ApiPublicResendConfigCheckRouteImport } from './routes/api/public/resend-config-check'
 import { Route as ApiPublicBackupsRunRouteImport } from './routes/api/public/backups/run'
+import { Route as ApiPublicRadarSyncRouteImport } from './routes/api/public/radar/sync'
 import { Route as ApiPublicWebhooksResendRouteImport } from './routes/api/public/webhooks/resend'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -56,6 +58,11 @@ const AuthenticatedMigrationRoute = AuthenticatedMigrationRouteImport.update({
   path: '/migration',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedRadarRoute = AuthenticatedRadarRouteImport.update({
+  id: '/radar',
+  path: '/radar',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const ApiPublicResendConfigCheckRoute =
   ApiPublicResendConfigCheckRouteImport.update({
     id: '/api/public/resend-config-check',
@@ -65,6 +72,11 @@ const ApiPublicResendConfigCheckRoute =
 const ApiPublicBackupsRunRoute = ApiPublicBackupsRunRouteImport.update({
   id: '/api/public/backups/run',
   path: '/api/public/backups/run',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicRadarSyncRoute = ApiPublicRadarSyncRouteImport.update({
+  id: '/api/public/radar/sync',
+  path: '/api/public/radar/sync',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicWebhooksResendRoute = ApiPublicWebhooksResendRouteImport.update({
@@ -80,8 +92,10 @@ export interface FileRoutesByFullPath {
   '/eintraege': typeof AuthenticatedEintraegeRoute
   '/freie-termine': typeof AuthenticatedFreieTermineRoute
   '/migration': typeof AuthenticatedMigrationRoute
+  '/radar': typeof AuthenticatedRadarRoute
   '/api/public/resend-config-check': typeof ApiPublicResendConfigCheckRoute
   '/api/public/backups/run': typeof ApiPublicBackupsRunRoute
+  '/api/public/radar/sync': typeof ApiPublicRadarSyncRoute
   '/api/public/webhooks/resend': typeof ApiPublicWebhooksResendRoute
 }
 export interface FileRoutesByTo {
@@ -90,9 +104,11 @@ export interface FileRoutesByTo {
   '/eintraege': typeof AuthenticatedEintraegeRoute
   '/freie-termine': typeof AuthenticatedFreieTermineRoute
   '/migration': typeof AuthenticatedMigrationRoute
+  '/radar': typeof AuthenticatedRadarRoute
   '/': typeof AuthenticatedIndexRoute
   '/api/public/resend-config-check': typeof ApiPublicResendConfigCheckRoute
   '/api/public/backups/run': typeof ApiPublicBackupsRunRoute
+  '/api/public/radar/sync': typeof ApiPublicRadarSyncRoute
   '/api/public/webhooks/resend': typeof ApiPublicWebhooksResendRoute
 }
 export interface FileRoutesById {
@@ -103,9 +119,11 @@ export interface FileRoutesById {
   '/_authenticated/eintraege': typeof AuthenticatedEintraegeRoute
   '/_authenticated/freie-termine': typeof AuthenticatedFreieTermineRoute
   '/_authenticated/migration': typeof AuthenticatedMigrationRoute
+  '/_authenticated/radar': typeof AuthenticatedRadarRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/api/public/resend-config-check': typeof ApiPublicResendConfigCheckRoute
   '/api/public/backups/run': typeof ApiPublicBackupsRunRoute
+  '/api/public/radar/sync': typeof ApiPublicRadarSyncRoute
   '/api/public/webhooks/resend': typeof ApiPublicWebhooksResendRoute
 }
 export interface FileRouteTypes {
@@ -117,8 +135,10 @@ export interface FileRouteTypes {
     | '/eintraege'
     | '/freie-termine'
     | '/migration'
+    | '/radar'
     | '/api/public/resend-config-check'
     | '/api/public/backups/run'
+    | '/api/public/radar/sync'
     | '/api/public/webhooks/resend'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -127,9 +147,11 @@ export interface FileRouteTypes {
     | '/eintraege'
     | '/freie-termine'
     | '/migration'
+    | '/radar'
     | '/'
     | '/api/public/resend-config-check'
     | '/api/public/backups/run'
+    | '/api/public/radar/sync'
     | '/api/public/webhooks/resend'
   id:
     | '__root__'
@@ -139,9 +161,11 @@ export interface FileRouteTypes {
     | '/_authenticated/eintraege'
     | '/_authenticated/freie-termine'
     | '/_authenticated/migration'
+    | '/_authenticated/radar'
     | '/_authenticated/'
     | '/api/public/resend-config-check'
     | '/api/public/backups/run'
+    | '/api/public/radar/sync'
     | '/api/public/webhooks/resend'
   fileRoutesById: FileRoutesById
 }
@@ -150,6 +174,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ApiPublicResendConfigCheckRoute: typeof ApiPublicResendConfigCheckRoute
   ApiPublicBackupsRunRoute: typeof ApiPublicBackupsRunRoute
+  ApiPublicRadarSyncRoute: typeof ApiPublicRadarSyncRoute
   ApiPublicWebhooksResendRoute: typeof ApiPublicWebhooksResendRoute
 }
 
@@ -204,6 +229,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMigrationRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/radar': {
+      id: '/_authenticated/radar'
+      path: '/radar'
+      fullPath: '/radar'
+      preLoaderRoute: typeof AuthenticatedRadarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/resend-config-check': {
       id: '/api/public/resend-config-check'
       path: '/api/public/resend-config-check'
@@ -216,6 +248,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/backups/run'
       fullPath: '/api/public/backups/run'
       preLoaderRoute: typeof ApiPublicBackupsRunRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/radar/sync': {
+      id: '/api/public/radar/sync'
+      path: '/api/public/radar/sync'
+      fullPath: '/api/public/radar/sync'
+      preLoaderRoute: typeof ApiPublicRadarSyncRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/webhooks/resend': {
@@ -233,6 +272,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEintraegeRoute: typeof AuthenticatedEintraegeRoute
   AuthenticatedFreieTermineRoute: typeof AuthenticatedFreieTermineRoute
   AuthenticatedMigrationRoute: typeof AuthenticatedMigrationRoute
+  AuthenticatedRadarRoute: typeof AuthenticatedRadarRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
@@ -241,6 +281,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEintraegeRoute: AuthenticatedEintraegeRoute,
   AuthenticatedFreieTermineRoute: AuthenticatedFreieTermineRoute,
   AuthenticatedMigrationRoute: AuthenticatedMigrationRoute,
+  AuthenticatedRadarRoute: AuthenticatedRadarRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
 
@@ -252,6 +293,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ApiPublicResendConfigCheckRoute: ApiPublicResendConfigCheckRoute,
   ApiPublicBackupsRunRoute: ApiPublicBackupsRunRoute,
+  ApiPublicRadarSyncRoute: ApiPublicRadarSyncRoute,
   ApiPublicWebhooksResendRoute: ApiPublicWebhooksResendRoute,
 }
 export const routeTree = rootRouteImport

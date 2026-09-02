@@ -9,6 +9,7 @@ import { usePendingEvents } from "@/lib/offline-sync";
 
 const NAV = [
   { to: "/", label: "Übersicht", exact: true },
+  { to: "/radar", label: "Radar", exact: false },
   { to: "/eintraege", label: "Einträge", exact: false },
   { to: "/einstellungen", label: "Einstellungen", exact: false },
 ] as const;
