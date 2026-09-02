@@ -28,12 +28,14 @@ export function DepositMark({
 }) {
   if (!event.deposit_received) return null;
   return (
-    <Check
+    <span
       role="img"
       aria-label={DEPOSIT_LABEL}
       title={DEPOSIT_LABEL}
-      strokeWidth={3.5}
-      className={cn("ml-auto size-3 shrink-0 text-success", className)}
+      className="ml-auto flex shrink-0"
+    >
+      <Check strokeWidth={3.5} aria-hidden className={cn("size-3 text-success", className)} />
+    </span>
     />
   );
 }
