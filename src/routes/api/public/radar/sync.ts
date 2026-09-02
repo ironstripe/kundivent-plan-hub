@@ -21,9 +21,18 @@ export const Route = createFileRoute("/api/public/radar/sync")({
           return Response.json({ error: "unauthorized" }, { status: 401 });
         }
 
+        // Optional { "sourceId": "..." } narrows the run to a single source.
+        let sourceId: string | undefined;
+        try {
+          const body = (await request.clone().json()) as { sourceId?: unknown };
+          if (typeof body?.sourceId === "string" && body.sourceId) sourceId = body.sourceId;
+        } catch {
+          // no or invalid body → full sync
+        }
+
         const { runRadarSync } = await import("@/lib/radar/sync.server");
         try {
-          const results = await runRadarSync();
+          const results = await runRadarSync(sourceId);
           return Response.json({ ok: true, results });
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);

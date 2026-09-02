@@ -554,6 +554,7 @@ export type Database = {
           last_sync_at: string | null
           last_sync_error: string | null
           last_sync_status: string | null
+          last_sync_summary: string | null
           name: string
           source_type: string
           sync_enabled: boolean
@@ -567,6 +568,7 @@ export type Database = {
           last_sync_at?: string | null
           last_sync_error?: string | null
           last_sync_status?: string | null
+          last_sync_summary?: string | null
           name: string
           source_type: string
           sync_enabled?: boolean
@@ -580,6 +582,7 @@ export type Database = {
           last_sync_at?: string | null
           last_sync_error?: string | null
           last_sync_status?: string | null
+          last_sync_summary?: string | null
           name?: string
           source_type?: string
           sync_enabled?: boolean

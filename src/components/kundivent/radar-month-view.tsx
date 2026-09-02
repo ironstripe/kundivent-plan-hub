@@ -41,6 +41,13 @@ export function RadarMonthView({
   onSelect: (event: RadarEvent) => void;
   onCreate: (date: string) => void;
 }) {
+  const spanDays = (e: RadarEvent) => {
+    const end = e.end_date ?? e.start_date;
+    return Math.round(
+      (Date.parse(`${end}T00:00:00Z`) - Date.parse(`${e.start_date}T00:00:00Z`)) / 86400000,
+    );
+  };
+
   const weeks = useMemo(() => buildWeeks(year, month), [year, month]);
 
   const byDate = useMemo(() => {
@@ -85,9 +92,11 @@ export function RadarMonthView({
             const items = byDate.get(date) ?? [];
             const school = items.filter((e) => e.type === "school_holiday");
             const holidays = items.filter((e) => e.type === "public_holiday");
-            const rest = items.filter(
-              (e) => e.type === "regional_event" || e.type === "theme_day",
-            );
+            // Day-specific entries first; long-running exhibitions must not
+            // push the actual events of the day into "+n weitere".
+            const rest = items
+              .filter((e) => e.type === "regional_event" || e.type === "theme_day")
+              .sort((a, b) => spanDays(a) - spanDays(b) || a.title.localeCompare(b.title, "de"));
             const kundiventCount = kundiventByDate.get(date) ?? 0;
             return (
               <button
