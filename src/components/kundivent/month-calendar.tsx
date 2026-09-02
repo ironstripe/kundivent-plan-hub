@@ -293,7 +293,7 @@ export function MonthCalendar({
                                 ),
                               )}
                             >
-                              <PendingMark event={event} />{event.title}
+                              <DepositMark event={event} /><PendingMark event={event} />{event.title}
                             </button>
                           ))}
                         </div>
@@ -414,7 +414,7 @@ export function MonthCalendar({
                                   ),
                                 )}
                               >
-                                <PendingMark event={event} />{event.title}
+                                <DepositMark event={event} /><PendingMark event={event} />{event.title}
                               </button>
                             ))}
                           </div>
@@ -480,7 +480,7 @@ function EventBar({
       {time && !continuesFrom ? (
         <span className="shrink-0 tabular-nums opacity-70">{time}</span>
       ) : null}
-      <PendingMark event={event} /><span className="truncate">{event.title}</span>
+      <DepositMark event={event} /><PendingMark event={event} /><span className="truncate">{event.title}</span>
     </button>
   );
 
@@ -548,7 +548,7 @@ function EventPreview({
 
   return (
     <div>
-      <PendingMark event={event} /><p className="text-sm font-semibold leading-snug">{event.title}</p>
+      <DepositMark event={event} /><PendingMark event={event} /><p className="text-sm font-semibold leading-snug">{event.title}</p>
       <p className="mt-0.5 text-xs tabular-nums text-muted-foreground">
         {formatDateRange(event.start_date, event.end_date)} ·{" "}
         {formatTimeRange(event.all_day, event.start_time, event.end_time)}

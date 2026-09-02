@@ -473,7 +473,7 @@ function MatrixCell({
                   onClick={() => onOpenEvent(event)}
                   className="block w-full truncate rounded-sm px-1.5 py-1 text-left text-xs hover:bg-accent"
                 >
-                  <PendingMark event={event} />{event.title}
+                  <DepositMark event={event} /><PendingMark event={event} />{event.title}
                 </button>
               ))}
             </div>
@@ -529,6 +529,7 @@ function EventBlock({
       <span aria-hidden className="text-[8px] opacity-70">
         {statusMark(status, isHoliday)}
       </span>
+      <DepositMark event={event} />
       {continuesFrom ? (
         <span className="truncate text-[10px] opacity-60">↳ {event.title}</span>
       ) : (

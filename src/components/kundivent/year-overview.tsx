@@ -244,7 +244,7 @@ function DayCell({
               <span aria-hidden className="text-[9px] opacity-70">
                 {statusMark(event.status, holiday)}
               </span>
-              <PendingMark event={event} /><span className="min-w-0 flex-1 truncate">{event.title}</span>
+              <DepositMark event={event} /><PendingMark event={event} /><span className="min-w-0 flex-1 truncate">{event.title}</span>
               <EventStatusBadge status={event.status} />
             </button>
           );
