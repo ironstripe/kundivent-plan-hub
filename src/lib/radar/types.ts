@@ -95,12 +95,27 @@ export type RadarSyncContext = {
  * Every external source is connected through this interface so the Radar UI
  * and data model stay independent of any provider.
  */
+/** Optional per-source diagnostics shown to admins in the Radar settings. */
+export type RadarSyncStats = {
+  discovered: number;
+  parsed: number;
+  skipped: number;
+  errors: number;
+  messages: string[];
+};
+
+export type RadarAdapterResult =
+  | NormalizedRadarEvent[]
+  | { events: NormalizedRadarEvent[]; stats?: RadarSyncStats };
+
 export type RadarSourceAdapter = {
   sourceId: string;
   label: string;
   /** false = registry entry prepared, no usable structured interface yet. */
   connected: boolean;
-  fetchEvents(context: RadarSyncContext): Promise<NormalizedRadarEvent[]>;
+  /** true = stale future records may be deactivated after a complete scan. */
+  supportsDeactivation?: boolean;
+  fetchEvents(context: RadarSyncContext): Promise<RadarAdapterResult>;
 };
 
 /** Sync horizon: current year plus the next two years. */
