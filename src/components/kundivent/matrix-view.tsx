@@ -529,15 +529,15 @@ function EventBlock({
       <span aria-hidden className="text-[8px] opacity-70">
         {statusMark(status, isHoliday)}
       </span>
-      <DepositMark event={event} />
       {continuesFrom ? (
-        <span className="truncate text-[10px] opacity-60">↳ {event.title}</span>
+        <span className="min-w-0 flex-1 truncate text-[10px] opacity-60">↳ {event.title}</span>
       ) : (
-        <span className="truncate">
+        <span className="min-w-0 flex-1 truncate">
           {time ? <span className="tabular-nums opacity-70">{time} </span> : null}
           <PendingMark event={event} />{event.title}
         </span>
       )}
+      <DepositMark event={event} />
 
     </button>
   );

@@ -285,15 +285,16 @@ export function MonthCalendar({
                               style={
                                 AREA_STYLE[displayAreaKey(event.planning_area_ids, areaNameById)]
                               }
-                              className={cn(
-                                "block w-full truncate rounded-[3px] px-1.5 py-1 text-left text-xs",
-                                eventBlockClasses(
-                                  event.status as EventStatus,
-                                  isHolidayEvent(event, categoryById),
-                                ),
-                              )}
-                            >
-                              <DepositMark event={event} /><PendingMark event={event} />{event.title}
+                                className={cn(
+                                  "flex w-full items-center rounded-[3px] px-1.5 py-1 text-left text-xs",
+                                  eventBlockClasses(
+                                    event.status as EventStatus,
+                                    isHolidayEvent(event, categoryById),
+                                  ),
+                                )}
+                              >
+                                <PendingMark event={event} /><span className="min-w-0 flex-1 truncate">{event.title}</span>
+                                <DepositMark event={event} />
                             </button>
                           ))}
                         </div>
@@ -406,15 +407,16 @@ export function MonthCalendar({
                                 style={
                                   AREA_STYLE[displayAreaKey(event.planning_area_ids, areaNameById)]
                                 }
-                                className={cn(
-                                  "block w-full truncate rounded-[3px] px-1.5 py-1 text-left text-xs",
-                                  eventBlockClasses(
-                                    event.status as EventStatus,
-                                    isHolidayEvent(event, categoryById),
-                                  ),
-                                )}
-                              >
-                                <DepositMark event={event} /><PendingMark event={event} />{event.title}
+                                  className={cn(
+                                    "flex w-full items-center rounded-[3px] px-1.5 py-1 text-left text-xs",
+                                    eventBlockClasses(
+                                      event.status as EventStatus,
+                                      isHolidayEvent(event, categoryById),
+                                    ),
+                                  )}
+                                >
+                                  <PendingMark event={event} /><span className="min-w-0 flex-1 truncate">{event.title}</span>
+                                  <DepositMark event={event} />
                               </button>
                             ))}
                           </div>
@@ -480,7 +482,8 @@ function EventBar({
       {time && !continuesFrom ? (
         <span className="shrink-0 tabular-nums opacity-70">{time}</span>
       ) : null}
-      <DepositMark event={event} /><PendingMark event={event} /><span className="truncate">{event.title}</span>
+      <PendingMark event={event} /><span className="min-w-0 flex-1 truncate">{event.title}</span>
+      <DepositMark event={event} />
     </button>
   );
 
@@ -548,7 +551,7 @@ function EventPreview({
 
   return (
     <div>
-      <DepositMark event={event} /><PendingMark event={event} /><p className="text-sm font-semibold leading-snug">{event.title}</p>
+      <PendingMark event={event} /><p className="text-sm font-semibold leading-snug">{event.title}</p>
       <p className="mt-0.5 text-xs tabular-nums text-muted-foreground">
         {formatDateRange(event.start_date, event.end_date)} ·{" "}
         {formatTimeRange(event.all_day, event.start_time, event.end_time)}
