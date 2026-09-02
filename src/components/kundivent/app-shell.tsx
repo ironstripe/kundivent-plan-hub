@@ -55,9 +55,14 @@ export function AppShell({ email, children }: { email?: string | null; children:
                 key={item.to}
                 to={item.to}
                 activeOptions={{ exact: item.exact }}
-                className="relative rounded-sm px-2.5 py-1.5 text-[13px] text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground data-[status=active]:font-semibold data-[status=active]:text-foreground data-[status=active]:after:absolute data-[status=active]:after:inset-x-2 data-[status=active]:after:-bottom-[7px] data-[status=active]:after:h-0.5 data-[status=active]:after:rounded-full data-[status=active]:after:bg-primary data-[status=active]:after:content-['']"
+                className="relative flex items-center gap-1 rounded-sm px-2.5 py-1.5 text-[13px] text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground data-[status=active]:font-semibold data-[status=active]:text-foreground data-[status=active]:after:absolute data-[status=active]:after:inset-x-2 data-[status=active]:after:-bottom-[7px] data-[status=active]:after:h-0.5 data-[status=active]:after:rounded-full data-[status=active]:after:bg-primary data-[status=active]:after:content-['']"
               >
                 {item.label}
+                {item.to === "/radar" ? (
+                  <span className="rounded-sm bg-secondary px-1 py-px text-[9px] font-semibold uppercase tracking-wide text-secondary-foreground">
+                    Beta
+                  </span>
+                ) : null}
               </Link>
             ))}
           </nav>
@@ -86,9 +91,14 @@ export function AppShell({ email, children }: { email?: string | null; children:
                       to={item.to}
                       activeOptions={{ exact: item.exact }}
                       onClick={() => setOpen(false)}
-                      className="rounded-sm px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground data-[status=active]:bg-accent data-[status=active]:text-accent-foreground data-[status=active]:font-medium"
+                      className="flex items-center gap-1.5 rounded-sm px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground data-[status=active]:bg-accent data-[status=active]:text-accent-foreground data-[status=active]:font-medium"
                     >
                       {item.label}
+                      {item.to === "/radar" ? (
+                        <span className="rounded-sm bg-secondary px-1 py-px text-[9px] font-semibold uppercase tracking-wide text-secondary-foreground">
+                          Beta
+                        </span>
+                      ) : null}
                     </Link>
                   ))}
                 </nav>
