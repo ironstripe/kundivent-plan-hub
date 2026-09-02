@@ -73,6 +73,8 @@ function useUsersMutation<TInput, TResult>(fn: (data: TInput) => Promise<TResult
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["managed-users"] });
+      await queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+      await queryClient.invalidateQueries({ queryKey: ["my-delete-areas"] });
     },
   });
 }
@@ -84,7 +86,8 @@ export function useCreateUser() {
       password: string;
       display_name: string;
       active: boolean;
-      is_admin: boolean;
+      role: "viewer" | "editor" | "admin";
+      delete_area_ids: string[];
     }) => createUser({ data }),
   );
 }
@@ -96,7 +99,8 @@ export function useUpdateUser() {
       email: string;
       display_name: string;
       active: boolean;
-      is_admin: boolean;
+      role: "viewer" | "editor" | "admin";
+      delete_area_ids: string[];
     }) => updateUser({ data }),
   );
 }

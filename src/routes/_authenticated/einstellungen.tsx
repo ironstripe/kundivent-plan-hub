@@ -28,7 +28,7 @@ export const Route = createFileRoute("/_authenticated/einstellungen")({
 
 function Einstellungen() {
   const profile = useMyProfile();
-  const isAdmin = profile.data?.is_admin ?? false;
+  const isAdmin = profile.data?.role === "admin";
 
 
   return (
