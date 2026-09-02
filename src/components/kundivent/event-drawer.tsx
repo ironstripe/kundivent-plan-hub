@@ -134,6 +134,7 @@ export function EventDrawer({
   const areas = usePlanningAreas();
   const categories = useCategories();
   const profiles = useProfiles();
+  const permissions = usePermissions();
   const save = useSaveEvent();
   const remove = useDeleteEvent();
 
@@ -151,8 +152,10 @@ export function EventDrawer({
 
   /** Entries that only exist in the local queue. */
   const isLocal = event?.is_pending === true;
-  /** Server entries can only be viewed while offline. */
-  const readOnly = !online && !!event;
+  /** Server entries can only be viewed while offline; viewers never edit. */
+  const readOnly = (!online && !!event) || !permissions.canEdit;
+  /** Local offline drafts belong to the user and can always be discarded. */
+  const mayDelete = isLocal || (!!event && permissions.canDeleteEvent(event));
 
 
   const activeAreas = useMemo(() => (areas.data ?? []).filter((a) => a.active), [areas.data]);
@@ -713,7 +716,7 @@ export function EventDrawer({
 
 
             <div className="flex shrink-0 items-center gap-2 border-t border-border px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-              {event ? (
+              {event && mayDelete ? (
                 <Button
                   type="button"
                   variant="ghost"
