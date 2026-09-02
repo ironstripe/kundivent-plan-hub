@@ -80,12 +80,12 @@ async function recordSourceStatus(
   errorMessage: string | null,
   summary?: string | null,
 ) {
-  const patch: Record<string, unknown> = {
+  const patch = {
     last_sync_at: new Date().toISOString(),
     last_sync_status: status,
     last_sync_error: errorMessage,
+    ...(summary !== undefined ? { last_sync_summary: summary } : {}),
   };
-  if (summary !== undefined) patch["last_sync_summary"] = summary;
   await supabaseAdmin.from("radar_sources").update(patch).eq("id", sourceId);
 }
 
