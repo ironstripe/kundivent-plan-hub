@@ -59,6 +59,32 @@ function StatusLine({ runs, type }: { runs: BackupRun[]; type: BackupRun["backup
   );
 }
 
+/** Status of the additional Google-Drive copy (via Make) for the latest Excel backup. */
+function ExternalCopyLine({ runs }: { runs: BackupRun[] }) {
+  const last = runs.find((r) => r.backup_type === "excel_export" && r.status === "success");
+  if (!last) return null;
+  const status = last.external_backup_status ?? "pending";
+  if (status === "success") {
+    return (
+      <p className="text-[11px] text-muted-foreground">
+        Google-Drive-Kopie: erfolgreich · {formatDateTime(last.external_backup_at)}
+      </p>
+    );
+  }
+  if (status === "failed") {
+    return (
+      <p className="text-[11px] text-destructive">
+        Google-Drive-Kopie fehlgeschlagen: {last.external_backup_error ?? "unbekannter Fehler"}
+      </p>
+    );
+  }
+  return (
+    <p className="text-[11px] text-muted-foreground">
+      Google-Drive-Kopie: ausstehend{last.external_backup_error ? ` (${last.external_backup_error})` : ""}
+    </p>
+  );
+}
+
 function FileList({
   files,
   onDownload,
