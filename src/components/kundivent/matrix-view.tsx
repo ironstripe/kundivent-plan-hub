@@ -471,9 +471,10 @@ function MatrixCell({
                   key={event.id}
                   type="button"
                   onClick={() => onOpenEvent(event)}
-                  className="block w-full truncate rounded-sm px-1.5 py-1 text-left text-xs hover:bg-accent"
+                  className="flex w-full items-center rounded-sm px-1.5 py-1 text-left text-xs hover:bg-accent"
                 >
-                  <DepositMark event={event} /><PendingMark event={event} />{event.title}
+                  <PendingMark event={event} /><span className="min-w-0 flex-1 truncate">{event.title}</span>
+                  <DepositMark event={event} />
                 </button>
               ))}
             </div>
