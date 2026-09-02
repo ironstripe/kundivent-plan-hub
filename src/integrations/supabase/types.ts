@@ -446,6 +446,192 @@ export type Database = {
         }
         Relationships: []
       }
+      radar_events: {
+        Row: {
+          active: boolean
+          all_day: boolean
+          canton: string | null
+          category: string | null
+          city: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          end_date: string | null
+          end_time: string | null
+          external_id: string | null
+          id: string
+          is_manual: boolean
+          kundivent_idea: string | null
+          last_synced_at: string | null
+          location_name: string | null
+          relevance: string
+          source_id: string
+          source_key: string
+          source_url: string | null
+          start_date: string
+          start_time: string | null
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          all_day?: boolean
+          canton?: string | null
+          category?: string | null
+          city?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          end_time?: string | null
+          external_id?: string | null
+          id?: string
+          is_manual?: boolean
+          kundivent_idea?: string | null
+          last_synced_at?: string | null
+          location_name?: string | null
+          relevance?: string
+          source_id: string
+          source_key: string
+          source_url?: string | null
+          start_date: string
+          start_time?: string | null
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          all_day?: boolean
+          canton?: string | null
+          category?: string | null
+          city?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          end_time?: string | null
+          external_id?: string | null
+          id?: string
+          is_manual?: boolean
+          kundivent_idea?: string | null
+          last_synced_at?: string | null
+          location_name?: string | null
+          relevance?: string
+          source_id?: string
+          source_key?: string
+          source_url?: string | null
+          start_date?: string
+          start_time?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "radar_events_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "radar_events_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "radar_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      radar_sources: {
+        Row: {
+          active: boolean
+          base_url: string | null
+          created_at: string
+          id: string
+          last_sync_at: string | null
+          last_sync_error: string | null
+          last_sync_status: string | null
+          name: string
+          source_type: string
+          sync_enabled: boolean
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          base_url?: string | null
+          created_at?: string
+          id: string
+          last_sync_at?: string | null
+          last_sync_error?: string | null
+          last_sync_status?: string | null
+          name: string
+          source_type: string
+          sync_enabled?: boolean
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          base_url?: string | null
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          last_sync_error?: string | null
+          last_sync_status?: string | null
+          name?: string
+          source_type?: string
+          sync_enabled?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      radar_theme_days: {
+        Row: {
+          active: boolean
+          category: string
+          created_at: string
+          day: number
+          description: string | null
+          id: string
+          kundivent_idea: string | null
+          month: number
+          name: string
+          relevance: string
+          source_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category: string
+          created_at?: string
+          day: number
+          description?: string | null
+          id?: string
+          kundivent_idea?: string | null
+          month: number
+          name: string
+          relevance?: string
+          source_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          created_at?: string
+          day?: number
+          description?: string | null
+          id?: string
+          kundivent_idea?: string | null
+          month?: number
+          name?: string
+          relevance?: string
+          source_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -472,12 +658,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -501,11 +687,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -526,11 +712,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -551,11 +737,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -568,11 +754,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }

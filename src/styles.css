@@ -270,3 +270,42 @@
   }
 }
 
+
+/* ---------------------------------------------------------------------------
+ * Radar (Umfeld) colour system.
+ *
+ * Radar is context, not operational data: every surface stays clearly quieter
+ * than the planning-area colours so Kundivent events keep visual priority.
+ * ------------------------------------------------------------------------ */
+
+:root {
+  --radar-school: oklch(0.62 0.055 250);
+  --radar-holiday: oklch(0.58 0.08 20);
+  --radar-regional: oklch(0.58 0.06 300);
+  --radar-theme: oklch(0.6 0.07 160);
+}
+
+.dark {
+  --radar-school: oklch(0.74 0.055 250);
+  --radar-holiday: oklch(0.72 0.08 20);
+  --radar-regional: oklch(0.72 0.06 300);
+  --radar-theme: oklch(0.74 0.07 160);
+}
+
+:root,
+.dark {
+  --radar-school-band: color-mix(in oklab, var(--radar-school) 12%, var(--card));
+  --radar-school-band-strong: color-mix(in oklab, var(--radar-school) 22%, var(--card));
+  --radar-holiday-bg: color-mix(in oklab, var(--radar-holiday) 16%, var(--card));
+  --radar-regional-bg: color-mix(in oklab, var(--radar-regional) 14%, var(--card));
+  --radar-regional-border: color-mix(in oklab, var(--radar-regional) 38%, var(--card));
+  --radar-theme-bg: color-mix(in oklab, var(--radar-theme) 14%, var(--card));
+  --radar-theme-border: color-mix(in oklab, var(--radar-theme) 38%, var(--card));
+}
+
+@theme inline {
+  --color-radar-school: var(--radar-school);
+  --color-radar-holiday: var(--radar-holiday);
+  --color-radar-regional: var(--radar-regional);
+  --color-radar-theme: var(--radar-theme);
+}
