@@ -164,6 +164,7 @@ export const steinAmRheinAdapter: RadarSourceAdapter = {
   sourceId: SOURCE_ID,
   label: "Stadt Stein am Rhein",
   connected: true,
+  supportsDeactivation: true,
   async fetchEvents() {
     const { from, to } = horizon();
     const stats: RadarSyncStats = { discovered: 0, parsed: 0, skipped: 0, errors: 0, messages: [] };
@@ -231,7 +232,6 @@ export const steinAmRheinAdapter: RadarSourceAdapter = {
           const category = mapCategory(textValue(vevent, "CATEGORIES"), title);
           const location = locationOf(textValue(vevent, "LOCATION"));
           const description = truncate(textValue(vevent, "DESCRIPTION"));
-          const uid = textValue(vevent, "UID");
 
           for (const occurrence of occurrences) {
             events.push({
@@ -241,7 +241,7 @@ export const steinAmRheinAdapter: RadarSourceAdapter = {
               sourceUrl: item.detailUrl,
               type: "regional_event",
               title,
-              description: description ?? (uid ? null : null),
+              description,
               startDate: occurrence,
               endDate: spanDays > 0 ? addDays(occurrence, spanDays) : occurrence,
               allDay,
