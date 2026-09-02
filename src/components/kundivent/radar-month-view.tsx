@@ -41,6 +41,13 @@ export function RadarMonthView({
   onSelect: (event: RadarEvent) => void;
   onCreate: (date: string) => void;
 }) {
+  const spanDays = (e: RadarEvent) => {
+    const end = e.end_date ?? e.start_date;
+    return Math.round(
+      (Date.parse(`${end}T00:00:00Z`) - Date.parse(`${e.start_date}T00:00:00Z`)) / 86400000,
+    );
+  };
+
   const weeks = useMemo(() => buildWeeks(year, month), [year, month]);
 
   const byDate = useMemo(() => {
