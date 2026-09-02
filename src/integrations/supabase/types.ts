@@ -21,6 +21,9 @@ export type Database = {
           created_at: string
           error_message: string | null
           event_count: number | null
+          external_backup_at: string | null
+          external_backup_error: string | null
+          external_backup_status: string
           file_size: number | null
           id: string
           started_at: string
@@ -33,6 +36,9 @@ export type Database = {
           created_at?: string
           error_message?: string | null
           event_count?: number | null
+          external_backup_at?: string | null
+          external_backup_error?: string | null
+          external_backup_status?: string
           file_size?: number | null
           id?: string
           started_at?: string
@@ -45,6 +51,9 @@ export type Database = {
           created_at?: string
           error_message?: string | null
           event_count?: number | null
+          external_backup_at?: string | null
+          external_backup_error?: string | null
+          external_backup_status?: string
           file_size?: number | null
           id?: string
           started_at?: string
