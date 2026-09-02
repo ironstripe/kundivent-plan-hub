@@ -58,7 +58,12 @@ export const RADAR_CANTONS = ["CH", "SH", "TG", "ZH"] as const;
 export type RadarCanton = (typeof RADAR_CANTONS)[number];
 
 /** Cities covered by the regional-event layer. */
-export const RADAR_CITIES = ["Schaffhausen", "Stein am Rhein", "Frauenfeld"] as const;
+export const RADAR_CITIES = [
+  "Schaffhausen",
+  "Stein am Rhein",
+  "Diessenhofen",
+  "Frauenfeld",
+] as const;
 
 /**
  * A Radar record after normalization — the only shape adapters may return.
