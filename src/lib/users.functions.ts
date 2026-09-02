@@ -1,13 +1,18 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+export type UserRole = "viewer" | "editor" | "admin";
+
 export type ManagedUser = {
   id: string;
   email: string;
   display_name: string;
   active: boolean;
+  role: UserRole;
   is_admin: boolean;
   must_change_password: boolean;
+  /** Planning areas this user may delete entries in (editors only). */
+  delete_area_ids: string[];
 };
 
 function assertPassword(password: string) {
@@ -27,12 +32,18 @@ function normalizeEmail(email: string) {
 async function requireAdmin(context: { supabase: any; userId: string }) {
   const { data, error } = await context.supabase
     .from("profiles")
-    .select("is_admin, active")
+    .select("role, active")
     .eq("id", context.userId)
     .maybeSingle();
   if (error) throw new Error("Berechtigung konnte nicht geprüft werden.");
   if (!data?.active) throw new Error("Dieser Benutzer ist deaktiviert.");
-  if (!data?.is_admin) throw new Error("Keine Berechtigung für die Benutzerverwaltung.");
+  if (data?.role !== "admin") throw new Error("Keine Berechtigung für die Benutzerverwaltung.");
+}
+
+function assertRole(role: string): asserts role is UserRole {
+  if (!["viewer", "editor", "admin"].includes(role)) {
+    throw new Error("Ungültige Rolle.");
+  }
 }
 
 async function admin() {
@@ -41,7 +52,7 @@ async function admin() {
 }
 
 async function activeAdminCount(db: any, excludeId?: string) {
-  let query = db.from("profiles").select("id", { count: "exact", head: true }).eq("is_admin", true).eq("active", true);
+  let query = db.from("profiles").select("id", { count: "exact", head: true }).eq("role", "admin").eq("active", true);
   if (excludeId) query = query.neq("id", excludeId);
   const { count, error } = await query;
   if (error) throw new Error("Administratoren konnten nicht geprüft werden.");
@@ -54,6 +65,30 @@ async function guardLastAdmin(db: any, targetId: string, stillActiveAdmin: boole
   if (remaining === 0) {
     throw new Error("Der letzte aktive Administrator kann nicht deaktiviert oder entfernt werden.");
   }
+}
+
+/** Delete permissions are only meaningful for editors; other roles get none. */
+async function syncDeletePermissions(
+  db: any,
+  profileId: string,
+  role: UserRole,
+  areaIds: string[],
+) {
+  const wanted = role === "editor" ? Array.from(new Set(areaIds)) : [];
+  const { error: clearError } = await db
+    .from("profile_planning_area_permissions")
+    .delete()
+    .eq("profile_id", profileId);
+  if (clearError) throw new Error("Löschrechte konnten nicht gespeichert werden.");
+  if (!wanted.length) return;
+  const { error } = await db.from("profile_planning_area_permissions").insert(
+    wanted.map((planning_area_id) => ({
+      profile_id: profileId,
+      planning_area_id,
+      can_delete: true,
+    })),
+  );
+  if (error) throw new Error("Löschrechte konnten nicht gespeichert werden.");
 }
 
 /** Minimal, non-sensitive directory of all users (name pickers, creator labels). */
@@ -77,12 +112,18 @@ export const listUsers = createServerFn({ method: "POST" })
 
     const { data: profiles, error } = await db
       .from("profiles")
-      .select("id, display_name, active, is_admin, must_change_password")
+      .select("id, display_name, active, role, must_change_password")
       .order("display_name", { ascending: true });
     if (error) throw new Error("Benutzer konnten nicht geladen werden.");
 
     const { data: authList, error: authError } = await db.auth.admin.listUsers({ page: 1, perPage: 200 });
     if (authError) throw new Error("Benutzer konnten nicht geladen werden.");
+
+    const { data: perms, error: permError } = await db
+      .from("profile_planning_area_permissions")
+      .select("profile_id, planning_area_id, can_delete")
+      .eq("can_delete", true);
+    if (permError) throw new Error("Löschrechte konnten nicht geladen werden.");
 
     const emails = new Map(authList.users.map((u) => [u.id, u.email ?? ""]));
     return (profiles ?? []).map((p) => ({
@@ -90,8 +131,12 @@ export const listUsers = createServerFn({ method: "POST" })
       email: emails.get(p.id) ?? "",
       display_name: p.display_name,
       active: p.active,
-      is_admin: p.is_admin,
+      role: p.role as UserRole,
+      is_admin: p.role === "admin",
       must_change_password: p.must_change_password,
+      delete_area_ids: (perms ?? [])
+        .filter((x) => x.profile_id === p.id)
+        .map((x) => x.planning_area_id),
     }));
   });
 
@@ -102,10 +147,12 @@ export const createUser = createServerFn({ method: "POST" })
     password: string;
     display_name: string;
     active: boolean;
-    is_admin: boolean;
+    role: UserRole;
+    delete_area_ids?: string[];
   }) => input)
   .handler(async ({ data, context }) => {
     await requireAdmin(context as any);
+    assertRole(data.role);
     assertPassword(data.password);
     const email = normalizeEmail(data.email);
     const db = await admin();
@@ -130,10 +177,11 @@ export const createUser = createServerFn({ method: "POST" })
         id: created.user.id,
         display_name: data.display_name?.trim() ?? "",
         active: data.active,
-        is_admin: data.is_admin,
+        role: data.role,
         must_change_password: true,
       });
     if (profileError) throw new Error("Profil konnte nicht gespeichert werden.");
+    await syncDeletePermissions(db, created.user.id, data.role, data.delete_area_ids ?? []);
     return { id: created.user.id };
   });
 
@@ -144,14 +192,16 @@ export const updateUser = createServerFn({ method: "POST" })
     email: string;
     display_name: string;
     active: boolean;
-    is_admin: boolean;
+    role: UserRole;
+    delete_area_ids?: string[];
   }) => input)
   .handler(async ({ data, context }) => {
     await requireAdmin(context as any);
+    assertRole(data.role);
     const email = normalizeEmail(data.email);
     const db = await admin();
 
-    await guardLastAdmin(db, data.id, data.active && data.is_admin);
+    await guardLastAdmin(db, data.id, data.active && data.role === "admin");
 
     const { error: authError } = await db.auth.admin.updateUserById(data.id, {
       email,
@@ -171,10 +221,11 @@ export const updateUser = createServerFn({ method: "POST" })
       .update({
         display_name: data.display_name?.trim() ?? "",
         active: data.active,
-        is_admin: data.is_admin,
+        role: data.role,
       })
       .eq("id", data.id);
     if (error) throw new Error("Benutzer konnte nicht gespeichert werden.");
+    await syncDeletePermissions(db, data.id, data.role, data.delete_area_ids ?? []);
     return { ok: true };
   });
 
