@@ -287,6 +287,12 @@ export async function runExcelExport(): Promise<BackupResult> {
       .eq("id", runId);
 
     await pruneExcelExports();
+    // External copy (Make -> Google Drive) is an extra layer; never fails the backup.
+    try {
+      await notifyMakeExcelBackup(runId, path, now.toISOString());
+    } catch {
+      // notifyMakeExcelBackup records its own status
+    }
     return { runId, type: "excel_export", storagePath: path, fileSize: bytes.byteLength, eventCount: events.length, checksum };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
