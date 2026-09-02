@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { EventDrawer } from "@/components/kundivent/event-drawer";
+import { usePermissions } from "@/lib/permissions";
 import { MonthCalendar } from "@/components/kundivent/month-calendar";
 import { MatrixView } from "@/components/kundivent/matrix-view";
 import { YearOverview } from "@/components/kundivent/year-overview";
@@ -91,6 +92,7 @@ function todayIso() {
 }
 
 function Uebersicht() {
+  const { canEdit } = usePermissions();
   const events = useEvents();
   const areas = usePlanningAreas();
   const categories = useCategories();
@@ -621,10 +623,12 @@ function Uebersicht() {
           )}
 
 
-          <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => openNew()}>
-            <Plus className="size-3.5" />
-            Eintrag
-          </Button>
+          {canEdit ? (
+            <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => openNew()}>
+              <Plus className="size-3.5" />
+              Eintrag
+            </Button>
+          ) : null}
         </div>
       </div>
 

@@ -1,3 +1,4 @@
+import { usePermissions } from "@/lib/permissions";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { setFormDirty, useIsOnline } from "@/lib/connection";
 import { useQueryClient } from "@tanstack/react-query";
@@ -134,6 +135,7 @@ export function EventDrawer({
   const areas = usePlanningAreas();
   const categories = useCategories();
   const profiles = useProfiles();
+  const permissions = usePermissions();
   const save = useSaveEvent();
   const remove = useDeleteEvent();
 
@@ -151,8 +153,10 @@ export function EventDrawer({
 
   /** Entries that only exist in the local queue. */
   const isLocal = event?.is_pending === true;
-  /** Server entries can only be viewed while offline. */
-  const readOnly = !online && !!event;
+  /** Server entries can only be viewed while offline; viewers never edit. */
+  const readOnly = (!online && !!event) || !permissions.canEdit;
+  /** Local offline drafts belong to the user and can always be discarded. */
+  const mayDelete = isLocal || (!!event && permissions.canDeleteEvent(event));
 
 
   const activeAreas = useMemo(() => (areas.data ?? []).filter((a) => a.active), [areas.data]);
@@ -401,12 +405,20 @@ export function EventDrawer({
         >
           <SheetHeader className="shrink-0 border-b border-border px-4 py-3">
             <SheetTitle className="text-sm font-semibold">
-              {event ? (isLocal ? "Offline-Eintrag" : "Eintrag bearbeiten") : "Neuer Eintrag"}
+              {event
+                ? isLocal
+                  ? "Offline-Eintrag"
+                  : permissions.canEdit
+                    ? "Eintrag bearbeiten"
+                    : "Eintrag ansehen"
+                : "Neuer Eintrag"}
             </SheetTitle>
             <SheetDescription className="text-xs">
               {isLocal
                 ? "Noch nicht synchronisiert – wird übertragen, sobald wieder eine Verbindung besteht."
-                : readOnly
+                : !permissions.canEdit
+                  ? "Als Betrachter können Einträge nur angesehen werden."
+                  : readOnly
                   ? "Offline-Modus: bestehende Einträge können nur angesehen werden."
                   : "Event, Belegung oder Betriebsferien erfassen."}
             </SheetDescription>
@@ -713,7 +725,7 @@ export function EventDrawer({
 
 
             <div className="flex shrink-0 items-center gap-2 border-t border-border px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-              {event ? (
+              {event && mayDelete ? (
                 <Button
                   type="button"
                   variant="ghost"
@@ -729,7 +741,7 @@ export function EventDrawer({
               <div className="ml-auto flex items-center gap-2">
                 {readOnly ? (
                   <span className="text-[11px] text-destructive">
-                    Offline – nur Ansicht
+                    {permissions.canEdit ? "Offline – nur Ansicht" : "Nur Ansicht"}
                   </span>
                 ) : null}
                 <Button

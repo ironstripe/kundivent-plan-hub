@@ -22,6 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EventDrawer } from "@/components/kundivent/event-drawer";
+import { usePermissions } from "@/lib/permissions";
 import { EventStatusBadge } from "@/components/kundivent/event-status-badge";
 import { TimelineEventRow } from "@/components/kundivent/timeline-event-row";
 import { useCategories, usePlanningAreas } from "@/lib/master-data";
@@ -59,6 +60,7 @@ const ALL = "all";
 const UNASSIGNED = "unassigned";
 
 function Eintraege() {
+  const { canEdit } = usePermissions();
   const events = useEvents();
   const areas = usePlanningAreas();
   const categories = useCategories();
@@ -306,10 +308,12 @@ function Eintraege() {
 
             ))}
           </div>
-          <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={openNew}>
-            <Plus className="size-3.5" />
-            Eintrag
-          </Button>
+          {canEdit ? (
+            <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={openNew}>
+              <Plus className="size-3.5" />
+              Eintrag
+            </Button>
+          ) : null}
         </div>
       </div>
 
@@ -330,7 +334,7 @@ function Eintraege() {
                 ? "Erstelle den ersten Eintrag für die Eventplanung."
                 : "Passe Suche oder Filter an."}
             </p>
-            {(events.data ?? []).length === 0 ? (
+            {(events.data ?? []).length === 0 && canEdit ? (
               <Button size="sm" className="mt-4 h-8 gap-1.5 text-xs" onClick={openNew}>
                 <Plus className="size-3.5" />
                 Eintrag

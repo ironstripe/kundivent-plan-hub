@@ -416,14 +416,57 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_planning_area_permissions: {
+        Row: {
+          can_delete: boolean
+          created_at: string
+          id: string
+          planning_area_id: string
+          profile_id: string
+          updated_at: string
+        }
+        Insert: {
+          can_delete?: boolean
+          created_at?: string
+          id?: string
+          planning_area_id: string
+          profile_id: string
+          updated_at?: string
+        }
+        Update: {
+          can_delete?: boolean
+          created_at?: string
+          id?: string
+          planning_area_id?: string
+          profile_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_planning_area_permissions_planning_area_id_fkey"
+            columns: ["planning_area_id"]
+            isOneToOne: false
+            referencedRelation: "planning_areas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_planning_area_permissions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           active: boolean
           created_at: string
           display_name: string
           id: string
-          is_admin: boolean
+          is_admin: boolean | null
           must_change_password: boolean
+          role: Database["public"]["Enums"]["user_role"]
           updated_at: string
         }
         Insert: {
@@ -431,8 +474,9 @@ export type Database = {
           created_at?: string
           display_name?: string
           id: string
-          is_admin?: boolean
+          is_admin?: boolean | null
           must_change_password?: boolean
+          role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
         }
         Update: {
@@ -440,8 +484,9 @@ export type Database = {
           created_at?: string
           display_name?: string
           id?: string
-          is_admin?: boolean
+          is_admin?: boolean | null
           must_change_password?: boolean
+          role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
         }
         Relationships: []
@@ -640,12 +685,25 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_delete_event: {
+        Args: { _event_id: string; _user_id: string }
+        Returns: boolean
+      }
+      current_user_role: {
+        Args: never
+        Returns: Database["public"]["Enums"]["user_role"]
+      }
       is_active_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_active_editor_or_admin: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       new_inbound_email_token: { Args: never; Returns: string }
       verify_backup_token: { Args: { _token: string }; Returns: boolean }
     }
     Enums: {
       event_status: "idea" | "provisional" | "confirmed" | "cancelled"
+      user_role: "viewer" | "editor" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -774,6 +832,7 @@ export const Constants = {
   public: {
     Enums: {
       event_status: ["idea", "provisional", "confirmed", "cancelled"],
+      user_role: ["viewer", "editor", "admin"],
     },
   },
 } as const

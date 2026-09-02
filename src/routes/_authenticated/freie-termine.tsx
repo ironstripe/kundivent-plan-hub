@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { usePlanningAreas, useCategories } from "@/lib/master-data";
 import { EventDrawer } from "@/components/kundivent/event-drawer";
+import { usePermissions } from "@/lib/permissions";
 import { EventStatusBadge } from "@/components/kundivent/event-status-badge";
 import { formatDateRange, formatTimeRange, type EventWithRelations } from "@/lib/events";
 import {
@@ -423,6 +424,7 @@ function DayCell({
   onCreate: () => void;
   onOpenEvent: (event: EventWithRelations) => void;
 }) {
+  const { canEdit } = usePermissions();
   const style = STATE_STYLE[day.state];
   const Icon = style.Icon;
   const wd = WEEKDAYS[isoWeekday(day.date) - 1]!.short;
@@ -492,14 +494,16 @@ function DayCell({
           ))}
         </div>
 
-        <Button
-          size="sm"
-          variant="outline"
-          className="mt-3 h-7 w-full gap-1 text-xs"
-          onClick={onCreate}
-        >
-          <Plus className="size-3" /> Trotzdem Eintrag erfassen
-        </Button>
+        {canEdit ? (
+          <Button
+            size="sm"
+            variant="outline"
+            className="mt-3 h-7 w-full gap-1 text-xs"
+            onClick={onCreate}
+          >
+            <Plus className="size-3" /> Trotzdem Eintrag erfassen
+          </Button>
+        ) : null}
       </PopoverContent>
     </Popover>
   );
