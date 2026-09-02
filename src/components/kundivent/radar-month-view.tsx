@@ -126,18 +126,21 @@ export function RadarMonthView({
                 </div>
 
                 <div className="space-y-0.5">
-                  {school.map((s) => (
-                    <span
-                      key={s.id}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onSelect(s);
-                      }}
-                      className="block truncate rounded-sm px-1 py-0.5 text-[10px] text-muted-foreground"
-                    >
-                      {s.title}
-                    </span>
-                  ))}
+                  {/* Only label the band where it starts or a week begins. */}
+                  {school
+                    .filter((s) => s.start_date === date || week[0] === date)
+                    .map((s) => (
+                      <span
+                        key={s.id}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelect(s);
+                        }}
+                        className="block truncate rounded-sm px-1 py-0.5 text-[10px] text-muted-foreground"
+                      >
+                        {s.title}
+                      </span>
+                    ))}
                   {rest.slice(0, 3).map((item) => (
                     <span
                       key={item.id}
