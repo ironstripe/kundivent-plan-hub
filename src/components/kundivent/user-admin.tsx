@@ -39,6 +39,16 @@ import {
   useUsers,
 } from "@/lib/users";
 import type { ManagedUser } from "@/lib/users.functions";
+import { ROLE_OPTIONS, roleLabel, type UserRole } from "@/lib/permissions";
+import { usePlanningAreas } from "@/lib/master-data";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 function errorMessage(error: unknown) {
   if (error instanceof Error && error.message) return error.message;
@@ -50,7 +60,8 @@ type FormState = {
   email: string;
   password: string;
   active: boolean;
-  is_admin: boolean;
+  role: UserRole;
+  delete_area_ids: string[];
 };
 
 const EMPTY: FormState = {
@@ -58,7 +69,8 @@ const EMPTY: FormState = {
   email: "",
   password: "",
   active: true,
-  is_admin: false,
+  role: "editor",
+  delete_area_ids: [],
 };
 
 const MIN_PASSWORD_LENGTH = 8;
@@ -72,6 +84,7 @@ function generatePassword() {
 
 export function UserAdmin() {
   const users = useUsers(true);
+  const areas = usePlanningAreas();
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
   const setActive = useSetUserActive();
@@ -120,7 +133,8 @@ export function UserAdmin() {
       email: user.email,
       password: "",
       active: user.active,
-      is_admin: user.is_admin,
+      role: user.role,
+      delete_area_ids: user.delete_area_ids ?? [],
     });
     setFormError(null);
     setInvalidField(null);
@@ -155,7 +169,8 @@ export function UserAdmin() {
           email: form.email,
           display_name: form.display_name,
           active: form.active,
-          is_admin: form.is_admin,
+          role: form.role,
+          delete_area_ids: form.delete_area_ids,
         });
         toast.success("Benutzer gespeichert.");
       } else {
@@ -164,7 +179,8 @@ export function UserAdmin() {
           password: form.password,
           display_name: form.display_name.trim(),
           active: form.active,
-          is_admin: form.is_admin,
+          role: form.role,
+          delete_area_ids: form.delete_area_ids,
         });
         const list = await users.refetch();
         const created = list.data?.some(
@@ -253,7 +269,7 @@ export function UserAdmin() {
                 <TableHead className="h-8 text-xs">Name</TableHead>
                 <TableHead className="h-8 text-xs">E-Mail</TableHead>
                 <TableHead className="h-8 w-24 text-xs">Status</TableHead>
-                <TableHead className="h-8 w-20 text-xs">Admin</TableHead>
+                <TableHead className="h-8 w-32 text-xs">Rolle</TableHead>
                 <TableHead className="h-8 w-36 text-xs">Passwort</TableHead>
                 <TableHead className="h-8 w-64 text-xs text-right">Aktionen</TableHead>
               </TableRow>
@@ -274,7 +290,13 @@ export function UserAdmin() {
                     </Badge>
                   </TableCell>
                   <TableCell className="py-1.5 text-xs">
-                    {user.is_admin ? "Ja" : "Nein"}
+                    <span>{roleLabel(user.role)}</span>
+                    {user.role === "editor" && user.delete_area_ids.length > 0 ? (
+                      <span className="block text-[11px] text-muted-foreground">
+                        Löschrecht: {user.delete_area_ids.length}{" "}
+                        {user.delete_area_ids.length === 1 ? "Bereich" : "Bereiche"}
+                      </span>
+                    ) : null}
                   </TableCell>
                   <TableCell className="py-1.5 text-[11px] text-muted-foreground">
                     {user.must_change_password ? "Wechsel erforderlich" : "Gesetzt"}
@@ -424,16 +446,69 @@ export function UserAdmin() {
                   onCheckedChange={(v) => setForm({ ...form, active: v })}
                 />
               </div>
-              <div className="flex items-center justify-between rounded-sm border border-border px-3 py-2">
-                <Label htmlFor="user-admin" className="text-xs">
-                  Admin
-                </Label>
-                <Switch
-                  id="user-admin"
-                  checked={form.is_admin}
-                  onCheckedChange={(v) => setForm({ ...form, is_admin: v })}
-                />
+              <div className="space-y-1.5">
+                <Label className="text-xs">Rolle</Label>
+                <Select
+                  value={form.role}
+                  onValueChange={(v) => setForm({ ...form, role: v as UserRole })}
+                >
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ROLE_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value} className="text-xs">
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[11px] text-muted-foreground">
+                  {ROLE_OPTIONS.find((o) => o.value === form.role)?.hint}
+                </p>
               </div>
+
+              {form.role === "admin" ? (
+                <p className="rounded-sm border border-border px-3 py-2 text-[11px] text-muted-foreground">
+                  Administratoren dürfen Einträge in allen Planungsbereichen löschen.
+                </p>
+              ) : null}
+
+              {form.role === "editor" ? (
+                <div className="space-y-2 rounded-sm border border-border px-3 py-2">
+                  <p className="text-xs font-medium">Darf Einträge löschen in</p>
+                  <div className="space-y-1.5">
+                    {(areas.data ?? [])
+                      .filter((area) => area.active)
+                      .map((area) => {
+                        const checked = form.delete_area_ids.includes(area.id);
+                        return (
+                          <label
+                            key={area.id}
+                            className="flex cursor-pointer items-center gap-2 text-xs"
+                          >
+                            <Checkbox
+                              checked={checked}
+                              onCheckedChange={(v) =>
+                                setForm({
+                                  ...form,
+                                  delete_area_ids: v
+                                    ? [...form.delete_area_ids, area.id]
+                                    : form.delete_area_ids.filter((id) => id !== area.id),
+                                })
+                              }
+                            />
+                            {area.name}
+                          </label>
+                        );
+                      })}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Ein Eintrag kann nur gelöscht werden, wenn für alle zugeordneten
+                    Planungsbereiche ein Löschrecht besteht.
+                  </p>
+                </div>
+              ) : null}
 
               {formError ? (
                 <p
