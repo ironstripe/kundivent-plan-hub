@@ -11,6 +11,9 @@ export type BackupRun = {
   file_size: number | null;
   event_count: number | null;
   error_message: string | null;
+  external_backup_status?: "pending" | "success" | "failed" | null;
+  external_backup_at?: string | null;
+  external_backup_error?: string | null;
 };
 
 export type BackupFile = {

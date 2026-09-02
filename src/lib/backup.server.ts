@@ -170,6 +170,76 @@ export async function runDatabaseSnapshot(): Promise<BackupResult> {
   }
 }
 
+const MAKE_SIGNED_URL_TTL_SECONDS = 15 * 60;
+const MAKE_TIMEOUT_MS = 10_000;
+
+async function setExternalStatus(
+  runId: string,
+  status: "pending" | "success" | "failed",
+  error: string | null,
+) {
+  await supabaseAdmin
+    .from("backup_runs")
+    .update({
+      external_backup_status: status,
+      external_backup_at: new Date().toISOString(),
+      external_backup_error: error ? error.slice(0, 500) : null,
+    })
+    .eq("id", runId);
+}
+
+/**
+ * Notifies the Make webhook so it can copy the generated XLSX to Google Drive.
+ * Never throws into the backup flow — the run stays successful either way.
+ */
+async function notifyMakeExcelBackup(runId: string, storagePath: string, createdAt: string) {
+  const webhookUrl = process.env["MAKE_BACKUP_WEBHOOK_URL"];
+  const apiKey = process.env["MAKE_BACKUP_WEBHOOK_API_KEY"];
+  if (!webhookUrl || !apiKey) {
+    await setExternalStatus(runId, "pending", "Make-Webhook nicht konfiguriert.");
+    return;
+  }
+
+  try {
+    const { data: signed, error } = await supabaseAdmin.storage
+      .from(BACKUP_BUCKET)
+      .createSignedUrl(storagePath, MAKE_SIGNED_URL_TTL_SECONDS, { download: true });
+    if (error || !signed?.signedUrl) {
+      throw new Error(`Signierter Link fehlgeschlagen: ${error?.message ?? "unbekannt"}`);
+    }
+
+    const payload = {
+      type: "excel_backup",
+      filename: storagePath.slice(storagePath.lastIndexOf("/") + 1),
+      download_url: signed.signedUrl,
+      created_at: createdAt,
+    };
+
+    let lastError = "";
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        const response = await fetch(webhookUrl, {
+          method: "POST",
+          headers: { "content-type": "application/json", "x-make-apikey": apiKey },
+          body: JSON.stringify(payload),
+          signal: AbortSignal.timeout(MAKE_TIMEOUT_MS),
+        });
+        if (response.ok) {
+          await setExternalStatus(runId, "success", null);
+          return;
+        }
+        lastError = `Make antwortete mit Status ${response.status}`;
+      } catch (err) {
+        lastError = err instanceof Error ? err.message : String(err);
+      }
+    }
+    throw new Error(lastError || "Make-Webhook fehlgeschlagen.");
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    await setExternalStatus(runId, "failed", message);
+  }
+}
+
 function formatTime(value: string | null) {
   return value ? value.slice(0, 5) : "";
 }
@@ -287,6 +357,12 @@ export async function runExcelExport(): Promise<BackupResult> {
       .eq("id", runId);
 
     await pruneExcelExports();
+    // External copy (Make -> Google Drive) is an extra layer; never fails the backup.
+    try {
+      await notifyMakeExcelBackup(runId, path, now.toISOString());
+    } catch {
+      // notifyMakeExcelBackup records its own status
+    }
     return { runId, type: "excel_export", storagePath: path, fileSize: bytes.byteLength, eventCount: events.length, checksum };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
