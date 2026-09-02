@@ -1,4 +1,4 @@
-import { CloudUpload } from "lucide-react";
+import { Check, CloudUpload } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { EventWithRelations } from "@/lib/events";
 
@@ -15,7 +15,10 @@ export function PendingMark({ event, className }: { event: EventWithRelations; c
 
 export const DEPOSIT_LABEL = "Anzahlung eingegangen";
 
-/** Small green bullet shown before the title when a deposit has been received. */
+/**
+ * Small green check shown at the far right of compact event chips when a
+ * deposit has been received. Renders nothing otherwise.
+ */
 export function DepositMark({
   event,
   className,
@@ -25,14 +28,12 @@ export function DepositMark({
 }) {
   if (!event.deposit_received) return null;
   return (
-    <span
+    <Check
       role="img"
       aria-label={DEPOSIT_LABEL}
       title={DEPOSIT_LABEL}
-      className={cn(
-        "mr-1 inline-block size-1.5 shrink-0 rounded-full bg-success align-[-2px]",
-        className,
-      )}
+      strokeWidth={3.5}
+      className={cn("ml-auto size-3 shrink-0 text-success", className)}
     />
   );
 }
