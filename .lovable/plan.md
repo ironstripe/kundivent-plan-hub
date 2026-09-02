@@ -1,101 +1,46 @@
-# Excel-Abgleich (Build 15) – kontrollierter Update-Import
+# Excel-Backups an Make melden
 
-Der Excel-Import wird von einer Einmal-Migration zu einem wiederholbaren, kontrollierten Abgleich: Änderungen aus der Excel-Datei werden erkannt, vorab angezeigt und erst nach ausdrücklicher Bestätigung übernommen. Es wird nie automatisch gelöscht oder abgesagt, und manuell in Kundivent erfasste Einträge bleiben komplett unberührt.
+Nach jeder erfolgreichen Excel-Sicherung meldet Kundivent die Datei an einen Make-Webhook, damit Make die XLSX-Datei nach Google Drive kopiert. Der Backup-Speicher bleibt privat, Make erhält nur einen zeitlich begrenzten Download-Link.
 
-## Ausgangslage (geprüft)
+## Ablauf
 
-- 86 Einträge stammen aus Excel (`migration_source = kundelfingerhof_excel`), 7 sind manuell erfasst.
-- Die heutige Quellreferenz enthält Datum und Titel, z. B. `2026|Bankett/Event|2026-08-22|2026-08-22|hochzeit-stroppel-&-schlatter-50-pax`. Ändert sich Datum oder Titel in Excel, entsteht heute ein Duplikat statt einer Aktualisierung.
-- Titel allein reicht als Identität nicht: z. B. «First Friday SH» kommt in derselben Spalte mehrfach an verschiedenen Daten vor.
+1. Excel-Backup wird wie bisher erzeugt und in den privaten Speicher geladen (unverändert).
+2. Erst danach: signierter Download-Link mit 15 Minuten Gültigkeit für genau diese Datei.
+3. POST an die Make-Webhook-URL mit Header `x-make-apikey` und Payload:
+   `type`, `filename`, `download_url`, `created_at`.
+4. Ergebnis wird getrennt vom Haupt-Backup protokolliert.
 
-## Wiedererkennung derselben Veranstaltung
+Gilt identisch für das manuelle "Backup jetzt erstellen → Excel" und den wöchentlichen automatischen Lauf – beide nutzen dieselbe Funktion, kein zweiter Code-Pfad.
 
-Da die Excel-Datei keine feste ID-Spalte hat, wird in mehreren Stufen zugeordnet (jeweils eindeutig, 1:1):
+## Fehlerbehandlung
 
-1. Voller Schlüssel identisch (Blatt + Spalten + Datumsbereich + Titel) → sicher dieselbe Veranstaltung.
-2. Blatt + Spalten + Datumsbereich identisch, Titel geändert → Umbenennung.
-3. Blatt + Spalten + Titel identisch, Datum verschoben → Verschiebung, aber nur wenn auf beiden Seiten genau ein Kandidat übrig bleibt.
-4. Mehrere mögliche Kandidaten → «Prüfung nötig»; der Anwender kann im Detaildialog wählen: als neuer Eintrag anlegen oder einem bestehenden Eintrag zuordnen.
+- Schlägt der Webhook fehl, bleibt das Excel-Backup erfolgreich; nichts wird gelöscht.
+- Ein einziger kurzer Wiederholungsversuch, danach Abbruch mit knapper Fehlermeldung (kein Endlos-Retry), Timeout ca. 10 Sekunden.
+- Der Status der externen Kopie wird pro Lauf gespeichert: `pending`, `success` oder `failed` samt Zeitpunkt und Fehlertext.
+- Fehlt eine der beiden Konfigurationen (URL/Key), bleibt der Status `pending` mit dem Hinweis "nicht konfiguriert".
 
-Der beim Übernehmen geschriebene Schlüssel (`migration_source_key`) wird für die bestehenden 86 Einträge einmalig aus der vorhandenen Referenz übernommen, damit nichts bricht.
+## UI
 
-## Klassifizierung und Vorschau
+In der Admin-Ansicht "Datensicherung" zeigt die Excel-Karte zusätzlich eine Zeile zur externen Kopie, z. B. "Google-Drive-Kopie: erfolgreich · 02.09.2026 03:01" bzw. rot mit Fehlermeldung. Keine weiteren Änderungen am Backup-UI.
 
-Nach der Dateiauswahl wird nur gelesen und verglichen – keine Datenbankschreibung. Angezeigt wird:
+## Sicherheit
 
-```text
-Excel-Abgleich
+- Webhook-URL und API-Key werden als serverseitige Secrets hinterlegt (`MAKE_BACKUP_WEBHOOK_URL`, `MAKE_BACKUP_WEBHOOK_API_KEY`) und ausschliesslich im Server-Code gelesen.
+- Kein Key im Browser, in Logs, in der UI oder in Backup-Dateien; der Service-Role-Key wird nie an Make gesendet.
+- Der Bucket bleibt privat.
 
-Neu                12
-Geändert            8
-Unverändert       143
-Fehlt in Excel      3
-Prüfung nötig       2
-```
+## Technische Details
 
-- Filter: Alle · Neu · Geändert · Unverändert · Fehlt in Excel · Prüfung nötig.
-- Bei «Geändert» zeigt der Detaildialog nur die abweichenden Felder mit Alt/Neu (Datum, Pax, Status, Titel, Kategorie, Bereiche, Bemerkungen).
-- Verglichen wird normalisiert: leer = leer, Leerzeichen und Datumsformat vereinheitlicht, Planungsbereiche als Menge ohne Reihenfolge. Ganztags-Einträge ohne Zeiten gelten als gleich.
-- «Fehlt in Excel» listet importierte Einträge, die in der neuen Datei nicht mehr vorkommen, mit den Aktionen «Ignorieren» und «Eintrag öffnen». Kein Löschen, kein automatisches Absagen, keine Statusänderung.
+- Migration: `backup_runs` erhält `external_backup_status` (Default `pending`), `external_backup_at`, `external_backup_error`; nur für `excel_export` befüllt. Bestehende Leserechte bleiben (Admins lesen).
+- `src/lib/backup.server.ts`: neue interne Funktion `notifyMakeExcelBackup(runId, storagePath, createdAt)` – `createSignedUrl(path, 900, { download: true })`, `fetch` mit `x-make-apikey`, `AbortSignal.timeout`, ein Retry, danach `backup_runs` aktualisieren. Aufruf am Ende von `runExcelExport()` nach dem erfolgreichen Upload/Verify, in `try/catch` gekapselt, sodass das Backup-Ergebnis unverändert zurückgegeben wird. Secrets werden erst innerhalb der Handler aus `process.env` gelesen.
+- `src/lib/backups.functions.ts`: `BackupRun`-Typ um die drei neuen Felder erweitert (Overview liefert sie bereits über `select("*")`).
+- `src/components/kundivent/backup-admin.tsx`: Statuszeile für die externe Kopie in der Excel-Karte.
+- Beide Auslöser (`triggerBackup` und der Cron-Endpunkt `/api/public/backups/run`) rufen bereits `runBackup` auf – dadurch automatisch abgedeckt.
 
-## Übernahme
+## Test
 
-Primäraktion: **Excel-Abgleich übernehmen**. Darüber dauerhaft sichtbar der Hinweis:
+Manuelles Excel-Backup auslösen und prüfen: XLSX liegt im privaten Speicher, signierter Link funktioniert, Webhook-Aufruf mit korrektem Header und Payload wird ausgeführt, `external_backup_status` steht auf `success`, das Haupt-Backup bleibt unverändert. Ob die Datei in Google Drive ankommt, prüfst du in Make – das liegt ausserhalb von Kundivent.
 
-`Der Excel-Abgleich aktualisiert nur Einträge, die ursprünglich aus Excel stammen. Manuell in Kundivent erfasste Einträge bleiben unverändert. Einträge werden nie automatisch gelöscht.`
+## Benötigt
 
-- Neu → Eintrag anlegen inkl. Planungsbereichen.
-- Geändert → bestehenden Eintrag aktualisieren, gleiche Eintrags-ID, nur Excel-Felder.
-- Unverändert → nichts schreiben.
-- Prüfung nötig → wird nur übernommen, wenn der Anwender sie im Dialog freigegeben hat.
-- Fehlt in Excel → nur markieren.
-
-Excel darf ausschliesslich verändern: Titel, Kategorie, Datum/Zeiten, Ganztags-Kennzeichen, Status, Pax, Bemerkungen, Planungsbereiche, Prüf-Kennzeichen und Sync-Metadaten. Unberührt bleiben: verantwortliche Person, E-Mail-Adresse des Eintrags (`inbound_email_token`), Dateianhänge, E-Mail-Verlauf, Ersteller, Offline-Metadaten.
-
-Abschlussmeldung:
-
-```text
-Excel-Abgleich abgeschlossen
-
-Neu erstellt: 12
-Aktualisiert: 8
-Unverändert: 143
-Fehlt in Excel: 3
-Fehlgeschlagen: 0
-```
-
-Fehlgeschlagene Quellsätze werden einzeln mit Grund aufgeführt.
-
-## Technische Umsetzung
-
-**Datenbank (eine Migration)**
-
-- `events.migration_source_key text` (Index auf `(migration_source, migration_source_key)`), einmalig aus `migration_source_ref` befüllt.
-- `events.migration_missing_from_source boolean not null default false`.
-- `events.last_import_batch_id text` (z. B. `excel-sync-20260831-151100-a1b2`).
-- RPC `public.apply_excel_event_sync(...)` (SECURITY INVOKER, für `authenticated`): aktualisiert bzw. erstellt einen Eintrag samt Planungsbereichs-Verknüpfungen in einer Transaktion, sodass kein halb aktualisierter Zustand entstehen kann. Setzt `last_synced_at`, `sync_status`, Batch-ID; rührt Kundivent-eigene Felder nicht an.
-
-**Parser (`src/lib/migration/parse.ts`)**
-
-- Bestehende Lese-/Konsolidierungslogik bleibt unverändert (Blätter 2026–2028, Wochenend-Übersicht weiterhin nur Validierung).
-- `MigrationRecord` erhält zusätzlich `sourceKey` (Blatt + sortierte Spalten + Titel-Slug) sowie `dateKey`; `ref` bleibt für Kompatibilität erhalten.
-
-**Neuer Vergleich (`src/lib/migration/diff.ts`)**
-
-- Lädt einmalig alle Excel-Einträge inkl. Bereichs-Verknüpfungen, Kategorien und Planungsbereiche (kein Query pro Zeile).
-- Führt die vierstufige Zuordnung aus, normalisiert und liefert pro Datensatz Klassifikation und Feld-Diffs sowie die Liste «Fehlt in Excel».
-
-**Anwenden (`src/lib/migration/import.ts`)**
-
-- `useApplyExcelSync` ruft je Datensatz die RPC auf, sammelt Erfolge/Fehler und markiert am Ende `migration_missing_from_source` (setzen und wieder zurücksetzen).
-
-**UI (`src/routes/_authenticated/migration.tsx`)**
-
-- Titel «Excel-Abgleich», Subline «Aktualisiert bestehende Excel-Einträge in Kundivent und übernimmt neue Einträge.»
-- Zählkacheln, neue Filter, Diff-Dialog, Bereich «Fehlt in Excel», Ergebnis-Zusammenfassung.
-
-Nicht Teil dieses Builds: automatisches Löschen oder Absagen, Excel-Export, Datei-Überwachung, Cloud-Sync, geplante Importe, Versionierung.
-
-## Abschliessender Test
-
-Mit einer Kopie der aktuellen Arbeitsmappe: identische Datei (0 neu, 0 geändert), geänderter Eintrag (1 geändert, gleiche ID, Verantwortliche/Anhänge/E-Mail-Adresse unverändert), neuer Eintrag (1 neu), entfernter Eintrag (1 fehlt in Excel, nichts gelöscht), manueller Kundivent-Eintrag unberührt, Wiederholung ohne Duplikate.
+Die Make-Webhook-URL und der zugehörige API-Key werden beim Umsetzen abgefragt.
