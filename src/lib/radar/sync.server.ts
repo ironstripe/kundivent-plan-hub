@@ -13,13 +13,14 @@ import {
 import {
   frauenfeldAdapter,
   schaffhauserlandAdapter,
-  steinAmRheinAdapter,
 } from "@/lib/radar/adapters/regional";
+import { steinAmRheinAdapter } from "@/lib/radar/adapters/stein-am-rhein";
 import {
   syncHorizon,
   type NormalizedRadarEvent,
   type RadarSourceAdapter,
   type RadarSyncContext,
+  type RadarSyncStats,
 } from "@/lib/radar/types";
 
 export const RADAR_ADAPTERS: RadarSourceAdapter[] = [
@@ -77,15 +78,87 @@ async function recordSourceStatus(
   sourceId: string,
   status: "success" | "failed",
   errorMessage: string | null,
+  summary?: string | null,
 ) {
-  await supabaseAdmin
-    .from("radar_sources")
-    .update({
-      last_sync_at: new Date().toISOString(),
-      last_sync_status: status,
-      last_sync_error: errorMessage,
-    })
-    .eq("id", sourceId);
+  const patch: Record<string, unknown> = {
+    last_sync_at: new Date().toISOString(),
+    last_sync_status: status,
+    last_sync_error: errorMessage,
+  };
+  if (summary !== undefined) patch["last_sync_summary"] = summary;
+  await supabaseAdmin.from("radar_sources").update(patch).eq("id", sourceId);
+}
+
+type ImportCounts = { created: number; updated: number; unchanged: number };
+
+/** Compares incoming records with the stored ones to report real changes. */
+async function classify(
+  sourceId: string,
+  events: NormalizedRadarEvent[],
+): Promise<ImportCounts> {
+  const counts: ImportCounts = { created: 0, updated: 0, unchanged: 0 };
+  const { data } = await supabaseAdmin
+    .from("radar_events")
+    .select("source_key, title, description, start_date, end_date, start_time, end_time, location_name, category, active")
+    .eq("source_id", sourceId);
+  const existing = new Map((data ?? []).map((row) => [row.source_key, row]));
+  for (const event of events) {
+    const row = existing.get(event.sourceKey);
+    if (!row) {
+      counts.created += 1;
+      continue;
+    }
+    const same =
+      row.title === event.title &&
+      (row.description ?? null) === (event.description ?? null) &&
+      row.start_date === event.startDate &&
+      (row.end_date ?? null) === (event.endDate ?? null) &&
+      (row.start_time ?? null)?.slice(0, 5) === (event.startTime ?? null) &&
+      (row.end_time ?? null)?.slice(0, 5) === (event.endTime ?? null) &&
+      (row.location_name ?? null) === (event.locationName ?? null) &&
+      (row.category ?? null) === (event.category ?? null) &&
+      row.active === true;
+    if (same) counts.unchanged += 1;
+    else counts.updated += 1;
+  }
+  return counts;
+}
+
+/**
+ * Conservative cleanup: only after a complete successful scan, and only for
+ * future imported records of that source that were not returned this time.
+ */
+async function deactivateStale(sourceId: string, events: NormalizedRadarEvent[]) {
+  const keep = new Set(events.map((e) => e.sourceKey));
+  const today = new Date().toISOString().slice(0, 10);
+  const { data } = await supabaseAdmin
+    .from("radar_events")
+    .select("id, source_key")
+    .eq("source_id", sourceId)
+    .eq("is_manual", false)
+    .eq("active", true)
+    .gte("start_date", today);
+  const stale = (data ?? []).filter((row) => !keep.has(row.source_key)).map((row) => row.id);
+  if (!stale.length) return 0;
+  await supabaseAdmin.from("radar_events").update({ active: false }).in("id", stale);
+  return stale.length;
+}
+
+function summaryLine(
+  stats: RadarSyncStats | null,
+  counts: ImportCounts,
+  deactivated: number,
+): string {
+  const parts = [
+    stats ? `Gefunden: ${stats.discovered}` : null,
+    `Neu: ${counts.created}`,
+    `Aktualisiert: ${counts.updated}`,
+    `Unverändert: ${counts.unchanged}`,
+    stats && stats.skipped ? `Übersprungen: ${stats.skipped}` : null,
+    stats && stats.errors ? `Fehler: ${stats.errors}` : null,
+    deactivated ? `Deaktiviert: ${deactivated}` : null,
+  ].filter(Boolean);
+  return parts.join(" · ");
 }
 
 /**
@@ -139,6 +212,7 @@ export type SourceSyncResult = {
   status: "success" | "failed" | "skipped";
   count: number;
   error: string | null;
+  summary?: string | null;
 };
 
 async function syncAdapter(
@@ -149,10 +223,18 @@ async function syncAdapter(
     return { sourceId: adapter.sourceId, status: "skipped", count: 0, error: null };
   }
   try {
-    const events = await adapter.fetchEvents(ctx);
+    const result = await adapter.fetchEvents(ctx);
+    const events = Array.isArray(result) ? result : result.events;
+    const stats = Array.isArray(result) ? null : (result.stats ?? null);
+
+    const counts = await classify(adapter.sourceId, events);
     const count = await upsertEvents(events);
-    await recordSourceStatus(adapter.sourceId, "success", null);
-    return { sourceId: adapter.sourceId, status: "success", count, error: null };
+    const deactivated = adapter.supportsDeactivation
+      ? await deactivateStale(adapter.sourceId, events)
+      : 0;
+    const summary = summaryLine(stats, counts, deactivated);
+    await recordSourceStatus(adapter.sourceId, "success", null, summary);
+    return { sourceId: adapter.sourceId, status: "success", count, error: null, summary };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     // Previously synchronized data stays untouched.
