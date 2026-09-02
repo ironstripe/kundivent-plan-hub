@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import { PendingMark } from "@/components/kundivent/pending-mark";
+import { DepositMark, PendingMark } from "@/components/kundivent/pending-mark";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import {

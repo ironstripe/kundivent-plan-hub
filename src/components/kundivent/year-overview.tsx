@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { PendingMark } from "@/components/kundivent/pending-mark";
+import { DepositMark, PendingMark } from "@/components/kundivent/pending-mark";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { EventStatusBadge } from "@/components/kundivent/event-status-badge";
 import { HOLIDAY_CATEGORY, formatDateRange, type EventWithRelations } from "@/lib/events";

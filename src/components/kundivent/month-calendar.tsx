@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { PendingMark } from "@/components/kundivent/pending-mark";
+import { DepositMark, PendingMark } from "@/components/kundivent/pending-mark";
 import { profileLabel, useProfiles } from "@/lib/users";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
