@@ -492,14 +492,16 @@ function DayCell({
           ))}
         </div>
 
-        <Button
-          size="sm"
-          variant="outline"
-          className="mt-3 h-7 w-full gap-1 text-xs"
-          onClick={onCreate}
-        >
-          <Plus className="size-3" /> Trotzdem Eintrag erfassen
-        </Button>
+        {canEdit ? (
+          <Button
+            size="sm"
+            variant="outline"
+            className="mt-3 h-7 w-full gap-1 text-xs"
+            onClick={onCreate}
+          >
+            <Plus className="size-3" /> Trotzdem Eintrag erfassen
+          </Button>
+        ) : null}
       </PopoverContent>
     </Popover>
   );
