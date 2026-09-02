@@ -32,11 +32,6 @@ export const schaffhauserlandAdapter = preparedAdapter(
   "Schaffhauserland Tourismus",
 );
 
-export const steinAmRheinAdapter = preparedAdapter(
-  "stein-am-rhein",
-  "Stein am Rhein – Veranstaltungskalender",
-);
-
 export const frauenfeldAdapter = preparedAdapter(
   "frauenfeld-aktuell",
   "Frauenfeld aktuell – Veranstaltungskalender",
