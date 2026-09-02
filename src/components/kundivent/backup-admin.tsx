@@ -179,6 +179,7 @@ export function BackupAdmin() {
             </Badge>
           </div>
           <StatusLine runs={runs} type="excel_export" />
+          <ExternalCopyLine runs={runs} />
           <Button
             size="sm"
             variant="outline"
