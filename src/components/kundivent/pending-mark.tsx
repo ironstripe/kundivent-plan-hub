@@ -36,6 +36,5 @@ export function DepositMark({
     >
       <Check strokeWidth={3.5} aria-hidden className={cn("size-3 text-success", className)} />
     </span>
-    />
   );
 }
