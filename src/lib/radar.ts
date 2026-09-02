@@ -129,7 +129,7 @@ export type RadarLayers = {
 export const DEFAULT_LAYERS: RadarLayers = {
   schoolCantons: ["SH", "TG"],
   holidayCantons: ["CH", "SH", "TG"],
-  cities: ["Schaffhausen", "Stein am Rhein", "Frauenfeld"],
+  cities: ["Schaffhausen", "Stein am Rhein", "Diessenhofen", "Frauenfeld"],
   themeCategories: ["Fisch & Genuss", "Natur & Umwelt", "Familie & Freizeit"],
   showKundivent: true,
   showLowRelevance: false,

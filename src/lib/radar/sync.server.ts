@@ -10,6 +10,7 @@ import {
   openHolidaysPublicAdapter,
   openHolidaysSchoolAdapter,
 } from "@/lib/radar/adapters/openholidays";
+import { diessenhofenAdapter } from "@/lib/radar/adapters/diessenhofen";
 import {
   frauenfeldAdapter,
   schaffhauserlandAdapter,
@@ -28,6 +29,7 @@ export const RADAR_ADAPTERS: RadarSourceAdapter[] = [
   openHolidaysPublicAdapter,
   schaffhauserlandAdapter,
   steinAmRheinAdapter,
+  diessenhofenAdapter,
   frauenfeldAdapter,
 ];
 
