@@ -404,12 +404,20 @@ export function EventDrawer({
         >
           <SheetHeader className="shrink-0 border-b border-border px-4 py-3">
             <SheetTitle className="text-sm font-semibold">
-              {event ? (isLocal ? "Offline-Eintrag" : "Eintrag bearbeiten") : "Neuer Eintrag"}
+              {event
+                ? isLocal
+                  ? "Offline-Eintrag"
+                  : permissions.canEdit
+                    ? "Eintrag bearbeiten"
+                    : "Eintrag ansehen"
+                : "Neuer Eintrag"}
             </SheetTitle>
             <SheetDescription className="text-xs">
               {isLocal
                 ? "Noch nicht synchronisiert – wird übertragen, sobald wieder eine Verbindung besteht."
-                : readOnly
+                : !permissions.canEdit
+                  ? "Als Betrachter können Einträge nur angesehen werden."
+                  : readOnly
                   ? "Offline-Modus: bestehende Einträge können nur angesehen werden."
                   : "Event, Belegung oder Betriebsferien erfassen."}
             </SheetDescription>
@@ -732,7 +740,7 @@ export function EventDrawer({
               <div className="ml-auto flex items-center gap-2">
                 {readOnly ? (
                   <span className="text-[11px] text-destructive">
-                    Offline – nur Ansicht
+                    {permissions.canEdit ? "Offline – nur Ansicht" : "Nur Ansicht"}
                   </span>
                 ) : null}
                 <Button
