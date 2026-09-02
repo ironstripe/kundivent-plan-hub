@@ -19,6 +19,7 @@ import { Route as AuthenticatedMigrationRouteImport } from './routes/_authentica
 import { Route as AuthenticatedRadarRouteImport } from './routes/_authenticated/radar'
 import { Route as ApiPublicResendConfigCheckRouteImport } from './routes/api/public/resend-config-check'
 import { Route as ApiPublicBackupsRunRouteImport } from './routes/api/public/backups/run'
+import { Route as ApiPublicRadarSyncRouteImport } from './routes/api/public/radar/sync'
 import { Route as ApiPublicWebhooksResendRouteImport } from './routes/api/public/webhooks/resend'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -73,6 +74,11 @@ const ApiPublicBackupsRunRoute = ApiPublicBackupsRunRouteImport.update({
   path: '/api/public/backups/run',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicRadarSyncRoute = ApiPublicRadarSyncRouteImport.update({
+  id: '/api/public/radar/sync',
+  path: '/api/public/radar/sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicWebhooksResendRoute = ApiPublicWebhooksResendRouteImport.update({
   id: '/api/public/webhooks/resend',
   path: '/api/public/webhooks/resend',
@@ -89,6 +95,7 @@ export interface FileRoutesByFullPath {
   '/radar': typeof AuthenticatedRadarRoute
   '/api/public/resend-config-check': typeof ApiPublicResendConfigCheckRoute
   '/api/public/backups/run': typeof ApiPublicBackupsRunRoute
+  '/api/public/radar/sync': typeof ApiPublicRadarSyncRoute
   '/api/public/webhooks/resend': typeof ApiPublicWebhooksResendRoute
 }
 export interface FileRoutesByTo {
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/': typeof AuthenticatedIndexRoute
   '/api/public/resend-config-check': typeof ApiPublicResendConfigCheckRoute
   '/api/public/backups/run': typeof ApiPublicBackupsRunRoute
+  '/api/public/radar/sync': typeof ApiPublicRadarSyncRoute
   '/api/public/webhooks/resend': typeof ApiPublicWebhooksResendRoute
 }
 export interface FileRoutesById {
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/api/public/resend-config-check': typeof ApiPublicResendConfigCheckRoute
   '/api/public/backups/run': typeof ApiPublicBackupsRunRoute
+  '/api/public/radar/sync': typeof ApiPublicRadarSyncRoute
   '/api/public/webhooks/resend': typeof ApiPublicWebhooksResendRoute
 }
 export interface FileRouteTypes {
@@ -129,6 +138,7 @@ export interface FileRouteTypes {
     | '/radar'
     | '/api/public/resend-config-check'
     | '/api/public/backups/run'
+    | '/api/public/radar/sync'
     | '/api/public/webhooks/resend'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -141,6 +151,7 @@ export interface FileRouteTypes {
     | '/'
     | '/api/public/resend-config-check'
     | '/api/public/backups/run'
+    | '/api/public/radar/sync'
     | '/api/public/webhooks/resend'
   id:
     | '__root__'
@@ -154,6 +165,7 @@ export interface FileRouteTypes {
     | '/_authenticated/'
     | '/api/public/resend-config-check'
     | '/api/public/backups/run'
+    | '/api/public/radar/sync'
     | '/api/public/webhooks/resend'
   fileRoutesById: FileRoutesById
 }
@@ -162,6 +174,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ApiPublicResendConfigCheckRoute: typeof ApiPublicResendConfigCheckRoute
   ApiPublicBackupsRunRoute: typeof ApiPublicBackupsRunRoute
+  ApiPublicRadarSyncRoute: typeof ApiPublicRadarSyncRoute
   ApiPublicWebhooksResendRoute: typeof ApiPublicWebhooksResendRoute
 }
 
@@ -237,6 +250,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicBackupsRunRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/radar/sync': {
+      id: '/api/public/radar/sync'
+      path: '/api/public/radar/sync'
+      fullPath: '/api/public/radar/sync'
+      preLoaderRoute: typeof ApiPublicRadarSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/resend': {
       id: '/api/public/webhooks/resend'
       path: '/api/public/webhooks/resend'
@@ -273,6 +293,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ApiPublicResendConfigCheckRoute: ApiPublicResendConfigCheckRoute,
   ApiPublicBackupsRunRoute: ApiPublicBackupsRunRoute,
+  ApiPublicRadarSyncRoute: ApiPublicRadarSyncRoute,
   ApiPublicWebhooksResendRoute: ApiPublicWebhooksResendRoute,
 }
 export const routeTree = rootRouteImport
