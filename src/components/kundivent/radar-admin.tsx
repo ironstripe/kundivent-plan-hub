@@ -103,6 +103,11 @@ export function RadarAdmin() {
                     >
                       {STATUS_LABEL[source.last_sync_status ?? "never"] ?? source.last_sync_status}
                     </span>
+                    {source.last_sync_summary && source.last_sync_status === "success" ? (
+                      <p className="mt-0.5 max-w-[22rem] text-[11px] text-muted-foreground">
+                        {source.last_sync_summary}
+                      </p>
+                    ) : null}
                     {source.last_sync_error ? (
                       <p className="mt-0.5 max-w-[22rem] text-[11px] text-muted-foreground">
                         {source.last_sync_error}

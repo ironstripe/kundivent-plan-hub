@@ -10,6 +10,7 @@ export type RadarSourceStatus = {
   last_sync_at: string | null;
   last_sync_status: string | null;
   last_sync_error: string | null;
+  last_sync_summary: string | null;
   entry_count: number;
 };
 
