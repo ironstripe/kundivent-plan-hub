@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { usePlanningAreas, useCategories } from "@/lib/master-data";
 import { EventDrawer } from "@/components/kundivent/event-drawer";
+import { usePermissions } from "@/lib/permissions";
 import { EventStatusBadge } from "@/components/kundivent/event-status-badge";
 import { formatDateRange, formatTimeRange, type EventWithRelations } from "@/lib/events";
 import {

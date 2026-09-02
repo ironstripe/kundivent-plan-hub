@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { EventDrawer } from "@/components/kundivent/event-drawer";
+import { usePermissions } from "@/lib/permissions";
 import { MonthCalendar } from "@/components/kundivent/month-calendar";
 import { MatrixView } from "@/components/kundivent/matrix-view";
 import { YearOverview } from "@/components/kundivent/year-overview";

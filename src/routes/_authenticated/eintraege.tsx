@@ -22,6 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EventDrawer } from "@/components/kundivent/event-drawer";
+import { usePermissions } from "@/lib/permissions";
 import { EventStatusBadge } from "@/components/kundivent/event-status-badge";
 import { TimelineEventRow } from "@/components/kundivent/timeline-event-row";
 import { useCategories, usePlanningAreas } from "@/lib/master-data";
