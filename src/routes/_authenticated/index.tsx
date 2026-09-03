@@ -315,6 +315,20 @@ function Uebersicht() {
     setDrawerOpen(true);
   }
 
+  /** Global search result: jump to the event's month, then open it. */
+  function selectSearchResult(id: string) {
+    const event =
+      (globalSearch.data ?? []).find((e) => e.id === id) ??
+      (events.data ?? []).find((e) => e.id === id);
+    if (!event) return;
+    const year = Number(event.start_date.slice(0, 4));
+    const month = Number(event.start_date.slice(5, 7)) - 1;
+    goToMonth(year, month);
+    openEvent(event);
+  }
+
+
+
   function openNew(date?: string, areaId?: string) {
     setPrefillDate(date ?? null);
     setPrefillAreas(areaId ? [areaId] : areaIds.length === 1 ? [areaIds[0]!] : []);
