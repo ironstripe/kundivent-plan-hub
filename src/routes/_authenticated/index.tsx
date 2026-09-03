@@ -20,6 +20,7 @@ import { usePermissions } from "@/lib/permissions";
 import { MonthCalendar } from "@/components/kundivent/month-calendar";
 import { MatrixView } from "@/components/kundivent/matrix-view";
 import { YearOverview } from "@/components/kundivent/year-overview";
+import { TitleSearch } from "@/components/kundivent/title-search";
 import { useCategories, usePlanningAreas } from "@/lib/master-data";
 import { EVENT_STATUSES, useEvents, type EventWithRelations } from "@/lib/events";
 import {
@@ -42,10 +43,12 @@ export const Route = createFileRoute("/_authenticated/")({
     const mode = MODES.includes(search['mode'] as Mode) ? (search['mode'] as Mode) : undefined;
     const y = Number(search['y']);
     const m = Number(search['m']);
+    const q = typeof search['q'] === "string" ? search['q'].slice(0, 100) : "";
     return {
       ...(mode ? { mode } : {}),
       ...(Number.isInteger(y) && y > 1900 ? { y } : {}),
       ...(Number.isInteger(m) && m >= 0 && m <= 11 ? { m } : {}),
+      ...(q ? { q } : {}),
     };
   },
   head: () => ({
@@ -109,9 +112,13 @@ function Uebersicht() {
     month: urlSearch.m ?? currentMonth,
   };
 
-  function patchSearch(patch: { mode?: Mode; y?: number; m?: number }) {
+  function patchSearch(patch: { mode?: Mode; y?: number; m?: number; q?: string }) {
     navigate({ to: ".", replace: true, search: (prev) => ({ ...prev, ...patch }) });
   }
+
+  /** Title-only quick search, kept in the URL so it survives view switches. */
+  const titleQuery = urlSearch.q ?? "";
+  const setTitleQuery = (value: string) => patchSearch({ q: value });
 
   const [weekdays, setWeekdays] = useState<number[]>([1, 2, 3, 4, 5, 6, 7]);
   const [areaIds, setAreaIds] = useState<string[]>([]);
@@ -149,7 +156,10 @@ function Uebersicht() {
 
   const filteredEvents = useMemo(() => {
     const term = search.trim().toLowerCase();
+    // Verfügbarkeit has no quick search by design.
+    const title = mode === "verfuegbarkeit" ? "" : titleQuery.trim().toLowerCase();
     return (events.data ?? []).filter((event) => {
+      if (title && !event.title.toLowerCase().includes(title)) return false;
       if (!showCancelled && event.status === "cancelled" && status !== "cancelled") return false;
       if (areaIds.length && !event.planning_area_ids.some((id) => areaIds.includes(id)))
         return false;
@@ -158,7 +168,7 @@ function Uebersicht() {
       if (term && !`${event.title} ${event.notes ?? ""}`.toLowerCase().includes(term)) return false;
       return true;
     });
-  }, [events.data, areaIds, categoryId, status, search, showCancelled]);
+  }, [events.data, areaIds, categoryId, status, search, showCancelled, mode, titleQuery]);
 
   const matrixEvents = useMemo(
     () =>
@@ -467,6 +477,9 @@ function Uebersicht() {
 
 
         <div className="ml-auto flex items-center gap-2">
+          {mode === "verfuegbarkeit" ? null : (
+            <TitleSearch value={titleQuery} onChange={setTitleQuery} />
+          )}
           <Popover open={areaPopoverOpen} onOpenChange={setAreaPopoverOpen}>
             <PopoverTrigger asChild>
               <Button
