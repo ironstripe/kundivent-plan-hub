@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { ChevronDown, ChevronLeft, ChevronRight, Plus, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,12 @@ import { MatrixView } from "@/components/kundivent/matrix-view";
 import { YearOverview } from "@/components/kundivent/year-overview";
 import { TitleSearch } from "@/components/kundivent/title-search";
 import { useCategories, usePlanningAreas } from "@/lib/master-data";
-import { EVENT_STATUSES, useEvents, type EventWithRelations } from "@/lib/events";
+import {
+  EVENT_STATUSES,
+  useEventTitleSearch,
+  useEvents,
+  type EventWithRelations,
+} from "@/lib/events";
 import {
   AVAILABILITY_LABEL,
   buildAvailabilityIndex,
@@ -120,6 +125,15 @@ function Uebersicht() {
   const titleQuery = urlSearch.q ?? "";
   const setTitleQuery = (value: string) => patchSearch({ q: value });
 
+  /** Debounced term for the global (database-backed) title search. */
+  const [debouncedQuery, setDebouncedQuery] = useState(titleQuery);
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(titleQuery), 250);
+    return () => clearTimeout(t);
+  }, [titleQuery]);
+  const globalSearch = useEventTitleSearch(debouncedQuery, 10);
+
+
   const [weekdays, setWeekdays] = useState<number[]>([1, 2, 3, 4, 5, 6, 7]);
   const [areaIds, setAreaIds] = useState<string[]>([]);
   const [categoryId, setCategoryId] = useState(ALL);
@@ -153,6 +167,30 @@ function Uebersicht() {
     for (const c of categories.data ?? []) map.set(c.id, { name: c.name, color: c.color });
     return map;
   }, [categories.data]);
+
+  /** Compact result rows for the global search dropdown. */
+  const searchResults = useMemo(
+    () =>
+      (globalSearch.data ?? []).map((event) => {
+        const [y, m, d] = event.start_date.split("-");
+        const areaNames = event.planning_area_ids
+          .map((id) => areaNameById.get(id))
+          .filter(Boolean) as string[];
+        const parts = [
+          ...(areaNames.length ? [areaNames.join(", ")] : []),
+          categoryById.get(event.category_id)?.name ?? "",
+        ].filter(Boolean);
+        return {
+          id: event.id,
+          title: event.title,
+          dateLabel: `${d}.${m}.${y}`,
+          ...(parts.length ? { meta: parts.join(" · ") } : {}),
+        };
+      }),
+    [globalSearch.data, areaNameById, categoryById],
+  );
+
+
 
   const filteredEvents = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -276,6 +314,20 @@ function Uebersicht() {
     setSelected(event);
     setDrawerOpen(true);
   }
+
+  /** Global search result: jump to the event's month, then open it. */
+  function selectSearchResult(id: string) {
+    const event =
+      (globalSearch.data ?? []).find((e) => e.id === id) ??
+      (events.data ?? []).find((e) => e.id === id);
+    if (!event) return;
+    const year = Number(event.start_date.slice(0, 4));
+    const month = Number(event.start_date.slice(5, 7)) - 1;
+    goToMonth(year, month);
+    openEvent(event);
+  }
+
+
 
   function openNew(date?: string, areaId?: string) {
     setPrefillDate(date ?? null);
@@ -478,7 +530,13 @@ function Uebersicht() {
 
         <div className="ml-auto flex items-center gap-2">
           {mode === "verfuegbarkeit" ? null : (
-            <TitleSearch value={titleQuery} onChange={setTitleQuery} />
+            <TitleSearch
+              value={titleQuery}
+              onChange={setTitleQuery}
+              results={searchResults}
+              loading={globalSearch.isFetching}
+              onSelect={selectSearchResult}
+            />
           )}
           <Popover open={areaPopoverOpen} onOpenChange={setAreaPopoverOpen}>
             <PopoverTrigger asChild>
