@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { ChevronDown, ChevronLeft, ChevronRight, Plus, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,12 @@ import { MatrixView } from "@/components/kundivent/matrix-view";
 import { YearOverview } from "@/components/kundivent/year-overview";
 import { TitleSearch } from "@/components/kundivent/title-search";
 import { useCategories, usePlanningAreas } from "@/lib/master-data";
-import { EVENT_STATUSES, useEvents, type EventWithRelations } from "@/lib/events";
+import {
+  EVENT_STATUSES,
+  useEventTitleSearch,
+  useEvents,
+  type EventWithRelations,
+} from "@/lib/events";
 import {
   AVAILABILITY_LABEL,
   buildAvailabilityIndex,
