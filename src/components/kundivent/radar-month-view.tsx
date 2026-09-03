@@ -169,9 +169,42 @@ export function RadarMonthView({
                       {item.title}
                     </span>
                   ))}
-                  {rest.length > 3 ? (
-                    <span className="block px-1 text-[10px] text-muted-foreground">
+                  {!expanded && rest.length > 3 ? (
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedDate(date);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.stopPropagation();
+                          setExpandedDate(date);
+                        }
+                      }}
+                      className="block cursor-pointer rounded-sm px-1 text-[10px] font-medium text-primary hover:bg-secondary"
+                    >
                       +{rest.length - 3} weitere
+                    </span>
+                  ) : null}
+                  {expanded ? (
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedDate(null);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.stopPropagation();
+                          setExpandedDate(null);
+                        }
+                      }}
+                      className="block cursor-pointer rounded-sm px-1 text-[10px] font-medium text-primary hover:bg-secondary"
+                    >
+                      Weniger anzeigen
                     </span>
                   ) : null}
                 </div>
