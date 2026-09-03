@@ -316,7 +316,7 @@ function Uebersicht() {
 
   function switchMode(next: Mode) {
     if (next === "matrix") setJumpMonth({ index: cursor.month, nonce: Date.now() });
-    if (next === "kalender") scrollTo(cursor.year, cursor.month);
+    if (next === "kalender" || next === "jahr") scrollTo(cursor.year, cursor.month);
     patchSearch({ mode: next });
   }
 
