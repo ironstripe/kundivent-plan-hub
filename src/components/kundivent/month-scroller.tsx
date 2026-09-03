@@ -177,11 +177,11 @@ export function MonthScroller({
         visible = best;
       }
 
-      // Skip while a prepend is being compensated: the position is not final.
+      // Skip while a window shift is being compensated: the position is not final.
       if (
         visible !== null &&
         pendingTarget.current === null &&
-        !pendingPrepend.current &&
+        !pendingShift.current &&
         visible !== activeKey.current
       ) {
         activeKey.current = visible;
@@ -189,20 +189,40 @@ export function MonthScroller({
         onActiveMonthChange(y, m);
       }
 
+      // Sliding window: extend towards the edge the user approaches and trim
+      // the opposite end, so the reachable range has no fixed end year.
       const rect = container.getBoundingClientRect();
       const size = range.end - range.start + 1;
-      if (!pendingPrepend.current && rect.top > -EXTEND_THRESHOLD && size < MAX_MONTHS) {
-        const anchorNode = monthRefs.current.get(range.start);
+      if (!pendingShift.current && rect.top > -EXTEND_THRESHOLD) {
+        const anchorNode = monthRefs.current.get(visible ?? range.start);
         if (!anchorNode) return;
-        pendingPrepend.current = true;
-        anchorKey.current = range.start;
+        pendingShift.current = true;
+        anchorKey.current = visible ?? range.start;
         anchorTop.current = anchorNode.getBoundingClientRect().top;
-        setRange((prev) => ({ ...prev, start: prev.start - EXTEND_BY }));
+        setRange((prev) => ({
+          start: prev.start - EXTEND_BY,
+          end:
+            prev.end - prev.start + 1 >= MAX_MONTHS - EXTEND_BY
+              ? prev.end - EXTEND_BY
+              : prev.end,
+        }));
       }
-      if (rect.bottom - window.innerHeight < EXTEND_THRESHOLD && size < MAX_MONTHS) {
-        setRange((prev) =>
-          prev.end - prev.start + 1 >= MAX_MONTHS ? prev : { ...prev, end: prev.end + EXTEND_BY },
-        );
+      if (rect.bottom - window.innerHeight < EXTEND_THRESHOLD) {
+        if (size >= MAX_MONTHS) {
+          // Trimming top months shifts content above the viewport: compensate.
+          const anchorNode = monthRefs.current.get(visible ?? range.end);
+          if (anchorNode && !pendingShift.current) {
+            pendingShift.current = true;
+            anchorKey.current = visible ?? range.end;
+            anchorTop.current = anchorNode.getBoundingClientRect().top;
+          }
+          setRange((prev) => ({
+            start: prev.start + EXTEND_BY,
+            end: prev.end + EXTEND_BY,
+          }));
+        } else {
+          setRange((prev) => ({ ...prev, end: prev.end + EXTEND_BY }));
+        }
       }
     };
     const onScroll = () => {
