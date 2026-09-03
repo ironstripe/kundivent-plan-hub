@@ -155,7 +155,10 @@ function Uebersicht() {
 
   const filteredEvents = useMemo(() => {
     const term = search.trim().toLowerCase();
+    // Verfügbarkeit has no quick search by design.
+    const title = mode === "verfuegbarkeit" ? "" : titleQuery.trim().toLowerCase();
     return (events.data ?? []).filter((event) => {
+      if (title && !event.title.toLowerCase().includes(title)) return false;
       if (!showCancelled && event.status === "cancelled" && status !== "cancelled") return false;
       if (areaIds.length && !event.planning_area_ids.some((id) => areaIds.includes(id)))
         return false;
