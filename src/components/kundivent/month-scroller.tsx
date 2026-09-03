@@ -23,7 +23,11 @@ const MONTHS = [
 /** Months rendered around the active month before lazy extension kicks in. */
 const WINDOW_BEFORE = 2;
 const WINDOW_AFTER = 2;
-/** Extension step and hard cap so the DOM cannot grow without bound. */
+/**
+ * Extension step and sliding-window size. The window has no fixed end date:
+ * it moves with the user and trims months at the opposite end, so any year
+ * stays reachable no matter how far the user scrolls.
+ */
 const EXTEND_BY = 2;
 const MAX_MONTHS = 25;
 /** Distance (px) from the loaded edge that triggers loading more months. */
@@ -78,8 +82,13 @@ export function MonthScroller({
   });
   const containerRef = useRef<HTMLDivElement>(null);
   const monthRefs = useRef(new Map<number, HTMLDivElement>());
-  const pendingPrepend = useRef(false);
-  /** Anchor month + its viewport top, used to keep the view still on prepend. */
+  /**
+   * Set when a range change alters content height above the viewport
+   * (prepend at the top or trimming top months while extending below).
+   * The layout effect compensates scroll position against a stable anchor.
+   */
+  const pendingShift = useRef(false);
+  /** Anchor month + its viewport top, used to keep the view still on shift. */
   const anchorKey = useRef(0);
   const anchorTop = useRef(0);
   const pendingTarget = useRef<number | null>(null);
@@ -129,16 +138,16 @@ export function MonthScroller({
     });
   }, [target, scrollToKey]);
 
-  // Keep the visual position stable when months are inserted above.
+  // Keep the visual position stable when height above the viewport changes.
   useLayoutEffect(() => {
-    if (!pendingPrepend.current) return;
+    if (!pendingShift.current) return;
     const node = monthRefs.current.get(anchorKey.current);
     const delta = node ? node.getBoundingClientRect().top - anchorTop.current : 0;
     if (delta) window.scrollBy(0, delta);
-    pendingPrepend.current = false;
+    pendingShift.current = false;
     // Re-evaluate the visible month once the position is corrected.
     window.dispatchEvent(new Event("scroll"));
-  }, [range.start]);
+  }, [range.start, range.end]);
 
   // Active month detection + lazy extension, throttled per animation frame.
   useEffect(() => {
@@ -168,11 +177,11 @@ export function MonthScroller({
         visible = best;
       }
 
-      // Skip while a prepend is being compensated: the position is not final.
+      // Skip while a window shift is being compensated: the position is not final.
       if (
         visible !== null &&
         pendingTarget.current === null &&
-        !pendingPrepend.current &&
+        !pendingShift.current &&
         visible !== activeKey.current
       ) {
         activeKey.current = visible;
@@ -180,20 +189,40 @@ export function MonthScroller({
         onActiveMonthChange(y, m);
       }
 
+      // Sliding window: extend towards the edge the user approaches and trim
+      // the opposite end, so the reachable range has no fixed end year.
       const rect = container.getBoundingClientRect();
       const size = range.end - range.start + 1;
-      if (!pendingPrepend.current && rect.top > -EXTEND_THRESHOLD && size < MAX_MONTHS) {
-        const anchorNode = monthRefs.current.get(range.start);
+      if (!pendingShift.current && rect.top > -EXTEND_THRESHOLD) {
+        const anchorNode = monthRefs.current.get(visible ?? range.start);
         if (!anchorNode) return;
-        pendingPrepend.current = true;
-        anchorKey.current = range.start;
+        pendingShift.current = true;
+        anchorKey.current = visible ?? range.start;
         anchorTop.current = anchorNode.getBoundingClientRect().top;
-        setRange((prev) => ({ ...prev, start: prev.start - EXTEND_BY }));
+        setRange((prev) => ({
+          start: prev.start - EXTEND_BY,
+          end:
+            prev.end - prev.start + 1 >= MAX_MONTHS - EXTEND_BY
+              ? prev.end - EXTEND_BY
+              : prev.end,
+        }));
       }
-      if (rect.bottom - window.innerHeight < EXTEND_THRESHOLD && size < MAX_MONTHS) {
-        setRange((prev) =>
-          prev.end - prev.start + 1 >= MAX_MONTHS ? prev : { ...prev, end: prev.end + EXTEND_BY },
-        );
+      if (rect.bottom - window.innerHeight < EXTEND_THRESHOLD) {
+        if (size >= MAX_MONTHS) {
+          // Trimming top months shifts content above the viewport: compensate.
+          const anchorNode = monthRefs.current.get(visible ?? range.end);
+          if (anchorNode && !pendingShift.current) {
+            pendingShift.current = true;
+            anchorKey.current = visible ?? range.end;
+            anchorTop.current = anchorNode.getBoundingClientRect().top;
+          }
+          setRange((prev) => ({
+            start: prev.start + EXTEND_BY,
+            end: prev.end + EXTEND_BY,
+          }));
+        } else {
+          setRange((prev) => ({ ...prev, end: prev.end + EXTEND_BY }));
+        }
       }
     };
     const onScroll = () => {
