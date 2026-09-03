@@ -23,7 +23,11 @@ const MONTHS = [
 /** Months rendered around the active month before lazy extension kicks in. */
 const WINDOW_BEFORE = 2;
 const WINDOW_AFTER = 2;
-/** Extension step and hard cap so the DOM cannot grow without bound. */
+/**
+ * Extension step and sliding-window size. The window has no fixed end date:
+ * it moves with the user and trims months at the opposite end, so any year
+ * stays reachable no matter how far the user scrolls.
+ */
 const EXTEND_BY = 2;
 const MAX_MONTHS = 25;
 /** Distance (px) from the loaded edge that triggers loading more months. */
@@ -78,8 +82,13 @@ export function MonthScroller({
   });
   const containerRef = useRef<HTMLDivElement>(null);
   const monthRefs = useRef(new Map<number, HTMLDivElement>());
-  const pendingPrepend = useRef(false);
-  /** Anchor month + its viewport top, used to keep the view still on prepend. */
+  /**
+   * Set when a range change alters content height above the viewport
+   * (prepend at the top or trimming top months while extending below).
+   * The layout effect compensates scroll position against a stable anchor.
+   */
+  const pendingShift = useRef(false);
+  /** Anchor month + its viewport top, used to keep the view still on shift. */
   const anchorKey = useRef(0);
   const anchorTop = useRef(0);
   const pendingTarget = useRef<number | null>(null);
