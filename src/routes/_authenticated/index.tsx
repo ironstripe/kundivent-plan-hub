@@ -762,17 +762,19 @@ function Uebersicht() {
           </Button>
         </div>
       ) : mode === "jahr" ? (
-        <YearOverview
+        <YearScroller
           year={cursor.year}
           events={matrixEvents}
           today={today}
           categoryById={categoryById}
           areaNameById={areaNameById}
+          target={scrollTarget}
+          onActiveYearChange={handleActiveYear}
           onOpenEvent={openEvent}
-          stickyOffset={headerOffset}
-          onOpenMonth={(month) => {
-            patchSearch({ mode: "kalender", y: cursor.year, m: month });
-            scrollTo(cursor.year, month);
+          headerOffset={headerOffset}
+          onOpenMonth={(y, month) => {
+            patchSearch({ mode: "kalender", y, m: month });
+            scrollTo(y, month);
           }}
         />
       ) : mode === "matrix" ? (
