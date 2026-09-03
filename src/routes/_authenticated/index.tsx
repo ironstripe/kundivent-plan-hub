@@ -297,7 +297,9 @@ function Uebersicht() {
   }
 
   function shiftYear(delta: number) {
-    patchSearch({ y: cursor.year + delta });
+    const year = cursor.year + delta;
+    scrollTo(year, cursor.month);
+    patchSearch({ y: year });
   }
 
   function goToday() {
