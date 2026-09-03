@@ -323,6 +323,7 @@ function Uebersicht() {
       navigate({
         to: ".",
         replace: true,
+        resetScroll: false,
         search: (prev) => (prev.m === month ? prev : { ...prev, m: month }),
       });
     },
@@ -336,6 +337,7 @@ function Uebersicht() {
       navigate({
         to: ".",
         replace: true,
+        resetScroll: false,
         search: (prev) =>
           prev.y === year && prev.m === month ? prev : { ...prev, y: year, m: month },
       });
