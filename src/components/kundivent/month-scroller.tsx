@@ -221,7 +221,7 @@ export function MonthScroller({
   return (
     <div
       ref={containerRef}
-      className="overflow-hidden rounded-md border border-border bg-card"
+      className="rounded-md border border-border bg-card"
     >
       <div
         className="sticky z-10 grid grid-cols-7 border-b border-border bg-muted/95 backdrop-blur"
