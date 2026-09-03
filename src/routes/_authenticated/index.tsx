@@ -530,7 +530,13 @@ function Uebersicht() {
 
         <div className="ml-auto flex items-center gap-2">
           {mode === "verfuegbarkeit" ? null : (
-            <TitleSearch value={titleQuery} onChange={setTitleQuery} />
+            <TitleSearch
+              value={titleQuery}
+              onChange={setTitleQuery}
+              results={searchResults}
+              loading={globalSearch.isFetching}
+              onSelect={selectSearchResult}
+            />
           )}
           <Popover open={areaPopoverOpen} onOpenChange={setAreaPopoverOpen}>
             <PopoverTrigger asChild>
