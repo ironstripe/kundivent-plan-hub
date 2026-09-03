@@ -780,7 +780,7 @@ function Uebersicht() {
       ) : mode === "jahr" ? (
         <YearScroller
           year={cursor.year}
-          events={matrixEvents}
+          events={filteredEvents}
           today={today}
           categoryById={categoryById}
           areaNameById={areaNameById}
