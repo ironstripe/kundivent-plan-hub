@@ -119,7 +119,8 @@ function Uebersicht() {
   };
 
   function patchSearch(patch: { mode?: Mode; y?: number; m?: number; q?: string }) {
-    navigate({ to: ".", replace: true, search: (prev) => ({ ...prev, ...patch }) });
+    // Scrolling is driven explicitly by the views, never by URL updates.
+    navigate({ to: ".", replace: true, resetScroll: false, search: (prev) => ({ ...prev, ...patch }) });
   }
 
   /** Title-only quick search, kept in the URL so it survives view switches. */
