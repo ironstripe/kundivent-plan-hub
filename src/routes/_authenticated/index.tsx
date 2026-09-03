@@ -346,6 +346,20 @@ function Uebersicht() {
     [navigate],
   );
 
+  /** Continuous year overview reports the year currently in focus. */
+  const handleActiveYear = useCallback(
+    (year: number) => {
+      navigate({
+        to: ".",
+        replace: true,
+        resetScroll: false,
+        search: (prev) => (prev.y === year ? prev : { ...prev, y: year }),
+      });
+    },
+    [navigate],
+  );
+
+
   function openEvent(event: EventWithRelations) {
     setPrefillDate(null);
     setPrefillAreas([]);
