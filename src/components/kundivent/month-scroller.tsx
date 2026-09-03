@@ -138,16 +138,16 @@ export function MonthScroller({
     });
   }, [target, scrollToKey]);
 
-  // Keep the visual position stable when months are inserted above.
+  // Keep the visual position stable when height above the viewport changes.
   useLayoutEffect(() => {
-    if (!pendingPrepend.current) return;
+    if (!pendingShift.current) return;
     const node = monthRefs.current.get(anchorKey.current);
     const delta = node ? node.getBoundingClientRect().top - anchorTop.current : 0;
     if (delta) window.scrollBy(0, delta);
-    pendingPrepend.current = false;
+    pendingShift.current = false;
     // Re-evaluate the visible month once the position is corrected.
     window.dispatchEvent(new Event("scroll"));
-  }, [range.start]);
+  }, [range.start, range.end]);
 
   // Active month detection + lazy extension, throttled per animation frame.
   useEffect(() => {
