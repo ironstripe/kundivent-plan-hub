@@ -167,7 +167,7 @@ function Uebersicht() {
       if (term && !`${event.title} ${event.notes ?? ""}`.toLowerCase().includes(term)) return false;
       return true;
     });
-  }, [events.data, areaIds, categoryId, status, search, showCancelled]);
+  }, [events.data, areaIds, categoryId, status, search, showCancelled, mode, titleQuery]);
 
   const matrixEvents = useMemo(
     () =>
