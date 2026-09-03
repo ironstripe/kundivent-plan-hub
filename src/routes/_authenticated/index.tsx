@@ -111,9 +111,13 @@ function Uebersicht() {
     month: urlSearch.m ?? currentMonth,
   };
 
-  function patchSearch(patch: { mode?: Mode; y?: number; m?: number }) {
+  function patchSearch(patch: { mode?: Mode; y?: number; m?: number; q?: string }) {
     navigate({ to: ".", replace: true, search: (prev) => ({ ...prev, ...patch }) });
   }
+
+  /** Title-only quick search, kept in the URL so it survives view switches. */
+  const titleQuery = urlSearch.q ?? "";
+  const setTitleQuery = (value: string) => patchSearch({ q: value });
 
   const [weekdays, setWeekdays] = useState<number[]>([1, 2, 3, 4, 5, 6, 7]);
   const [areaIds, setAreaIds] = useState<string[]>([]);
