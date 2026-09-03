@@ -224,7 +224,7 @@ export function MonthScroller({
       className="rounded-md border border-border bg-card"
     >
       <div
-        className="sticky z-10 grid grid-cols-7 border-b border-border bg-muted/95 backdrop-blur"
+        className="sticky z-[19] grid grid-cols-7 border-b border-border bg-muted shadow-sm"
         style={{ top: headerOffset }}
       >
         {WEEKDAYS.map((d, i) => (
