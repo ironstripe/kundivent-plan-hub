@@ -79,7 +79,9 @@ export function MonthScroller({
   const containerRef = useRef<HTMLDivElement>(null);
   const monthRefs = useRef(new Map<number, HTMLDivElement>());
   const pendingPrepend = useRef(false);
-  const heightBeforePrepend = useRef(0);
+  /** Anchor month + its viewport top, used to keep the view still on prepend. */
+  const anchorKey = useRef(0);
+  const anchorTop = useRef(0);
   const pendingTarget = useRef<number | null>(null);
   const activeKey = useRef(initial);
   const lastNonce = useRef<number | null>(null);
@@ -130,7 +132,8 @@ export function MonthScroller({
   // Keep the visual position stable when months are inserted above.
   useLayoutEffect(() => {
     if (!pendingPrepend.current) return;
-    const delta = document.documentElement.scrollHeight - heightBeforePrepend.current;
+    const node = monthRefs.current.get(anchorKey.current);
+    const delta = node ? node.getBoundingClientRect().top - anchorTop.current : 0;
     if (delta) window.scrollBy(0, delta);
     pendingPrepend.current = false;
     // Re-evaluate the visible month once the position is corrected.
@@ -180,8 +183,11 @@ export function MonthScroller({
       const rect = container.getBoundingClientRect();
       const size = range.end - range.start + 1;
       if (!pendingPrepend.current && rect.top > -EXTEND_THRESHOLD && size < MAX_MONTHS) {
+        const anchorNode = monthRefs.current.get(range.start);
+        if (!anchorNode) return;
         pendingPrepend.current = true;
-        heightBeforePrepend.current = document.documentElement.scrollHeight;
+        anchorKey.current = range.start;
+        anchorTop.current = anchorNode.getBoundingClientRect().top;
         setRange((prev) => ({ ...prev, start: prev.start - EXTEND_BY }));
       }
       if (rect.bottom - window.innerHeight < EXTEND_THRESHOLD && size < MAX_MONTHS) {
