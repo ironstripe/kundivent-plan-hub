@@ -120,6 +120,15 @@ function Uebersicht() {
   const titleQuery = urlSearch.q ?? "";
   const setTitleQuery = (value: string) => patchSearch({ q: value });
 
+  /** Debounced term for the global (database-backed) title search. */
+  const [debouncedQuery, setDebouncedQuery] = useState(titleQuery);
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(titleQuery), 250);
+    return () => clearTimeout(t);
+  }, [titleQuery]);
+  const globalSearch = useEventTitleSearch(debouncedQuery, 10);
+
+
   const [weekdays, setWeekdays] = useState<number[]>([1, 2, 3, 4, 5, 6, 7]);
   const [areaIds, setAreaIds] = useState<string[]>([]);
   const [categoryId, setCategoryId] = useState(ALL);
