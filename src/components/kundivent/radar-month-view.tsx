@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { overlapsDate, type RadarEvent } from "@/lib/radar";
 import { RADAR_CHIP_CLASS, RADAR_DOT_CLASS, RELEVANCE_CLASS } from "@/lib/radar/theme";
@@ -49,6 +49,7 @@ export function RadarMonthView({
   };
 
   const weeks = useMemo(() => buildWeeks(year, month), [year, month]);
+  const [expandedDate, setExpandedDate] = useState<string | null>(null);
 
   const byDate = useMemo(() => {
     const map = new Map<string, RadarEvent[]>();
@@ -98,6 +99,8 @@ export function RadarMonthView({
               .filter((e) => e.type === "regional_event" || e.type === "theme_day")
               .sort((a, b) => spanDays(a) - spanDays(b) || a.title.localeCompare(b.title, "de"));
             const kundiventCount = kundiventByDate.get(date) ?? 0;
+            const expanded = expandedDate === date;
+            const visibleRest = expanded ? rest : rest.slice(0, 3);
             return (
               <button
                 type="button"
@@ -150,7 +153,7 @@ export function RadarMonthView({
                         {s.title}
                       </span>
                     ))}
-                  {rest.slice(0, 3).map((item) => (
+                  {visibleRest.map((item) => (
                     <span
                       key={item.id}
                       onClick={(e) => {
@@ -166,9 +169,42 @@ export function RadarMonthView({
                       {item.title}
                     </span>
                   ))}
-                  {rest.length > 3 ? (
-                    <span className="block px-1 text-[10px] text-muted-foreground">
+                  {!expanded && rest.length > 3 ? (
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedDate(date);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.stopPropagation();
+                          setExpandedDate(date);
+                        }
+                      }}
+                      className="block cursor-pointer rounded-sm px-1 text-[10px] font-medium text-primary hover:bg-secondary"
+                    >
                       +{rest.length - 3} weitere
+                    </span>
+                  ) : null}
+                  {expanded ? (
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpandedDate(null);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.stopPropagation();
+                          setExpandedDate(null);
+                        }
+                      }}
+                      className="block cursor-pointer rounded-sm px-1 text-[10px] font-medium text-primary hover:bg-secondary"
+                    >
+                      Weniger anzeigen
                     </span>
                   ) : null}
                 </div>
