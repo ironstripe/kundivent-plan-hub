@@ -99,6 +99,8 @@ export function RadarMonthView({
               .filter((e) => e.type === "regional_event" || e.type === "theme_day")
               .sort((a, b) => spanDays(a) - spanDays(b) || a.title.localeCompare(b.title, "de"));
             const kundiventCount = kundiventByDate.get(date) ?? 0;
+            const expanded = expandedDate === date;
+            const visibleRest = expanded ? rest : rest.slice(0, 3);
             return (
               <button
                 type="button"
@@ -151,7 +153,7 @@ export function RadarMonthView({
                         {s.title}
                       </span>
                     ))}
-                  {rest.slice(0, 3).map((item) => (
+                  {visibleRest.map((item) => (
                     <span
                       key={item.id}
                       onClick={(e) => {
