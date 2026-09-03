@@ -168,6 +168,30 @@ function Uebersicht() {
     return map;
   }, [categories.data]);
 
+  /** Compact result rows for the global search dropdown. */
+  const searchResults = useMemo(
+    () =>
+      (globalSearch.data ?? []).map((event) => {
+        const [y, m, d] = event.start_date.split("-");
+        const areaNames = event.planning_area_ids
+          .map((id) => areaNameById.get(id))
+          .filter(Boolean) as string[];
+        const parts = [
+          ...(areaNames.length ? [areaNames.join(", ")] : []),
+          categoryById.get(event.category_id)?.name ?? "",
+        ].filter(Boolean);
+        return {
+          id: event.id,
+          title: event.title,
+          dateLabel: `${d}.${m}.${y}`,
+          ...(parts.length ? { meta: parts.join(" · ") } : {}),
+        };
+      }),
+    [globalSearch.data, areaNameById, categoryById],
+  );
+
+
+
   const filteredEvents = useMemo(() => {
     const term = search.trim().toLowerCase();
     // Verfügbarkeit has no quick search by design.
