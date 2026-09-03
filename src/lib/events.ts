@@ -257,3 +257,34 @@ export function formatTimeRange(
   if (end) return `bis ${trim(end)}`;
   return "—";
 }
+
+/**
+ * Global title search — queries the database directly so matches outside the
+ * currently displayed calendar period are found too.
+ */
+export function useEventTitleSearch(term: string, limit = 10) {
+  const trimmed = term.trim();
+  return useQuery({
+    queryKey: ["events", "title-search", trimmed.toLowerCase(), limit],
+    enabled: trimmed.length >= 2,
+    queryFn: async (): Promise<EventWithRelations[]> => {
+      const escaped = trimmed.replace(/[%_,()]/g, " ");
+      const { data, error } = await supabase
+        .from("events")
+        .select("*, event_planning_areas(planning_area_id)")
+        .ilike("title", `%${escaped}%`)
+        .order("start_date", { ascending: true })
+        .limit(limit);
+      if (error) throw error;
+      return (data ?? []).map((row) => {
+        const { event_planning_areas, ...event } = row as EventRow & {
+          event_planning_areas: { planning_area_id: string }[] | null;
+        };
+        return {
+          ...event,
+          planning_area_ids: (event_planning_areas ?? []).map((a) => a.planning_area_id),
+        };
+      });
+    },
+  });
+}
