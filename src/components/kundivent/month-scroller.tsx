@@ -129,6 +129,7 @@ export function MonthScroller({
 
   // Keep the visual position stable when months are inserted above.
   useLayoutEffect(() => {
+    console.log("[scroller] layout", range.start, pendingPrepend.current);
     if (!pendingPrepend.current) return;
     pendingPrepend.current = false;
     const delta = document.documentElement.scrollHeight - heightBeforePrepend.current;
@@ -173,6 +174,7 @@ export function MonthScroller({
       const rect = container.getBoundingClientRect();
       const size = range.end - range.start + 1;
       if (!pendingPrepend.current && rect.top > -EXTEND_THRESHOLD && size < MAX_MONTHS) {
+        console.log("[scroller] prepend requested");
         pendingPrepend.current = true;
         heightBeforePrepend.current = document.documentElement.scrollHeight;
         setRange((prev) => ({ ...prev, start: prev.start - EXTEND_BY }));
