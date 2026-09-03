@@ -20,7 +20,7 @@ import { usePermissions } from "@/lib/permissions";
 import { MonthCalendar } from "@/components/kundivent/month-calendar";
 import { MonthScroller, type ScrollTarget } from "@/components/kundivent/month-scroller";
 import { MatrixView } from "@/components/kundivent/matrix-view";
-import { YearOverview } from "@/components/kundivent/year-overview";
+import { YearScroller } from "@/components/kundivent/year-scroller";
 import { TitleSearch } from "@/components/kundivent/title-search";
 import { useCategories, usePlanningAreas } from "@/lib/master-data";
 import {
