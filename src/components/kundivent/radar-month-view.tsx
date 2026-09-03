@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { overlapsDate, type RadarEvent } from "@/lib/radar";
 import { RADAR_CHIP_CLASS, RADAR_DOT_CLASS, RELEVANCE_CLASS } from "@/lib/radar/theme";
@@ -49,6 +49,7 @@ export function RadarMonthView({
   };
 
   const weeks = useMemo(() => buildWeeks(year, month), [year, month]);
+  const [expandedDate, setExpandedDate] = useState<string | null>(null);
 
   const byDate = useMemo(() => {
     const map = new Map<string, RadarEvent[]>();
