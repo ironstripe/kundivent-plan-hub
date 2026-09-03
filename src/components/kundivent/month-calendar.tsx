@@ -116,6 +116,8 @@ export function MonthCalendar({
   availability,
   onOpenEvent,
   onCreate,
+  hideWeekdayHeader = false,
+  bare = false,
 }: {
   year: number;
   month: number;
@@ -126,6 +128,10 @@ export function MonthCalendar({
   availability?: AvailabilityOverlay | undefined;
   onOpenEvent: (event: EventWithRelations) => void;
   onCreate: (date: string) => void;
+  /** Stacked (continuous) mode renders one shared weekday header above. */
+  hideWeekdayHeader?: boolean;
+  /** Stacked mode drops the card chrome so months read as one surface. */
+  bare?: boolean;
 }) {
   const weeks = useMemo(() => buildWeeks(year, month), [year, month]);
 
@@ -209,7 +215,13 @@ export function MonthCalendar({
   }, [weeks, events]);
 
   return (
-    <section className="overflow-hidden rounded-md border border-border bg-card">
+    <section
+      className={cn(
+        "bg-card",
+        bare ? "border-b border-border last:border-b-0" : "overflow-hidden rounded-md border border-border",
+      )}
+    >
+      {hideWeekdayHeader ? null : (
       <div className="grid grid-cols-7 border-b border-border bg-muted/50">
         {WEEKDAYS.map((d, i) => (
           <div
@@ -224,6 +236,7 @@ export function MonthCalendar({
           </div>
         ))}
       </div>
+      )}
 
       {weekLayouts.map(({ week, segments, hiddenByDate, laneCount }) => (
         <div key={week[0]} className="relative min-h-[120px] border-b border-border last:border-b-0">
@@ -333,7 +346,11 @@ export function MonthCalendar({
                     availability.weekdays.includes(isoWeekday(date))
                   : true;
                 return (
-                  <div key={date} className="flex items-center gap-1 px-1.5 pb-0.5 pt-1">
+                  <div
+                    key={date}
+                    data-date={date}
+                    className="flex items-center gap-1 px-1.5 pb-0.5 pt-1"
+                  >
                     <span
                       className={cn(
                         "inline-flex size-5 items-center justify-center rounded-full text-[11px] tabular-nums",

@@ -147,7 +147,7 @@ function RadarPage() {
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="sticky top-12 z-20 flex flex-wrap items-center gap-2 rounded-md bg-background/95 py-1 backdrop-blur">
         <div className="flex items-center gap-1">
           <Button size="icon" variant="ghost" className="size-7" onClick={() => shift(-1)}>
             <ChevronLeft className="size-4" />

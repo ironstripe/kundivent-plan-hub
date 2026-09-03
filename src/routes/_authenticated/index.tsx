@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { ChevronDown, ChevronLeft, ChevronRight, Plus, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import {
 import { EventDrawer } from "@/components/kundivent/event-drawer";
 import { usePermissions } from "@/lib/permissions";
 import { MonthCalendar } from "@/components/kundivent/month-calendar";
+import { MonthScroller, type ScrollTarget } from "@/components/kundivent/month-scroller";
 import { MatrixView } from "@/components/kundivent/matrix-view";
 import { YearOverview } from "@/components/kundivent/year-overview";
 import { TitleSearch } from "@/components/kundivent/title-search";
@@ -146,6 +147,20 @@ function Uebersicht() {
   const [prefillAreas, setPrefillAreas] = useState<string[]>([]);
   const [prefillStatus, setPrefillStatus] = useState<"provisional" | undefined>(undefined);
   const [jumpMonth, setJumpMonth] = useState<{ index: number; nonce: number } | null>(null);
+  /** Scroll goal for the continuous calendar (month + optional day). */
+  const [scrollTarget, setScrollTarget] = useState<ScrollTarget | null>(null);
+  /** Sticky offset for the continuous calendar = app header + toolbar. */
+  const toolbarRef = useRef<HTMLDivElement>(null);
+  const [headerOffset, setHeaderOffset] = useState(112);
+  useEffect(() => {
+    const el = toolbarRef.current;
+    if (!el) return;
+    const measure = () => setHeaderOffset(48 + el.offsetHeight + 4);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerYear, setPickerYear] = useState<number | null>(null);
   const [areaPopoverOpen, setAreaPopoverOpen] = useState(false);
@@ -267,11 +282,16 @@ function Uebersicht() {
     return count;
   }, [availabilityStates, cursor.month, weekdays]);
 
+  function scrollTo(year: number, month: number, date?: string) {
+    setScrollTarget({ year, month, ...(date ? { date } : {}), nonce: Date.now() });
+  }
+
   function shiftMonth(delta: number) {
     const next = cursor.month + delta;
     const year = cursor.year + Math.floor(next / 12);
     const month = ((next % 12) + 12) % 12;
     if (mode === "matrix") setJumpMonth({ index: month, nonce: Date.now() });
+    else scrollTo(year, month);
     patchSearch({ y: year, m: month });
   }
 
@@ -281,16 +301,19 @@ function Uebersicht() {
 
   function goToday() {
     if (mode === "matrix") setJumpMonth({ index: currentMonth, nonce: Date.now() });
+    else scrollTo(currentYear, currentMonth, today);
     patchSearch({ y: currentYear, m: currentMonth });
   }
 
-  function goToMonth(year: number, month: number) {
+  function goToMonth(year: number, month: number, date?: string) {
     if (mode === "matrix") setJumpMonth({ index: month, nonce: Date.now() });
+    else scrollTo(year, month, date);
     patchSearch({ y: year, m: month });
   }
 
   function switchMode(next: Mode) {
     if (next === "matrix") setJumpMonth({ index: cursor.month, nonce: Date.now() });
+    if (next === "kalender") scrollTo(cursor.year, cursor.month);
     patchSearch({ mode: next });
   }
 
@@ -306,6 +329,19 @@ function Uebersicht() {
     [navigate],
   );
 
+
+  /** Continuous calendar reports the month currently in focus. */
+  const handleActiveMonth = useCallback(
+    (year: number, month: number) => {
+      navigate({
+        to: ".",
+        replace: true,
+        search: (prev) =>
+          prev.y === year && prev.m === month ? prev : { ...prev, y: year, m: month },
+      });
+    },
+    [navigate],
+  );
 
   function openEvent(event: EventWithRelations) {
     setPrefillDate(null);
@@ -323,7 +359,7 @@ function Uebersicht() {
     if (!event) return;
     const year = Number(event.start_date.slice(0, 4));
     const month = Number(event.start_date.slice(5, 7)) - 1;
-    goToMonth(year, month);
+    goToMonth(year, month, event.start_date);
     openEvent(event);
   }
 
@@ -348,7 +384,10 @@ function Uebersicht() {
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-card px-2.5 py-2">
+      <div
+        ref={toolbarRef}
+        className="sticky top-12 z-20 flex flex-wrap items-center gap-2 rounded-md border border-border bg-card/95 px-2.5 py-2 backdrop-blur"
+      >
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
@@ -727,8 +766,10 @@ function Uebersicht() {
           categoryById={categoryById}
           areaNameById={areaNameById}
           onOpenEvent={openEvent}
+          stickyOffset={headerOffset}
           onOpenMonth={(month) => {
             patchSearch({ mode: "kalender", y: cursor.year, m: month });
+            scrollTo(cursor.year, month);
           }}
         />
       ) : mode === "matrix" ? (
@@ -744,6 +785,20 @@ function Uebersicht() {
           onCreate={openNew}
           onVisibleMonthChange={handleVisibleMonth}
 
+        />
+      ) : mode === "kalender" ? (
+        <MonthScroller
+          year={cursor.year}
+          month={cursor.month}
+          events={filteredEvents}
+          today={today}
+          categoryById={categoryById}
+          areaNameById={areaNameById}
+          target={scrollTarget}
+          onActiveMonthChange={handleActiveMonth}
+          headerOffset={headerOffset}
+          onOpenEvent={openEvent}
+          onCreate={(date) => openNew(date)}
         />
       ) : (
         <MonthCalendar

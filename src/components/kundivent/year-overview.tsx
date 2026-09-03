@@ -66,6 +66,7 @@ export function YearOverview({
   areaNameById,
   onOpenEvent,
   onOpenMonth,
+  stickyOffset = 112,
 }: {
   year: number;
   events: EventWithRelations[];
@@ -74,6 +75,8 @@ export function YearOverview({
   areaNameById: Map<string, string>;
   onOpenEvent: (event: EventWithRelations) => void;
   onOpenMonth: (month: number) => void;
+  /** Sticky offset (px) so month labels stay readable while scrolling. */
+  stickyOffset?: number;
 }) {
   const dayIndex = useMemo(() => buildDayIndex(events, year), [events, year]);
 
@@ -91,6 +94,7 @@ export function YearOverview({
           areaNameById={areaNameById}
           onOpenEvent={onOpenEvent}
           onOpenMonth={onOpenMonth}
+          stickyOffset={stickyOffset}
         />
       ))}
     </div>
@@ -107,6 +111,7 @@ function MiniMonth({
   areaNameById,
   onOpenEvent,
   onOpenMonth,
+  stickyOffset,
 }: {
   label: string;
   year: number;
@@ -117,6 +122,7 @@ function MiniMonth({
   areaNameById: Map<string, string>;
   onOpenEvent: (event: EventWithRelations) => void;
   onOpenMonth: (month: number) => void;
+  stickyOffset: number;
 }) {
   const first = new Date(Date.UTC(year, month, 1));
   const offset = (first.getUTCDay() + 6) % 7;
@@ -133,10 +139,11 @@ function MiniMonth({
       <button
         type="button"
         onClick={() => onOpenMonth(month)}
-        className="mb-1.5 w-full rounded-sm px-1 py-0.5 text-left text-xs font-semibold tracking-tight hover:bg-accent"
+        style={{ top: stickyOffset }}
+        className="sticky z-10 mb-1.5 w-full rounded-sm bg-card/95 px-1 py-0.5 text-left text-xs font-semibold tracking-tight backdrop-blur hover:bg-accent"
         title={`${label} im Monatskalender öffnen`}
       >
-        {label}
+        {label} {year}
       </button>
 
       <div className="grid grid-cols-7 gap-px text-center">
