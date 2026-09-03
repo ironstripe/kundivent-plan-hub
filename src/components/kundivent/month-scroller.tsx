@@ -130,9 +130,11 @@ export function MonthScroller({
   // Keep the visual position stable when months are inserted above.
   useLayoutEffect(() => {
     if (!pendingPrepend.current) return;
-    pendingPrepend.current = false;
     const delta = document.documentElement.scrollHeight - heightBeforePrepend.current;
     if (delta) window.scrollBy(0, delta);
+    pendingPrepend.current = false;
+    // Re-evaluate the visible month once the position is corrected.
+    window.dispatchEvent(new Event("scroll"));
   }, [range.start]);
 
   // Active month detection + lazy extension, throttled per animation frame.
@@ -163,7 +165,13 @@ export function MonthScroller({
         visible = best;
       }
 
-      if (visible !== null && pendingTarget.current === null && visible !== activeKey.current) {
+      // Skip while a prepend is being compensated: the position is not final.
+      if (
+        visible !== null &&
+        pendingTarget.current === null &&
+        !pendingPrepend.current &&
+        visible !== activeKey.current
+      ) {
         activeKey.current = visible;
         const { year: y, month: m } = fromKey(visible);
         onActiveMonthChange(y, m);
