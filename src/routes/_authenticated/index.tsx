@@ -42,10 +42,12 @@ export const Route = createFileRoute("/_authenticated/")({
     const mode = MODES.includes(search['mode'] as Mode) ? (search['mode'] as Mode) : undefined;
     const y = Number(search['y']);
     const m = Number(search['m']);
+    const q = typeof search['q'] === "string" ? search['q'].slice(0, 100) : "";
     return {
       ...(mode ? { mode } : {}),
       ...(Number.isInteger(y) && y > 1900 ? { y } : {}),
       ...(Number.isInteger(m) && m >= 0 && m <= 11 ? { m } : {}),
+      ...(q ? { q } : {}),
     };
   },
   head: () => ({
