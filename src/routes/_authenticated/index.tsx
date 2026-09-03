@@ -20,7 +20,7 @@ import { usePermissions } from "@/lib/permissions";
 import { MonthCalendar } from "@/components/kundivent/month-calendar";
 import { MonthScroller, type ScrollTarget } from "@/components/kundivent/month-scroller";
 import { MatrixView } from "@/components/kundivent/matrix-view";
-import { YearOverview } from "@/components/kundivent/year-overview";
+import { YearScroller } from "@/components/kundivent/year-scroller";
 import { TitleSearch } from "@/components/kundivent/title-search";
 import { useCategories, usePlanningAreas } from "@/lib/master-data";
 import {
@@ -297,7 +297,9 @@ function Uebersicht() {
   }
 
   function shiftYear(delta: number) {
-    patchSearch({ y: cursor.year + delta });
+    const year = cursor.year + delta;
+    scrollTo(year, cursor.month);
+    patchSearch({ y: year });
   }
 
   function goToday() {
@@ -314,7 +316,7 @@ function Uebersicht() {
 
   function switchMode(next: Mode) {
     if (next === "matrix") setJumpMonth({ index: cursor.month, nonce: Date.now() });
-    if (next === "kalender") scrollTo(cursor.year, cursor.month);
+    if (next === "kalender" || next === "jahr") scrollTo(cursor.year, cursor.month);
     patchSearch({ mode: next });
   }
 
@@ -345,6 +347,20 @@ function Uebersicht() {
     },
     [navigate],
   );
+
+  /** Continuous year overview reports the year currently in focus. */
+  const handleActiveYear = useCallback(
+    (year: number) => {
+      navigate({
+        to: ".",
+        replace: true,
+        resetScroll: false,
+        search: (prev) => (prev.y === year ? prev : { ...prev, y: year }),
+      });
+    },
+    [navigate],
+  );
+
 
   function openEvent(event: EventWithRelations) {
     setPrefillDate(null);
@@ -762,17 +778,19 @@ function Uebersicht() {
           </Button>
         </div>
       ) : mode === "jahr" ? (
-        <YearOverview
+        <YearScroller
           year={cursor.year}
-          events={matrixEvents}
+          events={filteredEvents}
           today={today}
           categoryById={categoryById}
           areaNameById={areaNameById}
+          target={scrollTarget}
+          onActiveYearChange={handleActiveYear}
           onOpenEvent={openEvent}
-          stickyOffset={headerOffset}
-          onOpenMonth={(month) => {
-            patchSearch({ mode: "kalender", y: cursor.year, m: month });
-            scrollTo(cursor.year, month);
+          headerOffset={headerOffset}
+          onOpenMonth={(y, month) => {
+            patchSearch({ mode: "kalender", y, m: month });
+            scrollTo(y, month);
           }}
         />
       ) : mode === "matrix" ? (

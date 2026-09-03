@@ -135,7 +135,10 @@ function MiniMonth({
   while (cells.length % 7 !== 0) cells.push(null);
 
   return (
-    <section className="rounded-md border border-border bg-card p-2">
+    <section
+      data-year-month={`${year}-${String(month + 1).padStart(2, "0")}`}
+      className="rounded-md border border-border bg-card p-2"
+    >
       <button
         type="button"
         onClick={() => onOpenMonth(month)}
