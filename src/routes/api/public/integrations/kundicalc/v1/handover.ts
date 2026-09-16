@@ -90,7 +90,7 @@ export const Route = createFileRoute("/api/public/integrations/kundicalc/v1/hand
           | { ok: false; code: string };
 
         if (!result?.ok) {
-          const code = (result?.code ?? "transaction_failed") as Parameters<typeof mod.fail>[0];
+          const code = mod.isErrorCode(result?.code) ? result.code : "transaction_failed";
           return mod.fail(code);
         }
 
