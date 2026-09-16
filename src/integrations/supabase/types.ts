@@ -398,6 +398,128 @@ export type Database = {
           },
         ]
       }
+      integration_handovers: {
+        Row: {
+          actor_profile_id: string | null
+          calculation_url: string | null
+          completed_at: string
+          contract_version: string
+          created_at: string
+          execution_approval_ref: string | null
+          execution_approved_at: string | null
+          id: string
+          idempotency_key: string
+          operation: string
+          outcome: string
+          request_fingerprint: string
+          source_actor_id: string
+          source_calculation_id: string | null
+          source_event_id: string
+          source_system: string
+          target_event_deleted: boolean
+          target_event_id: string | null
+          target_event_ref: string
+        }
+        Insert: {
+          actor_profile_id?: string | null
+          calculation_url?: string | null
+          completed_at?: string
+          contract_version?: string
+          created_at?: string
+          execution_approval_ref?: string | null
+          execution_approved_at?: string | null
+          id?: string
+          idempotency_key: string
+          operation: string
+          outcome: string
+          request_fingerprint: string
+          source_actor_id: string
+          source_calculation_id?: string | null
+          source_event_id: string
+          source_system: string
+          target_event_deleted?: boolean
+          target_event_id?: string | null
+          target_event_ref: string
+        }
+        Update: {
+          actor_profile_id?: string | null
+          calculation_url?: string | null
+          completed_at?: string
+          contract_version?: string
+          created_at?: string
+          execution_approval_ref?: string | null
+          execution_approved_at?: string | null
+          id?: string
+          idempotency_key?: string
+          operation?: string
+          outcome?: string
+          request_fingerprint?: string
+          source_actor_id?: string
+          source_calculation_id?: string | null
+          source_event_id?: string
+          source_system?: string
+          target_event_deleted?: boolean
+          target_event_id?: string | null
+          target_event_ref?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_handovers_actor_profile_id_fkey"
+            columns: ["actor_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_handovers_target_event_id_fkey"
+            columns: ["target_event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integration_user_map: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          note: string | null
+          profile_id: string
+          source_actor_id: string
+          source_system: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          note?: string | null
+          profile_id: string
+          source_actor_id: string
+          source_system: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          note?: string | null
+          profile_id?: string
+          source_actor_id?: string
+          source_system?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_user_map_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       planning_areas: {
         Row: {
           active: boolean
@@ -706,6 +828,13 @@ export type Database = {
       is_active_editor_or_admin: {
         Args: { _user_id: string }
         Returns: boolean
+      }
+      kundicalc_handover: { Args: { _payload: Json }; Returns: Json }
+      kundicalc_receipt: {
+        Args: {
+          _row: Database["public"]["Tables"]["integration_handovers"]["Row"]
+        }
+        Returns: Json
       }
       new_inbound_email_token: { Args: never; Returns: string }
       verify_backup_token: { Args: { _token: string }; Returns: boolean }
