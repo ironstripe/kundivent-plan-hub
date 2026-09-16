@@ -50,13 +50,17 @@ export const Route = createFileRoute("/_authenticated/")({
     const y = Number(search['y']);
     const m = Number(search['m']);
     const q = typeof search['q'] === "string" ? search['q'].slice(0, 100) : "";
+    const rawEvent = typeof search['event'] === "string" ? search['event'] : "";
+    const event = /^[0-9a-f-]{36}$/i.test(rawEvent) ? rawEvent : "";
     return {
       ...(mode ? { mode } : {}),
       ...(Number.isInteger(y) && y > 1900 ? { y } : {}),
       ...(Number.isInteger(m) && m >= 0 && m <= 11 ? { m } : {}),
       ...(q ? { q } : {}),
+      ...(event ? { event } : {}),
     };
   },
+
   head: () => ({
     meta: [
       { title: "Kalender – Kundivent" },
@@ -369,6 +373,22 @@ function Uebersicht() {
     setSelected(event);
     setDrawerOpen(true);
   }
+
+  /** Deep link ?event=<id>: open the entry once the data is available. */
+  const deepLinkedEvent = urlSearch.event ?? "";
+  const openedDeepLink = useRef<string | null>(null);
+  useEffect(() => {
+    if (!deepLinkedEvent || openedDeepLink.current === deepLinkedEvent) return;
+    const event = (events.data ?? []).find((e) => e.id === deepLinkedEvent);
+    if (!event) return;
+    openedDeepLink.current = deepLinkedEvent;
+    const year = Number(event.start_date.slice(0, 4));
+    const month = Number(event.start_date.slice(5, 7)) - 1;
+    goToMonth(year, month, event.start_date);
+    openEvent(event);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deepLinkedEvent, events.data]);
+
 
   /** Global search result: jump to the event's month, then open it. */
   function selectSearchResult(id: string) {

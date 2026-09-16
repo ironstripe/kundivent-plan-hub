@@ -6,6 +6,7 @@ import { CategoryAdmin } from "@/components/kundivent/category-admin";
 import { InboundEmailLog } from "@/components/kundivent/inbound-email-log";
 import { BackupAdmin } from "@/components/kundivent/backup-admin";
 import { RadarAdmin } from "@/components/kundivent/radar-admin";
+import { KundiCalcAdmin } from "@/components/kundivent/kundicalc-admin";
 
 
 export const Route = createFileRoute("/_authenticated/einstellungen")({
@@ -63,6 +64,8 @@ function Einstellungen() {
       <CategoryAdmin canManage={isAdmin} />
 
       {isAdmin ? <RadarAdmin /> : null}
+
+      {isAdmin ? <KundiCalcAdmin /> : null}
 
       {isAdmin ? <BackupAdmin /> : null}
 

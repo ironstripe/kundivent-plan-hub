@@ -21,6 +21,11 @@ import { Route as ApiPublicResendConfigCheckRouteImport } from './routes/api/pub
 import { Route as ApiPublicBackupsRunRouteImport } from './routes/api/public/backups/run'
 import { Route as ApiPublicRadarSyncRouteImport } from './routes/api/public/radar/sync'
 import { Route as ApiPublicWebhooksResendRouteImport } from './routes/api/public/webhooks/resend'
+import { Route as ApiPublicIntegrationsKundicalcV1EventsRouteImport } from './routes/api/public/integrations/kundicalc/v1/events'
+import { Route as ApiPublicIntegrationsKundicalcV1HandoverRouteImport } from './routes/api/public/integrations/kundicalc/v1/handover'
+import { Route as ApiPublicIntegrationsKundicalcV1MasterDataRouteImport } from './routes/api/public/integrations/kundicalc/v1/master-data'
+import { Route as ApiPublicIntegrationsKundicalcV1EventsEventIdRouteImport } from './routes/api/public/integrations/kundicalc/v1/events/$eventId'
+import { Route as ApiPublicIntegrationsKundicalcV1ReceiptsSourceEventIdRouteImport } from './routes/api/public/integrations/kundicalc/v1/receipts/$sourceEventId'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -84,6 +89,36 @@ const ApiPublicWebhooksResendRoute = ApiPublicWebhooksResendRouteImport.update({
   path: '/api/public/webhooks/resend',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicIntegrationsKundicalcV1EventsRoute =
+  ApiPublicIntegrationsKundicalcV1EventsRouteImport.update({
+    id: '/api/public/integrations/kundicalc/v1/events',
+    path: '/api/public/integrations/kundicalc/v1/events',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicIntegrationsKundicalcV1HandoverRoute =
+  ApiPublicIntegrationsKundicalcV1HandoverRouteImport.update({
+    id: '/api/public/integrations/kundicalc/v1/handover',
+    path: '/api/public/integrations/kundicalc/v1/handover',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicIntegrationsKundicalcV1MasterDataRoute =
+  ApiPublicIntegrationsKundicalcV1MasterDataRouteImport.update({
+    id: '/api/public/integrations/kundicalc/v1/master-data',
+    path: '/api/public/integrations/kundicalc/v1/master-data',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicIntegrationsKundicalcV1EventsEventIdRoute =
+  ApiPublicIntegrationsKundicalcV1EventsEventIdRouteImport.update({
+    id: '/$eventId',
+    path: '/$eventId',
+    getParentRoute: () => ApiPublicIntegrationsKundicalcV1EventsRoute,
+  } as any)
+const ApiPublicIntegrationsKundicalcV1ReceiptsSourceEventIdRoute =
+  ApiPublicIntegrationsKundicalcV1ReceiptsSourceEventIdRouteImport.update({
+    id: '/api/public/integrations/kundicalc/v1/receipts/$sourceEventId',
+    path: '/api/public/integrations/kundicalc/v1/receipts/$sourceEventId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -97,6 +132,11 @@ export interface FileRoutesByFullPath {
   '/api/public/backups/run': typeof ApiPublicBackupsRunRoute
   '/api/public/radar/sync': typeof ApiPublicRadarSyncRoute
   '/api/public/webhooks/resend': typeof ApiPublicWebhooksResendRoute
+  '/api/public/integrations/kundicalc/v1/events': typeof ApiPublicIntegrationsKundicalcV1EventsRouteWithChildren
+  '/api/public/integrations/kundicalc/v1/handover': typeof ApiPublicIntegrationsKundicalcV1HandoverRoute
+  '/api/public/integrations/kundicalc/v1/master-data': typeof ApiPublicIntegrationsKundicalcV1MasterDataRoute
+  '/api/public/integrations/kundicalc/v1/events/$eventId': typeof ApiPublicIntegrationsKundicalcV1EventsEventIdRoute
+  '/api/public/integrations/kundicalc/v1/receipts/$sourceEventId': typeof ApiPublicIntegrationsKundicalcV1ReceiptsSourceEventIdRoute
 }
 export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
@@ -110,6 +150,11 @@ export interface FileRoutesByTo {
   '/api/public/backups/run': typeof ApiPublicBackupsRunRoute
   '/api/public/radar/sync': typeof ApiPublicRadarSyncRoute
   '/api/public/webhooks/resend': typeof ApiPublicWebhooksResendRoute
+  '/api/public/integrations/kundicalc/v1/events': typeof ApiPublicIntegrationsKundicalcV1EventsRouteWithChildren
+  '/api/public/integrations/kundicalc/v1/handover': typeof ApiPublicIntegrationsKundicalcV1HandoverRoute
+  '/api/public/integrations/kundicalc/v1/master-data': typeof ApiPublicIntegrationsKundicalcV1MasterDataRoute
+  '/api/public/integrations/kundicalc/v1/events/$eventId': typeof ApiPublicIntegrationsKundicalcV1EventsEventIdRoute
+  '/api/public/integrations/kundicalc/v1/receipts/$sourceEventId': typeof ApiPublicIntegrationsKundicalcV1ReceiptsSourceEventIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -125,6 +170,11 @@ export interface FileRoutesById {
   '/api/public/backups/run': typeof ApiPublicBackupsRunRoute
   '/api/public/radar/sync': typeof ApiPublicRadarSyncRoute
   '/api/public/webhooks/resend': typeof ApiPublicWebhooksResendRoute
+  '/api/public/integrations/kundicalc/v1/events': typeof ApiPublicIntegrationsKundicalcV1EventsRouteWithChildren
+  '/api/public/integrations/kundicalc/v1/handover': typeof ApiPublicIntegrationsKundicalcV1HandoverRoute
+  '/api/public/integrations/kundicalc/v1/master-data': typeof ApiPublicIntegrationsKundicalcV1MasterDataRoute
+  '/api/public/integrations/kundicalc/v1/events/$eventId': typeof ApiPublicIntegrationsKundicalcV1EventsEventIdRoute
+  '/api/public/integrations/kundicalc/v1/receipts/$sourceEventId': typeof ApiPublicIntegrationsKundicalcV1ReceiptsSourceEventIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -140,6 +190,11 @@ export interface FileRouteTypes {
     | '/api/public/backups/run'
     | '/api/public/radar/sync'
     | '/api/public/webhooks/resend'
+    | '/api/public/integrations/kundicalc/v1/events'
+    | '/api/public/integrations/kundicalc/v1/handover'
+    | '/api/public/integrations/kundicalc/v1/master-data'
+    | '/api/public/integrations/kundicalc/v1/events/$eventId'
+    | '/api/public/integrations/kundicalc/v1/receipts/$sourceEventId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/auth'
@@ -153,6 +208,11 @@ export interface FileRouteTypes {
     | '/api/public/backups/run'
     | '/api/public/radar/sync'
     | '/api/public/webhooks/resend'
+    | '/api/public/integrations/kundicalc/v1/events'
+    | '/api/public/integrations/kundicalc/v1/handover'
+    | '/api/public/integrations/kundicalc/v1/master-data'
+    | '/api/public/integrations/kundicalc/v1/events/$eventId'
+    | '/api/public/integrations/kundicalc/v1/receipts/$sourceEventId'
   id:
     | '__root__'
     | '/_authenticated'
@@ -167,6 +227,11 @@ export interface FileRouteTypes {
     | '/api/public/backups/run'
     | '/api/public/radar/sync'
     | '/api/public/webhooks/resend'
+    | '/api/public/integrations/kundicalc/v1/events'
+    | '/api/public/integrations/kundicalc/v1/handover'
+    | '/api/public/integrations/kundicalc/v1/master-data'
+    | '/api/public/integrations/kundicalc/v1/events/$eventId'
+    | '/api/public/integrations/kundicalc/v1/receipts/$sourceEventId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -176,6 +241,10 @@ export interface RootRouteChildren {
   ApiPublicBackupsRunRoute: typeof ApiPublicBackupsRunRoute
   ApiPublicRadarSyncRoute: typeof ApiPublicRadarSyncRoute
   ApiPublicWebhooksResendRoute: typeof ApiPublicWebhooksResendRoute
+  ApiPublicIntegrationsKundicalcV1EventsRoute: typeof ApiPublicIntegrationsKundicalcV1EventsRouteWithChildren
+  ApiPublicIntegrationsKundicalcV1HandoverRoute: typeof ApiPublicIntegrationsKundicalcV1HandoverRoute
+  ApiPublicIntegrationsKundicalcV1MasterDataRoute: typeof ApiPublicIntegrationsKundicalcV1MasterDataRoute
+  ApiPublicIntegrationsKundicalcV1ReceiptsSourceEventIdRoute: typeof ApiPublicIntegrationsKundicalcV1ReceiptsSourceEventIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -264,6 +333,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksResendRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/integrations/kundicalc/v1/events': {
+      id: '/api/public/integrations/kundicalc/v1/events'
+      path: '/api/public/integrations/kundicalc/v1/events'
+      fullPath: '/api/public/integrations/kundicalc/v1/events'
+      preLoaderRoute: typeof ApiPublicIntegrationsKundicalcV1EventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/integrations/kundicalc/v1/handover': {
+      id: '/api/public/integrations/kundicalc/v1/handover'
+      path: '/api/public/integrations/kundicalc/v1/handover'
+      fullPath: '/api/public/integrations/kundicalc/v1/handover'
+      preLoaderRoute: typeof ApiPublicIntegrationsKundicalcV1HandoverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/integrations/kundicalc/v1/master-data': {
+      id: '/api/public/integrations/kundicalc/v1/master-data'
+      path: '/api/public/integrations/kundicalc/v1/master-data'
+      fullPath: '/api/public/integrations/kundicalc/v1/master-data'
+      preLoaderRoute: typeof ApiPublicIntegrationsKundicalcV1MasterDataRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/integrations/kundicalc/v1/events/$eventId': {
+      id: '/api/public/integrations/kundicalc/v1/events/$eventId'
+      path: '/$eventId'
+      fullPath: '/api/public/integrations/kundicalc/v1/events/$eventId'
+      preLoaderRoute: typeof ApiPublicIntegrationsKundicalcV1EventsEventIdRouteImport
+      parentRoute: typeof ApiPublicIntegrationsKundicalcV1EventsRoute
+    }
+    '/api/public/integrations/kundicalc/v1/receipts/$sourceEventId': {
+      id: '/api/public/integrations/kundicalc/v1/receipts/$sourceEventId'
+      path: '/api/public/integrations/kundicalc/v1/receipts/$sourceEventId'
+      fullPath: '/api/public/integrations/kundicalc/v1/receipts/$sourceEventId'
+      preLoaderRoute: typeof ApiPublicIntegrationsKundicalcV1ReceiptsSourceEventIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -288,6 +392,21 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface ApiPublicIntegrationsKundicalcV1EventsRouteChildren {
+  ApiPublicIntegrationsKundicalcV1EventsEventIdRoute: typeof ApiPublicIntegrationsKundicalcV1EventsEventIdRoute
+}
+
+const ApiPublicIntegrationsKundicalcV1EventsRouteChildren: ApiPublicIntegrationsKundicalcV1EventsRouteChildren =
+  {
+    ApiPublicIntegrationsKundicalcV1EventsEventIdRoute:
+      ApiPublicIntegrationsKundicalcV1EventsEventIdRoute,
+  }
+
+const ApiPublicIntegrationsKundicalcV1EventsRouteWithChildren =
+  ApiPublicIntegrationsKundicalcV1EventsRoute._addFileChildren(
+    ApiPublicIntegrationsKundicalcV1EventsRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
@@ -295,6 +414,14 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicBackupsRunRoute: ApiPublicBackupsRunRoute,
   ApiPublicRadarSyncRoute: ApiPublicRadarSyncRoute,
   ApiPublicWebhooksResendRoute: ApiPublicWebhooksResendRoute,
+  ApiPublicIntegrationsKundicalcV1EventsRoute:
+    ApiPublicIntegrationsKundicalcV1EventsRouteWithChildren,
+  ApiPublicIntegrationsKundicalcV1HandoverRoute:
+    ApiPublicIntegrationsKundicalcV1HandoverRoute,
+  ApiPublicIntegrationsKundicalcV1MasterDataRoute:
+    ApiPublicIntegrationsKundicalcV1MasterDataRoute,
+  ApiPublicIntegrationsKundicalcV1ReceiptsSourceEventIdRoute:
+    ApiPublicIntegrationsKundicalcV1ReceiptsSourceEventIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
