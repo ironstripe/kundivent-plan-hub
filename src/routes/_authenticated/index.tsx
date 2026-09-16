@@ -50,13 +50,17 @@ export const Route = createFileRoute("/_authenticated/")({
     const y = Number(search['y']);
     const m = Number(search['m']);
     const q = typeof search['q'] === "string" ? search['q'].slice(0, 100) : "";
+    const rawEvent = typeof search['event'] === "string" ? search['event'] : "";
+    const event = /^[0-9a-f-]{36}$/i.test(rawEvent) ? rawEvent : "";
     return {
       ...(mode ? { mode } : {}),
       ...(Number.isInteger(y) && y > 1900 ? { y } : {}),
       ...(Number.isInteger(m) && m >= 0 && m <= 11 ? { m } : {}),
       ...(q ? { q } : {}),
+      ...(event ? { event } : {}),
     };
   },
+
   head: () => ({
     meta: [
       { title: "Kalender – Kundivent" },
