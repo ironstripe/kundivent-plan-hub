@@ -35,6 +35,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { KundiCalcSection } from "@/components/kundivent/kundicalc-section";
+
 import { useCategories, usePlanningAreas } from "@/lib/master-data";
 import {
   EVENT_STATUSES,
