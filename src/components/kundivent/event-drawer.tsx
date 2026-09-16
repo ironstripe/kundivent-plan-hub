@@ -710,6 +710,8 @@ export function EventDrawer({
                 onPendingFilesChange={setPendingFiles}
               />
 
+              <KundiCalcSection eventId={isLocal ? null : (event?.id ?? null)} />
+
 
               {event ? (
                 <p className="border-t border-border pt-3 text-[11px] text-muted-foreground">
