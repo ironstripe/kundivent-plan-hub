@@ -374,6 +374,22 @@ function Uebersicht() {
     setDrawerOpen(true);
   }
 
+  /** Deep link ?event=<id>: open the entry once the data is available. */
+  const deepLinkedEvent = urlSearch.event ?? "";
+  const openedDeepLink = useRef<string | null>(null);
+  useEffect(() => {
+    if (!deepLinkedEvent || openedDeepLink.current === deepLinkedEvent) return;
+    const event = (events.data ?? []).find((e) => e.id === deepLinkedEvent);
+    if (!event) return;
+    openedDeepLink.current = deepLinkedEvent;
+    const year = Number(event.start_date.slice(0, 4));
+    const month = Number(event.start_date.slice(5, 7)) - 1;
+    goToMonth(year, month, event.start_date);
+    openEvent(event);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deepLinkedEvent, events.data]);
+
+
   /** Global search result: jump to the event's month, then open it. */
   function selectSearchResult(id: string) {
     const event =
