@@ -74,6 +74,10 @@ const STATUS: Record<ErrorCode, number> = {
   not_found: 404,
 };
 
+export function isErrorCode(value: unknown): value is ErrorCode {
+  return typeof value === "string" && value in MESSAGES;
+}
+
 export function fail(code: ErrorCode, detail?: string): Response {
   return Response.json(
     {
