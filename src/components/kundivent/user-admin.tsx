@@ -510,6 +510,9 @@ export function UserAdmin() {
                 </div>
               ) : null}
 
+              {editing ? <KundiCalcUserLink user={editing} /> : null}
+
+
               {formError ? (
                 <p
                   ref={errorRef}
