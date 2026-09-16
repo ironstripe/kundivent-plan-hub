@@ -42,6 +42,7 @@ import type { ManagedUser } from "@/lib/users.functions";
 import { ROLE_OPTIONS, roleLabel, type UserRole } from "@/lib/permissions";
 import { usePlanningAreas } from "@/lib/master-data";
 import { Checkbox } from "@/components/ui/checkbox";
+import { KundiCalcUserLink } from "@/components/kundivent/kundicalc-user-link";
 import {
   Select,
   SelectContent,
@@ -509,6 +510,9 @@ export function UserAdmin() {
                   </p>
                 </div>
               ) : null}
+
+              {editing ? <KundiCalcUserLink user={editing} /> : null}
+
 
               {formError ? (
                 <p
