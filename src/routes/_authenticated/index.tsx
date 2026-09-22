@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { ChevronDown, ChevronLeft, ChevronRight, Plus, SlidersHorizontal } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Plus, Printer, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -18,6 +18,7 @@ import {
 import { EventDrawer } from "@/components/kundivent/event-drawer";
 import { usePermissions } from "@/lib/permissions";
 import { MonthCalendar } from "@/components/kundivent/month-calendar";
+import { TwoMonthPrintView } from "@/components/kundivent/two-month-print-view";
 import { MonthScroller, type ScrollTarget } from "@/components/kundivent/month-scroller";
 import { MatrixView } from "@/components/kundivent/matrix-view";
 import { YearScroller } from "@/components/kundivent/year-scroller";
@@ -422,7 +423,7 @@ function Uebersicht() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="calendar-overview-page space-y-3">
       <div
         ref={toolbarRef}
         className="sticky top-12 z-20 flex flex-wrap items-center gap-2 rounded-md border border-border bg-card/95 px-2.5 py-2 backdrop-blur"
@@ -771,6 +772,18 @@ function Uebersicht() {
           </Popover>
           )}
 
+          {mode === "kalender" ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-1.5 px-2 text-xs"
+              onClick={() => window.print()}
+            >
+              <Printer className="size-3.5" />
+              Drucken
+            </Button>
+          ) : null}
+
 
           {canEdit ? (
             <Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => openNew()}>
@@ -858,6 +871,17 @@ function Uebersicht() {
           onCreate={(date) => openNew(date)}
         />
       )}
+
+      {mode === "kalender" && !events.isPending && !events.isError ? (
+        <TwoMonthPrintView
+          year={cursor.year}
+          month={cursor.month}
+          today={today}
+          events={filteredEvents}
+          categoryById={categoryById}
+          areaNameById={areaNameById}
+        />
+      ) : null}
 
       <EventDrawer
         open={drawerOpen}

@@ -65,6 +65,247 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+.kundivent-print-root {
+  display: none;
+}
+
+@page {
+  size: A3 landscape;
+  margin: 8mm;
+}
+
+@media print {
+  :root {
+    --print-paper: oklch(1 0 0);
+    --print-ink: oklch(0.18 0 0);
+    --print-muted: oklch(0.48 0 0);
+    --print-line: oklch(0.72 0 0);
+    --print-weekend: oklch(0.965 0 0);
+    --print-adjacent: oklch(0.94 0 0);
+  }
+
+  body {
+    margin: 0;
+    background: var(--print-paper);
+    color: var(--print-ink);
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  body > div > header,
+  .calendar-overview-page > :not(.kundivent-print-root) {
+    display: none !important;
+  }
+
+  body > div,
+  body > div > main,
+  .calendar-overview-page {
+    min-height: 0 !important;
+    height: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .kundivent-print-root,
+  .kundivent-print-root * {
+    visibility: visible;
+  }
+
+  .kundivent-print-root {
+    position: static;
+    display: block;
+    width: 100%;
+    background: var(--print-paper);
+    color: var(--print-ink);
+    font-family: ui-sans-serif, system-ui, sans-serif;
+  }
+
+  .print-overview-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 3mm;
+    border-bottom: 0.35mm solid var(--print-ink);
+    padding-bottom: 1.5mm;
+  }
+
+  .print-overview-header h1 {
+    margin: 0;
+    font-size: 12pt;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
+  .print-overview-header p {
+    margin: 0;
+    color: var(--print-muted);
+    font-size: 7.5pt;
+  }
+
+  .print-months {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 5mm;
+    align-items: start;
+  }
+
+  .print-month {
+    min-width: 0;
+    break-inside: avoid;
+  }
+
+  .print-month h2 {
+    margin: 0 0 1.5mm;
+    font-size: 11pt;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
+  .print-weekdays,
+  .print-week {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+
+  .print-weekdays {
+    border: 0.25mm solid var(--print-line);
+    border-bottom: 0;
+  }
+
+  .print-weekdays > div {
+    border-left: 0.2mm solid var(--print-line);
+    padding: 0.8mm 1mm;
+    color: var(--print-muted);
+    font-size: 7pt;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .print-weekdays > div:first-child {
+    border-left: 0;
+  }
+
+  .print-weekdays .print-weekend {
+    color: var(--print-ink);
+    background: var(--print-weekend);
+  }
+
+  .print-weeks {
+    border-top: 0.25mm solid var(--print-line);
+    border-left: 0.25mm solid var(--print-line);
+  }
+
+  .print-week {
+    break-inside: avoid;
+  }
+
+  .print-day {
+    min-height: 38mm;
+    border-right: 0.25mm solid var(--print-line);
+    border-bottom: 0.25mm solid var(--print-line);
+    padding: 0.7mm;
+    overflow: visible;
+  }
+
+  .print-day.print-weekend {
+    background-color: var(--print-weekend);
+    background-image: repeating-linear-gradient(
+      135deg,
+      transparent 0 2.5mm,
+      color-mix(in oklab, var(--print-line) 22%, transparent) 2.5mm 2.7mm
+    );
+  }
+
+  .print-adjacent-day {
+    background-color: var(--print-adjacent);
+    color: var(--print-muted);
+  }
+
+  .print-day-number {
+    display: block;
+    margin-bottom: 0.6mm;
+    font-size: 7.5pt;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .print-events {
+    display: grid;
+    gap: 0.45mm;
+  }
+
+  .print-event {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    align-items: baseline;
+    gap: 0.5mm;
+    min-width: 0;
+    border: 0.2mm solid var(--ev-border);
+    border-left: 1.2mm solid var(--ev-accent);
+    border-radius: 0.6mm;
+    padding: 0.45mm 0.65mm;
+    background: var(--ev-bg);
+    font-size: 7pt;
+    line-height: 1.18;
+    break-inside: avoid;
+  }
+
+  .print-event-provisional {
+    border-style: dashed;
+    background: var(--ev-soft);
+  }
+
+  .print-event-idea {
+    border-style: dotted;
+    background: var(--print-paper);
+  }
+
+  .print-event-cancelled {
+    border-color: var(--print-line);
+    border-left-color: var(--print-muted);
+    background: transparent;
+    color: var(--print-muted);
+    text-decoration: line-through;
+  }
+
+  .print-event-holiday {
+    border-color: var(--print-line);
+    border-style: dashed;
+    border-left-color: var(--print-muted);
+    background: repeating-linear-gradient(
+      135deg,
+      transparent 0 1.5mm,
+      color-mix(in oklab, var(--print-line) 32%, transparent) 1.5mm 1.8mm
+    );
+  }
+
+  .print-status-mark,
+  .print-event-time {
+    flex: none;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .print-status-mark {
+    font-size: 5.5pt;
+  }
+
+  .print-event-time {
+    color: var(--print-muted);
+    font-weight: 600;
+  }
+
+  .print-event-title {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-weight: 600;
+  }
+}
+
 :root {
   --radius: 0.375rem;
   --background: oklch(0.985 0.003 247.858);
