@@ -423,7 +423,7 @@ function Uebersicht() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="calendar-overview-page space-y-3">
       <div
         ref={toolbarRef}
         className="sticky top-12 z-20 flex flex-wrap items-center gap-2 rounded-md border border-border bg-card/95 px-2.5 py-2 backdrop-blur"

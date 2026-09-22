@@ -96,14 +96,28 @@
     visibility: hidden;
   }
 
+  body > div > header,
+  .calendar-overview-page > :not(.kundivent-print-root) {
+    display: none !important;
+  }
+
+  body > div,
+  body > div > main,
+  .calendar-overview-page {
+    min-height: 0 !important;
+    height: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
   .kundivent-print-root,
   .kundivent-print-root * {
     visibility: visible;
   }
 
   .kundivent-print-root {
-    position: absolute;
-    inset: 0;
+    position: static;
     display: block;
     width: 100%;
     background: var(--print-paper);
