@@ -205,7 +205,7 @@
   }
 
   .print-day {
-    min-height: 25mm;
+    min-height: 38mm;
     border-right: 0.25mm solid var(--print-line);
     border-bottom: 0.25mm solid var(--print-line);
     padding: 0.7mm;
@@ -250,8 +250,8 @@
     border-radius: 0.6mm;
     padding: 0.45mm 0.65mm;
     background: var(--ev-bg);
-    font-size: 6.2pt;
-    line-height: 1.12;
+    font-size: 7pt;
+    line-height: 1.18;
     break-inside: avoid;
   }
 
